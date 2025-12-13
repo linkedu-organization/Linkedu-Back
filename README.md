@@ -1,4 +1,4 @@
-# Linkedu
+# Linkedu 🎓
 
 Plataforma que conecta estudantes à oportunidades acadêmicas.
 
@@ -9,7 +9,7 @@ Plataforma que conecta estudantes à oportunidades acadêmicas.
 
 ## Inicializando a aplicação
 
-Rode o seguinte comando para instalar as dependências necessárias:
+Rode o seguinte comando para instalar as demais dependências:
 
 ```bash
 npm install
