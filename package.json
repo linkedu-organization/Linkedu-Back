@@ -24,7 +24,9 @@
   },
   "homepage": "https://github.com/linkedu-organization/Linkedu-Back#readme",
   "dependencies": {
-    "express": "^5.2.1"
+    "@prisma/client": "^7.1.0",
+    "express": "^5.2.1",
+    "prisma": "^7.1.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
