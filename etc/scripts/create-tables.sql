@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS perfil (
   id SERIAL NOT NULL,
   nome VARCHAR(255) NOT NULL,
   email VARCHAR(100) NOT NULL,
-  tipo VARCHAR(50) NOT NULL, /* enum TipoPerfil (ALUNO, TECNICO, PROFESSOR, PESQUISADOR, PROFESSOR_PESQUISADOR) */
+  tipo VARCHAR(50) NOT NULL, /* enum TipoPerfil (CANDIDATO, RECRUTADOR) */
   senha VARCHAR(255) NOT NULL,
   biografia VARCHAR(255),
   foto VARCHAR(255),
@@ -12,9 +12,10 @@ CREATE TABLE IF NOT EXISTS perfil (
   CONSTRAINT pk_perfil PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS aluno (
+CREATE TABLE IF NOT EXISTS candidato (
   id SERIAL NOT NULL,
   perfil_id INTEGER NOT NULL UNIQUE,
+  cargo VARCHAR(50) NOT NULL, /* enum CargoCandidato (ALUNO, TECNICO) */
   instituicao VARCHAR(255) NOT NULL,
   area_atuacao VARCHAR(255) NOT NULL,
   nivel_escolaridade VARCHAR(100) NOT NULL, /* enum NivelEscolaridade */
@@ -24,27 +25,27 @@ CREATE TABLE IF NOT EXISTS aluno (
   tempo_disponivel VARCHAR(50) NOT NULL, /* enum CargaHoraria */
   lattes VARCHAR(100),
   linkedin VARCHAR(100),
-  CONSTRAINT pk_aluno PRIMARY KEY (id),
-  CONSTRAINT fk_aluno_perfil FOREIGN KEY (perfil_id) REFERENCES perfil (id) ON DELETE CASCADE
+  CONSTRAINT pk_candidato PRIMARY KEY (id),
+  CONSTRAINT fk_candidato_perfil FOREIGN KEY (perfil_id) REFERENCES perfil (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS area_interesse_aluno (
-  aluno_id INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS area_interesse_candidato (
+  candidato_id INTEGER NOT NULL,
   area_interesse VARCHAR(255) NOT NULL,
-  CONSTRAINT pk_area_interesse_aluno PRIMARY KEY (aluno_id, area_interesse),
-  CONSTRAINT fk_area_interesse_aluno FOREIGN KEY (aluno_id) REFERENCES aluno (id) ON DELETE CASCADE
+  CONSTRAINT pk_area_interesse_candidato PRIMARY KEY (candidato_id, area_interesse),
+  CONSTRAINT fk_area_interesse_candidato FOREIGN KEY (candidato_id) REFERENCES candidato (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS habilidade_aluno (
-  aluno_id INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS habilidade_candidato (
+  candidato_id INTEGER NOT NULL,
   habilidade VARCHAR(255) NOT NULL,
-  CONSTRAINT pk_habilidade_aluno PRIMARY KEY (aluno_id, habilidade),
-  CONSTRAINT fk_habilidade_aluno FOREIGN KEY (aluno_id) REFERENCES aluno (id) ON DELETE CASCADE
+  CONSTRAINT pk_habilidade_candidato PRIMARY KEY (candidato_id, habilidade),
+  CONSTRAINT fk_habilidade_candidato FOREIGN KEY (candidato_id) REFERENCES candidato (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS experiencia (
   id SERIAL NOT NULL,
-  aluno_id INTEGER NOT NULL,
+  candidato_id INTEGER NOT NULL,
   titulo VARCHAR(255) NOT NULL,
   descricao VARCHAR(255) NOT NULL,
   orientador VARCHAR(255) NOT NULL,
@@ -53,22 +54,23 @@ CREATE TABLE IF NOT EXISTS experiencia (
   periodo_fim CHAR(6),
   local VARCHAR(255) NOT NULL,
   CONSTRAINT pk_experiencia PRIMARY KEY (id),
-  CONSTRAINT fk_experiencia_aluno FOREIGN KEY (aluno_id) REFERENCES aluno (id) ON DELETE CASCADE
+  CONSTRAINT fk_experiencia_candidato FOREIGN KEY (candidato_id) REFERENCES candidato (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS professor (
+CREATE TABLE IF NOT EXISTS recrutador (
   id SERIAL NOT NULL,
   perfil_id INTEGER NOT NULL UNIQUE,
+  cargo VARCHAR(50) NOT NULL, /* enum CargoRecrutador (PROFESSOR, PESQUISADOR, TECNICO) */
   instituicao VARCHAR(255) NOT NULL,
   area_atuacao VARCHAR(255) NOT NULL,
   laboratorios VARCHAR(255) NOT NULL,
-  CONSTRAINT pk_professor PRIMARY KEY (id),
-  CONSTRAINT fk_professor_perfil FOREIGN KEY (perfil_id) REFERENCES perfil (id) ON DELETE CASCADE
+  CONSTRAINT pk_recrutador PRIMARY KEY (id),
+  CONSTRAINT fk_recrutador_perfil FOREIGN KEY (perfil_id) REFERENCES perfil (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS vaga (
   id SERIAL NOT NULL,
-  professor_id INTEGER NOT NULL,
+  recrutador_id INTEGER NOT NULL,
   titulo VARCHAR(255) NOT NULL,
   descricao VARCHAR(255) NOT NULL,
   categoria VARCHAR(100) NOT NULL, /* enum CategoriaVaga */
@@ -81,7 +83,7 @@ CREATE TABLE IF NOT EXISTS vaga (
   link_inscricao VARCHAR(100) NOT NULL,
   local VARCHAR(255) NOT NULL,
   CONSTRAINT pk_vaga PRIMARY KEY (id),
-  CONSTRAINT fk_vaga_professor FOREIGN KEY (professor_id) REFERENCES professor (id) ON DELETE CASCADE
+  CONSTRAINT fk_vaga_recrutador FOREIGN KEY (recrutador_id) REFERENCES recrutador (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS carga_horaria_vaga (
@@ -113,21 +115,21 @@ CREATE TABLE IF NOT EXISTS conhecimento_opcional_vaga (
 );
 
 CREATE TABLE  IF NOT EXISTS candidatos_recomendados (
-  aluno_id INTEGER NOT NULL,
+  candidato_id INTEGER NOT NULL,
   vaga_id INTEGER NOT NULL,
   dt_ult_processamento TIMESTAMP NOT NULL,
   descricao VARCHAR(255) NOT NULL,
-  CONSTRAINT pk_candidato_recomendado_vaga PRIMARY KEY (aluno_id, vaga_id),
-  CONSTRAINT fk_candidato_recomendado FOREIGN KEY (aluno_id) REFERENCES aluno (id) ON DELETE CASCADE,
+  CONSTRAINT pk_candidato_recomendado_vaga PRIMARY KEY (candidato_id, vaga_id),
+  CONSTRAINT fk_candidato_recomendado FOREIGN KEY (candidato_id) REFERENCES candidato (id) ON DELETE CASCADE,
   CONSTRAINT fk_vaga FOREIGN KEY (vaga_id) REFERENCES vaga (id) ON DELETE CASCADE
 );
 
 CREATE TABLE  IF NOT EXISTS vagas_recomendadas (
   vaga_id INTEGER NOT NULL,
-  aluno_id INTEGER NOT NULL,
+  candidato_id INTEGER NOT NULL,
   dt_ult_processamento TIMESTAMP NOT NULL,
   descricao VARCHAR(255) NOT NULL,
-  CONSTRAINT pk_vaga_recomendada_aluno PRIMARY KEY (vaga_id, aluno_id),
+  CONSTRAINT pk_vaga_recomendada_candidato PRIMARY KEY (vaga_id, candidato_id),
   CONSTRAINT fk_vaga_recomendada FOREIGN KEY (vaga_id) REFERENCES vaga (id) ON DELETE CASCADE,
-  CONSTRAINT fk_aluno FOREIGN KEY (aluno_id) REFERENCES aluno (id) ON DELETE CASCADE
+  CONSTRAINT fk_candidato FOREIGN KEY (candidato_id) REFERENCES candidato (id) ON DELETE CASCADE
 );
