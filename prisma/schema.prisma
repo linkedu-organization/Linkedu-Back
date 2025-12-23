@@ -5,3 +5,24 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum CargoRecrutador {
+  TECNICO
+  PROFESSOR
+  PESQUISADOR
+}
+
+model Perfil {
+  id         Int         @id @default(autoincrement())
+  recrutador Recrutador?
+}
+
+model Recrutador {
+  id           Int             @id @default(autoincrement())
+  perfil_id    Int             @unique
+  cargo        CargoRecrutador
+  instituicao  String
+  area_atuacao String
+  laboratorios String
+  perfil       Perfil          @relation(fields: [perfil_id], references: [id])
+}
