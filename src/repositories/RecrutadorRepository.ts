@@ -1,0 +1,21 @@
+import { PrismaClient, TipoPerfil } from '@prisma/client';
+
+import { RecrutadorCreateDTO } from '../models/RecrutadorSchema';
+import { perfilRepository } from '../repositories/PerfilRepositoy';
+
+const prisma = new PrismaClient();
+
+class RecrutadorRepository {
+  async create(data: RecrutadorCreateDTO) {
+    const { perfil, ...recrutador } = data;
+    return prisma.$transaction(async tx => {
+      const perfilCriado = await perfilRepository.create(tx, perfil, TipoPerfil.RECRUTADOR);
+      const recrutadorCriado = await tx.recrutador.create({
+        data: { ...recrutador, perfil: { connect: { id: perfilCriado.id } } },
+      });
+      return recrutadorCriado;
+    });
+  }
+}
+
+export const recrutadorRepository = new RecrutadorRepository();
