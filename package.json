@@ -26,7 +26,8 @@
   "dependencies": {
     "@prisma/client": "^7.1.0",
     "express": "^5.2.1",
-    "prisma": "^7.1.0"
+    "prisma": "^7.1.0",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
