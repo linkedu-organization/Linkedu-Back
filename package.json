@@ -25,11 +25,13 @@
   "homepage": "https://github.com/linkedu-organization/Linkedu-Back#readme",
   "dependencies": {
     "@prisma/client": "^7.1.0",
+    "bcrypt": "^6.0.0",
     "express": "^5.2.1",
     "prisma": "^7.1.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.3",

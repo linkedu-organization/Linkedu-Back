@@ -36,7 +36,7 @@ model Recrutador {
   perfil_id    Int             @unique
   cargo        CargoRecrutador
   instituicao  String
-  area_atuacao String
+  areaAtuacao  String
   laboratorios String
   perfil       Perfil          @relation(fields: [perfil_id], references: [id])
 }
