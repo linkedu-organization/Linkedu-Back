@@ -1,4 +1,4 @@
-import { RecrutadorCreateDTO, RecrutadorCreateSchema } from '../models/RecrutadorSchema';
+import { RecrutadorCreateDTO, RecrutadorCreateSchema, RecrutadorResponseSchema } from '../models/RecrutadorSchema';
 import { recrutadorRepository } from '../repositories/RecrutadorRepository';
 
 class RecrutadorService {
@@ -6,7 +6,7 @@ class RecrutadorService {
     const parsedData = RecrutadorCreateSchema.parse(data);
     // await perfilService.validarEmail(parsedData.perfil.email);
     const result = await recrutadorRepository.create(parsedData);
-    return RecrutadorCreateSchema.parseAsync(result);
+    return RecrutadorResponseSchema.parseAsync(result);
   }
 }
 

@@ -8,7 +8,7 @@ const root = resolve(__dirname);
 export default {
   rootDir: root,
   displayName: 'root-tests',
-  testMatch: ['<rootDir>/src/**/*.test.ts'],
+  testMatch: ['<rootDir>/test/**/*.test.ts'],
   testEnvironment: 'node',
   clearMocks: true,
   preset: 'ts-jest',
@@ -19,4 +19,6 @@ export default {
   moduleFileExtensions: ['ts', 'js', 'json'],
   transformIgnorePatterns: ['<rootDir>/node_modules/'],
   setupFilesAfterEnv: ['<rootDir>/test/jest.setup.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/src/'],
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.test.ts', '!src/index.ts'],
 };
