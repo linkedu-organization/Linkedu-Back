@@ -4,7 +4,7 @@ import { recrutadorRepository } from '../src/repositories/RecrutadorRepository';
 jest.mock('../src/repositories/RecrutadorRepository');
 
 describe('RecrutadorService', () => {
-  const mockRecrutadorDTO = {
+  const mockRecrutadorRequest = {
     cargo: 'PROFESSOR' as const,
     instituicao: 'UFCG',
     areaAtuacao: 'Software Developing',
@@ -31,10 +31,10 @@ describe('RecrutadorService', () => {
     },
   };
 
-  test('case 0: Cria um Recrutador', async () => {
+  test('Case 0: Cria um Recrutador', async () => {
     (recrutadorRepository.create as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
 
-    const actual = await recrutadorService.create(mockRecrutadorDTO);
+    const actual = await recrutadorService.create(mockRecrutadorRequest);
 
     expect(recrutadorRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({

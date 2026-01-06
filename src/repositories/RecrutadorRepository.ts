@@ -16,6 +16,13 @@ class RecrutadorRepository {
       return recrutadorCriado;
     });
   }
+
+  async getById(id: number) {
+    return prisma.recrutador.findUnique({
+      where: { id },
+      include: { perfil: true },
+    });
+  }
 }
 
 export const recrutadorRepository = new RecrutadorRepository();
