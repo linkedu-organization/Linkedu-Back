@@ -1,9 +1,8 @@
-import { PrismaClient, TipoPerfil } from '@prisma/client';
+import { TipoPerfil } from '@prisma/client';
 
 import { RecrutadorCreateDTO } from '../models/RecrutadorSchema';
 import { perfilRepository } from '../repositories/PerfilRepositoy';
-
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma';
 
 class RecrutadorRepository {
   async create(data: RecrutadorCreateDTO) {
