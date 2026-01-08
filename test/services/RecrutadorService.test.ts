@@ -1,7 +1,7 @@
 import { recrutadorService } from '../../src/services/RecrutadorService';
 import { recrutadorRepository } from '../../src/repositories/RecrutadorRepository';
 
-jest.mock('../src/repositories/RecrutadorRepository');
+jest.mock('../../src/repositories/RecrutadorRepository');
 
 describe('RecrutadorService', () => {
   const mockProfileRequest = {
