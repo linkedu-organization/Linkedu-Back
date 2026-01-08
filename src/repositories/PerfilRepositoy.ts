@@ -5,15 +5,7 @@ import { PerfilCreateDTO } from '../models/PerfilSchema';
 class PerfilRepository {
   async create(tx: Prisma.TransactionClient, data: PerfilCreateDTO, tipo: TipoPerfil) {
     return tx.perfil.create({
-      data: {
-        nome: data.nome,
-        email: data.email,
-        senha: data.senha,
-        tipo: tipo,
-        foto: data.foto ?? null,
-        biografia: data.biografia ?? null,
-        ultimoAcesso: new Date(),
-      },
+      data: { ...data, tipo: tipo, ultimoAcesso: new Date() },
     });
   }
 }

@@ -9,8 +9,8 @@ export const PerfilCreateSchema = z.object({
   email: z.email(),
   senha: z.string().min(8),
   tipo: TipoPerfilEnum,
-  foto: z.url().optional(),
-  biografia: z.string().max(255).optional(),
+  foto: z.url().nullable(),
+  biografia: z.string().max(255).nullable(),
 });
 
 export const PerfilUpdateSchema = PerfilCreateSchema.omit({

@@ -1,5 +1,5 @@
-import { recrutadorService } from '../src/services/RecrutadorService';
-import { recrutadorRepository } from '../src/repositories/RecrutadorRepository';
+import { recrutadorService } from '../../src/services/RecrutadorService';
+import { recrutadorRepository } from '../../src/repositories/RecrutadorRepository';
 
 jest.mock('../src/repositories/RecrutadorRepository');
 
@@ -13,7 +13,7 @@ describe('RecrutadorService', () => {
     biografia: 'Biografia é um gênero textual que narra a história da vida de uma pessoa.',
   };
 
-  const { foto, biografia, ...profileSemOpcionais } = mockProfileRequest;
+  const profileSemOpcionais = { ...mockProfileRequest, foto: null, biografia: null };
 
   const mockRecrutadorRequest = {
     cargo: 'PROFESSOR' as const,

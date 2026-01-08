@@ -8,7 +8,7 @@ export const RecrutadorSchema = z.object({
   cargo: CargoRecrutador,
   instituicao: z.string(),
   areaAtuacao: z.string(),
-  laboratorios: z.string().optional(),
+  laboratorios: z.string().nullable(),
 });
 
 export const RecrutadorCreateSchema = RecrutadorSchema.extend({
