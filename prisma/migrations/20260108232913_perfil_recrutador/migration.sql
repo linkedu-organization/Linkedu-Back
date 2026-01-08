@@ -27,7 +27,7 @@ CREATE TABLE "Recrutador" (
     "cargo" "CargoRecrutador" NOT NULL,
     "instituicao" TEXT NOT NULL,
     "areaAtuacao" TEXT NOT NULL,
-    "laboratorios" TEXT NOT NULL,
+    "laboratorios" TEXT,
 
     CONSTRAINT "Recrutador_pkey" PRIMARY KEY ("id")
 );
