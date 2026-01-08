@@ -1,3 +1,4 @@
+import { EntityNotFoundError } from '../errors/EntityNotFoundException';
 import { RecrutadorCreateDTO, RecrutadorCreateSchema, RecrutadorResponseSchema } from '../models/RecrutadorSchema';
 import { recrutadorRepository } from '../repositories/RecrutadorRepository';
 import { gerarHashSenha } from '../utils/authUtils';
@@ -17,7 +18,7 @@ class RecrutadorService {
   async getById(id: number) {
     const result = await recrutadorRepository.getById(id);
     if (!result) {
-      throw new Error(`Entidade de id: ${id} não encontrada!`);
+      throw new EntityNotFoundError(id);
     }
     return RecrutadorResponseSchema.parseAsync(result);
   }
