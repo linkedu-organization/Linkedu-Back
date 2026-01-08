@@ -38,6 +38,6 @@ model Recrutador {
   cargo        CargoRecrutador
   instituicao  String
   areaAtuacao  String
-  laboratorios String
+  laboratorios String?
   perfil       Perfil          @relation(fields: [perfil_id], references: [id])
 }

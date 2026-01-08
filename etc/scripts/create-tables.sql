@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS recrutador (
   cargo VARCHAR(50) NOT NULL, /* enum CargoRecrutador (PROFESSOR, PESQUISADOR, TECNICO) */
   instituicao VARCHAR(255) NOT NULL,
   area_atuacao VARCHAR(255) NOT NULL,
-  laboratorios VARCHAR(255) NOT NULL,
+  laboratorios VARCHAR(255),
   CONSTRAINT pk_recrutador PRIMARY KEY (id),
   CONSTRAINT fk_recrutador_perfil FOREIGN KEY (perfil_id) REFERENCES perfil (id) ON DELETE CASCADE
 );
