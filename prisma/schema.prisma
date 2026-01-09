@@ -39,5 +39,5 @@ model Recrutador {
   instituicao  String
   areaAtuacao  String
   laboratorios String?
-  perfil       Perfil          @relation(fields: [perfil_id], references: [id])
+  perfil       Perfil          @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
 }

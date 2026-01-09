@@ -28,6 +28,12 @@ class RecrutadorRepository {
       include: { perfil: true },
     });
   }
+
+  async delete(id: number) {
+    return prisma.recrutador.delete({
+      where: { id },
+    });
+  }
 }
 
 export const recrutadorRepository = new RecrutadorRepository();

@@ -32,6 +32,14 @@ class RecrutadorService {
     const result = await recrutadorRepository.getAll();
     return RecrutadorResponseSchema.array().parseAsync(result);
   }
+
+  async delete(id: number) {
+    const recrutador = await recrutadorRepository.getById(id);
+    if (!recrutador) {
+      throw new EntityNotFoundError(id);
+    }
+    await recrutadorRepository.delete(id);
+  }
 }
 
 export const recrutadorService = new RecrutadorService();

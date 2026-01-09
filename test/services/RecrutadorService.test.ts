@@ -142,4 +142,18 @@ describe('RecrutadorService', () => {
 
     expect(actual).toEqual([]);
   });
+
+  test('Case 7: Deleta recrutador por id', async () => {
+    (recrutadorRepository.getById as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
+    (recrutadorRepository.delete as jest.Mock).mockResolvedValue(undefined);
+
+    await expect(recrutadorService.delete(mockRecrutadorResponse.id)).resolves.toBeUndefined();
+    expect(recrutadorRepository.delete).toHaveBeenCalledWith(mockRecrutadorResponse.id);
+  });
+
+  test('Case 8: Deleta recrutador por id inválido (Deve lançar erro)', async () => {
+    (recrutadorRepository.delete as jest.Mock).mockRejectedValue(new Error('Entidade com id -999 não encontrada'));
+
+    await expect(recrutadorService.delete(-999)).rejects.toThrow();
+  });
 });

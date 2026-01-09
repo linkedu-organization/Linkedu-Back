@@ -18,6 +18,12 @@ class RecrutadorController {
     const result = await recrutadorService.getAll();
     res.status(200).json(result);
   }
+
+  async delete(req: Request, res: Response) {
+    const { id } = req.params;
+    await recrutadorService.delete(Number(id));
+    res.status(204).send();
+  }
 }
 
 export const recrutadorController = new RecrutadorController();

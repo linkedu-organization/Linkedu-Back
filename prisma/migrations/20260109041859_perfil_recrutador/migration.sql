@@ -36,4 +36,4 @@ CREATE TABLE "Recrutador" (
 CREATE UNIQUE INDEX "Recrutador_perfil_id_key" ON "Recrutador"("perfil_id");
 
 -- AddForeignKey
-ALTER TABLE "Recrutador" ADD CONSTRAINT "Recrutador_perfil_id_fkey" FOREIGN KEY ("perfil_id") REFERENCES "Perfil"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Recrutador" ADD CONSTRAINT "Recrutador_perfil_id_fkey" FOREIGN KEY ("perfil_id") REFERENCES "Perfil"("id") ON DELETE CASCADE ON UPDATE CASCADE;
