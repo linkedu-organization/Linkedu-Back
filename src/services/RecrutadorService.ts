@@ -1,10 +1,5 @@
 import { EntityNotFoundError } from '../errors/EntityNotFoundException';
-import {
-  RecrutadorCreateDTO,
-  RecrutadorCreateSchema,
-  RecrutadorResponseSchema,
-  RecrutadorUpdateDTO,
-} from '../models/RecrutadorSchema';
+import { RecrutadorCreateDTO, RecrutadorCreateSchema, RecrutadorResponseSchema } from '../models/RecrutadorSchema';
 import { recrutadorRepository } from '../repositories/RecrutadorRepository';
 import { gerarHashSenha } from '../utils/authUtils';
 
