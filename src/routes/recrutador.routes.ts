@@ -11,3 +11,7 @@ recrutadorRoutes.post('/', async (req, res) => {
 recrutadorRoutes.get('/:id', async (req, res) => {
   await recrutadorController.getById(req, res);
 });
+
+recrutadorRoutes.get('/', async (req, res) => {
+  await recrutadorController.getAll(req, res);
+});

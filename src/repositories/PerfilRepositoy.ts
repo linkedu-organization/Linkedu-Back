@@ -8,6 +8,13 @@ class PerfilRepository {
       data: { ...data, tipo: tipo, ultimoAcesso: new Date() },
     });
   }
+
+  async update(tx: Prisma.TransactionClient, id: number, tipo: TipoPerfil, data: Partial<PerfilCreateDTO>) {
+    return tx.perfil.update({
+      where: { id },
+      data: { ...data, updatedAt: new Date() },
+    });
+  }
 }
 
 export const perfilRepository = new PerfilRepository();

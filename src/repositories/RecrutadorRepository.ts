@@ -22,6 +22,12 @@ class RecrutadorRepository {
       include: { perfil: true },
     });
   }
+
+  async getAll() {
+    return prisma.recrutador.findMany({
+      include: { perfil: true },
+    });
+  }
 }
 
 export const recrutadorRepository = new RecrutadorRepository();

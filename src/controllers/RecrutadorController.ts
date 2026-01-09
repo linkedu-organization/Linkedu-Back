@@ -13,6 +13,11 @@ class RecrutadorController {
     const result = await recrutadorService.getById(Number(id));
     res.status(200).json(result);
   }
+
+  async getAll(req: Request, res: Response) {
+    const result = await recrutadorService.getAll();
+    res.status(200).json(result);
+  }
 }
 
 export const recrutadorController = new RecrutadorController();
