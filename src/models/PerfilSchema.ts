@@ -17,11 +17,11 @@ export const PerfilUpdateSchema = PerfilCreateSchema.omit({
   senha: true,
 });
 
-export const PerfilResponseSchema = z.object({
+export const PerfilResponseSchema = PerfilUpdateSchema.extend({
   id: z.number(),
-  tipo: TipoPerfilEnum,
   createdAt: z.date().or(z.iso.datetime()),
   updatedAt: z.date().or(z.iso.datetime()),
+  ultimoAcesso: z.date().or(z.iso.datetime()),
 });
 
 export const PerfilExtendedResponseSchema = PerfilResponseSchema.extend({

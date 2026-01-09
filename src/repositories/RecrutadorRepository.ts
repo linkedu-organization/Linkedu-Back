@@ -12,7 +12,7 @@ class RecrutadorRepository {
       const recrutadorCriado = await tx.recrutador.create({
         data: { ...recrutador, perfil: { connect: { id: perfilCriado.id } } },
       });
-      return recrutadorCriado;
+      return { ...recrutadorCriado, perfil: perfilCriado };
     });
   }
 

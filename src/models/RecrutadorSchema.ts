@@ -4,7 +4,7 @@ import { PerfilCreateSchema, PerfilResponseSchema } from './PerfilSchema';
 
 const CargoRecrutador = z.enum(['PROFESSOR', 'PESQUISADOR', 'TECNICO']);
 
-export const RecrutadorSchema = z.object({
+const RecrutadorSchema = z.object({
   cargo: CargoRecrutador,
   instituicao: z.string(),
   areaAtuacao: z.string(),
@@ -21,4 +21,4 @@ export const RecrutadorResponseSchema = RecrutadorSchema.extend({
 });
 
 export type RecrutadorCreateDTO = z.infer<typeof RecrutadorCreateSchema>;
-export type RecrutadorUpdateDTO = z.infer<typeof RecrutadorSchema>;
+export type RecrutadorUpdateDTO = z.infer<typeof RecrutadorCreateSchema>;

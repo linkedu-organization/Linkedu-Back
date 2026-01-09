@@ -4,7 +4,7 @@ import { recrutadorRepository } from '../../src/repositories/RecrutadorRepositor
 jest.mock('../../src/repositories/RecrutadorRepository');
 
 describe('RecrutadorService', () => {
-  const mockProfileRequest = {
+  const perfilRequest = {
     nome: 'Luísa Ledra',
     email: 'luisa.ledra@gmail.com',
     senha: 'cnh_2025',
@@ -13,34 +13,41 @@ describe('RecrutadorService', () => {
     biografia: 'Biografia é um gênero textual que narra a história da vida de uma pessoa.',
   };
 
-  const profileSemOpcionais = { ...mockProfileRequest, foto: null, biografia: null };
+  const perfilRequestSemOpcionais = { ...perfilRequest, foto: null, biografia: null };
 
-  const mockRecrutadorRequest = {
+  const pefilResponse = {
+    id: 1,
+    nome: perfilRequest.nome,
+    email: perfilRequest.email,
+    tipo: perfilRequest.tipo,
+    foto: perfilRequest.foto,
+    biografia: perfilRequest.biografia,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ultimoAcesso: new Date(),
+  };
+
+  const recrutadorRequest = {
     cargo: 'PROFESSOR' as const,
     instituicao: 'UFCG',
     areaAtuacao: 'Software Developing',
     laboratorios: 'LSI',
-    perfil: mockProfileRequest,
+    perfil: perfilRequest,
   };
 
   const mockRecrutadorResponse = {
-    cargo: 'PROFESSOR',
-    instituicao: 'UFCG',
-    areaAtuacao: 'Software Developing',
-    laboratorios: 'LSI',
     id: 1,
-    perfil: {
-      id: 1,
-      tipo: 'RECRUTADOR',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
+    cargo: recrutadorRequest.cargo,
+    instituicao: recrutadorRequest.instituicao,
+    areaAtuacao: recrutadorRequest.areaAtuacao,
+    laboratorios: 'LSI',
+    perfil: pefilResponse,
   };
 
   test('Case 0: Cria um Recrutador com todos os campos preenchidos.', async () => {
     (recrutadorRepository.create as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
 
-    const actual = await recrutadorService.create(mockRecrutadorRequest);
+    const actual = await recrutadorService.create(recrutadorRequest);
 
     expect(recrutadorRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -58,7 +65,7 @@ describe('RecrutadorService', () => {
   test('Case 1: Cria Recrutador apenas campos obrigatórios', async () => {
     (recrutadorRepository.create as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
 
-    const actual = await recrutadorService.create({ ...mockRecrutadorRequest, perfil: profileSemOpcionais });
+    const actual = await recrutadorService.create({ ...recrutadorRequest, perfil: perfilRequestSemOpcionais });
 
     expect(recrutadorRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
