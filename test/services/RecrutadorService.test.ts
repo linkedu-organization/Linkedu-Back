@@ -37,7 +37,7 @@ describe('RecrutadorService', () => {
     perfil: perfilRequest,
   };
 
-  const mockRecrutadorResponse = {
+  const recrutadorResponse = {
     id: 1,
     cargo: recrutadorRequest.cargo,
     instituicao: recrutadorRequest.instituicao,
@@ -47,7 +47,7 @@ describe('RecrutadorService', () => {
   };
 
   test('Case 0: Cria um Recrutador com todos os campos preenchidos.', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
+    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
 
     const actual = await recrutadorService.create(recrutadorRequest);
 
@@ -60,12 +60,12 @@ describe('RecrutadorService', () => {
       }),
     );
 
-    expect(actual).toEqual(expect.objectContaining(mockRecrutadorResponse));
+    expect(actual).toEqual(expect.objectContaining(recrutadorResponse));
     expect(actual.perfil).not.toHaveProperty('senha');
   });
 
   test('Case 1: Cria Recrutador apenas campos obrigatórios (Opcionais Nulos)', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
+    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
 
     const actual = await recrutadorService.create({ ...recrutadorRequest, perfil: perfilRequestOptNulos });
 
@@ -79,12 +79,12 @@ describe('RecrutadorService', () => {
       }),
     );
 
-    expect(actual).toEqual(expect.objectContaining(mockRecrutadorResponse));
+    expect(actual).toEqual(expect.objectContaining(recrutadorResponse));
     expect(actual.perfil).not.toHaveProperty('senha');
   });
 
   test('Case 2: Cria Recrutador apenas campos obrigatórios (Opcionais vazios)', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
+    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
 
     const actual = await recrutadorService.create({ ...recrutadorRequest, perfil: perfilRequestOptVazios });
 
@@ -98,11 +98,11 @@ describe('RecrutadorService', () => {
       }),
     );
 
-    expect(actual).toEqual(expect.objectContaining(mockRecrutadorResponse));
+    expect(actual).toEqual(expect.objectContaining(recrutadorResponse));
   });
 
   test('Case 3: Cria Recrutador violando restrição da senha (Deve lançar erro)', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
+    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
 
     await expect(
       recrutadorService.create({
@@ -113,8 +113,8 @@ describe('RecrutadorService', () => {
   });
 
   test('Case 4: Recupera recrutador por id', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
-    (recrutadorRepository.getById as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
+    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
+    (recrutadorRepository.getById as jest.Mock).mockResolvedValue(recrutadorResponse);
 
     const actual = await recrutadorService.create(recrutadorRequest);
     const searched = await recrutadorService.getById(actual.id);
@@ -128,11 +128,11 @@ describe('RecrutadorService', () => {
   });
 
   test('Case 6: Recupera todos os recrutadores (Quando há)', async () => {
-    (recrutadorRepository.getAll as jest.Mock).mockResolvedValue([mockRecrutadorResponse]);
+    (recrutadorRepository.getAll as jest.Mock).mockResolvedValue([recrutadorResponse]);
 
     const actual = await recrutadorService.getAll();
 
-    expect(actual).toEqual([expect.objectContaining(mockRecrutadorResponse)]);
+    expect(actual).toEqual([expect.objectContaining(recrutadorResponse)]);
   });
 
   test('Case 6: Recupera todos os recrutadores (Quando não há - deve retornar lista vazia)', async () => {
@@ -144,11 +144,16 @@ describe('RecrutadorService', () => {
   });
 
   test('Case 7: Deleta recrutador por id', async () => {
-    (recrutadorRepository.getById as jest.Mock).mockResolvedValue(mockRecrutadorResponse);
+    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
+    (recrutadorRepository.getById as jest.Mock).mockResolvedValue(recrutadorResponse);
     (recrutadorRepository.delete as jest.Mock).mockResolvedValue(undefined);
 
-    await expect(recrutadorService.delete(mockRecrutadorResponse.id)).resolves.toBeUndefined();
-    expect(recrutadorRepository.delete).toHaveBeenCalledWith(mockRecrutadorResponse.id);
+    const actual = await recrutadorService.create(recrutadorRequest);
+
+    await recrutadorService.delete(actual.id);
+
+    expect(recrutadorRepository.getById).toHaveBeenCalledWith(actual.id);
+    expect(recrutadorRepository.delete).toHaveBeenCalledWith(actual.id);
   });
 
   test('Case 8: Deleta recrutador por id inválido (Deve lançar erro)', async () => {
