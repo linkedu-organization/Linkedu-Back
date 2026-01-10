@@ -1,6 +1,6 @@
 import { TipoPerfil } from '@prisma/client';
 
-import { RecrutadorCreateDTO, RecrutadorCreateSchema, RecrutadorUpdateDTO } from '../models/RecrutadorSchema';
+import { RecrutadorCreateDTO, RecrutadorUpdateDTO } from '../models/RecrutadorSchema';
 import { perfilRepository } from '../repositories/PerfilRepositoy';
 import prisma from '../utils/prisma';
 
@@ -35,7 +35,7 @@ class RecrutadorRepository {
       where: { id },
       data: {
         ...recrutador,
-        ...(perfil && { perfil: { update: perfil } }),
+        ...{ perfil: { update: perfil } },
       },
     });
   }
