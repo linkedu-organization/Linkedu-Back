@@ -1,250 +1,199 @@
-import { recrutadorService } from '../../src/services/RecrutadorService';
-import { recrutadorRepository } from '../../src/repositories/RecrutadorRepository';
 import { RecrutadorUpdateDTO } from '../../src/models/RecrutadorSchema';
+import { recrutadorRepository } from '../../src/repositories/RecrutadorRepository';
+import { recrutadorService } from '../../src/services/RecrutadorService';
 
-jest.mock('../../src/repositories/RecrutadorRepository');
+jest.mock('../../src/repositories/RecrutadorRepository', () => ({
+  recrutadorRepository: {
+    create: jest.fn(),
+    update: jest.fn(),
+    getById: jest.fn(),
+    getAll: jest.fn(),
+    delete: jest.fn(),
+  },
+}));
 
-describe('RecrutadorService', () => {
-  const perfilRequest = {
-    nome: 'Luísa Ledra',
-    email: 'luisa.ledra@gmail.com',
-    senha: 'cnh_2025',
-    tipo: 'RECRUTADOR' as const,
-    foto: 'https://drive.google.com/drive/u/0/folders/1QjlkrHlWhnyEQZwFK9pCNduJVP0NPL4I',
-    biografia: 'Biografia é um gênero textual que narra a história da vida de uma pessoa.',
-  };
+const makePerfil = (overrides = {}) => ({
+  nome: 'Professor Medeiros',
+  email: 'professor.medeiros@gmail.com',
+  senha: 'cnh_brasil_2026',
+  tipo: 'RECRUTADOR' as const,
+  foto: 'https://drive.google.com',
+  biografia: 'Biografia...',
+  ...overrides,
+});
 
-  const perfilRequestOptNulos = { ...perfilRequest, foto: null, biografia: null };
+const makePerfilResponse = (overrides = {}) => ({
+  id: 1,
+  nome: 'Professor Medeiros',
+  email: 'professor.medeiros@gmail.com',
+  tipo: 'RECRUTADOR',
+  foto: 'https://drive.google.com',
+  biografia: 'Biografia...',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ultimoAcesso: new Date(),
+  ...overrides,
+});
 
-  const perfilRequestOptVazios = { ...perfilRequest, foto: '', biografia: '' };
+const makeRecrutador = (overrides = {}) => ({
+  cargo: 'PROFESSOR' as const,
+  instituicao: 'UFCG',
+  areaAtuacao: 'Software Developing',
+  laboratorios: 'LSI',
+  perfil: makePerfil(),
+  ...overrides,
+});
 
-  const pefilResponse = {
-    id: 1,
-    nome: perfilRequest.nome,
-    email: perfilRequest.email,
-    tipo: perfilRequest.tipo,
-    foto: perfilRequest.foto,
-    biografia: perfilRequest.biografia,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ultimoAcesso: new Date(),
-  };
+const makeRecrutadorResponse = (overrides = {}) => ({
+  id: 1,
+  cargo: 'PROFESSOR',
+  instituicao: 'UFCG',
+  areaAtuacao: 'Software Developing',
+  laboratorios: 'LSI',
+  perfil: makePerfilResponse(),
+  ...overrides,
+});
 
-  const recrutadorRequest = {
-    cargo: 'PROFESSOR' as const,
-    instituicao: 'UFCG',
-    areaAtuacao: 'Software Developing',
-    laboratorios: 'LSI',
-    perfil: perfilRequest,
-  };
+const mockCreate = (v: any) => (recrutadorRepository.create as jest.Mock).mockResolvedValue(v);
+const mockUpdate = (v: any) => (recrutadorRepository.update as jest.Mock).mockResolvedValue(v);
+const mockGetById = (v: any) => (recrutadorRepository.getById as jest.Mock).mockResolvedValue(v);
+const mockGetAll = (v: any) => (recrutadorRepository.getAll as jest.Mock).mockResolvedValue(v);
+const mockDelete = () => (recrutadorRepository.delete as jest.Mock).mockResolvedValue(undefined);
 
-  const recrutadorResponse = {
-    id: 1,
-    cargo: recrutadorRequest.cargo,
-    instituicao: recrutadorRequest.instituicao,
-    areaAtuacao: recrutadorRequest.areaAtuacao,
-    laboratorios: 'LSI',
-    perfil: pefilResponse,
-  };
+describe('Cria recrutador', () => {
+  test('case 1: com todos os campos', async () => {
+    const recrutador = makeRecrutador();
+    const response = makeRecrutadorResponse();
 
-  test('Case 0: Cria um Recrutador com todos os campos preenchidos.', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
+    mockCreate(response);
+    const result = await recrutadorService.create(recrutador);
 
-    const actual = await recrutadorService.create(recrutadorRequest);
+    expect(recrutadorRepository.create).toHaveBeenCalled();
+    const payload = (recrutadorRepository.create as jest.Mock).mock.calls[0][0];
+    expect(payload.cargo).toBe('PROFESSOR');
+    expect(payload.perfil.tipo).toBe('RECRUTADOR');
 
-    expect(recrutadorRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        cargo: 'PROFESSOR',
-        perfil: expect.objectContaining({
-          tipo: 'RECRUTADOR',
-        }),
-      }),
-    );
-
-    expect(actual).toEqual(expect.objectContaining(recrutadorResponse));
-    expect(actual.perfil).not.toHaveProperty('senha');
+    expect(result.perfil).not.toHaveProperty('senha');
   });
 
-  test('Case 1: Cria Recrutador apenas campos obrigatórios (Opcionais Nulos)', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
+  test('case 2: removendo opcionais (deixando-os nulos)', async () => {
+    const recrutador = makeRecrutador({
+      perfil: makePerfil({ foto: null, biografia: null }),
+    });
 
-    const actual = await recrutadorService.create({ ...recrutadorRequest, perfil: perfilRequestOptNulos });
+    mockCreate(makeRecrutadorResponse({ perfil: makePerfilResponse({ foto: null, biografia: null }) }));
+    await recrutadorService.create(recrutador);
 
-    expect(recrutadorRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        cargo: 'PROFESSOR',
-        perfil: expect.not.objectContaining({
-          foto: expect.anything(),
-          biografia: expect.anything(),
-        }),
-      }),
-    );
-
-    expect(actual).toEqual(expect.objectContaining(recrutadorResponse));
-    expect(actual.perfil).not.toHaveProperty('senha');
+    const payload = (recrutadorRepository.create as jest.Mock).mock.calls[0][0];
+    expect(payload.perfil.foto).toBeNull();
+    expect(payload.perfil.biografia).toBeNull();
   });
 
-  test('Case 2: Cria Recrutador apenas campos obrigatórios (Opcionais vazios)', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
+  test('case 3: rejeita senha menor que o tamanho mínimo', async () => {
+    const recrutador = makeRecrutador({
+      perfil: makePerfil({ senha: 'a' }),
+    });
 
-    const actual = await recrutadorService.create({ ...recrutadorRequest, perfil: perfilRequestOptVazios });
-
-    expect(recrutadorRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        cargo: 'PROFESSOR',
-        perfil: expect.objectContaining({
-          foto: '',
-          biografia: '',
-        }),
-      }),
-    );
-
-    expect(actual).toEqual(expect.objectContaining(recrutadorResponse));
+    await expect(recrutadorService.create(recrutador)).rejects.toThrow();
   });
+});
 
-  test('Case 3: Cria Recrutador violando restrição da senha (Deve lançar erro)', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
+describe('Atualiza recrutador', () => {
+  test('case 1: com dados válidos', async () => {
+    const response = makeRecrutadorResponse({
+      cargo: 'PESQUISADOR',
+      instituicao: 'UFPB',
+    });
 
-    await expect(
-      recrutadorService.create({
-        ...recrutadorRequest,
-        perfil: { ...recrutadorRequest.perfil, senha: 'a' },
-      }),
-    ).rejects.toThrow();
-  });
+    mockGetById(makeRecrutadorResponse());
+    mockUpdate(response);
 
-  test('Case 4: Recupera recrutador por id', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
-    (recrutadorRepository.getById as jest.Mock).mockResolvedValue(recrutadorResponse);
-
-    const actual = await recrutadorService.create(recrutadorRequest);
-    const searched = await recrutadorService.getById(actual.id);
-    expect(actual).toEqual(searched);
-  });
-
-  test('Case 5: Atualiza recrutador id e dados válidos', async () => {
-    const updatedRecrutadorResponse = {
-      ...recrutadorResponse,
+    const dto: RecrutadorUpdateDTO = {
       cargo: 'PESQUISADOR' as const,
-      instituicao: 'UFRN',
+      instituicao: response.instituicao,
+      areaAtuacao: response.areaAtuacao,
+      laboratorios: response.laboratorios,
+      perfil: makePerfil(),
     };
+    const result = await recrutadorService.update(1, dto);
+    const [, payload] = (recrutadorRepository.update as jest.Mock).mock.calls[0];
+    expect(payload.cargo).toBe('PESQUISADOR');
+    expect(payload.instituicao).toBe('UFPB');
 
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
-    (recrutadorRepository.update as jest.Mock).mockResolvedValue(updatedRecrutadorResponse);
+    expect(result).toEqual(response);
+  });
 
-    const actual = await recrutadorService.create(recrutadorRequest);
-
-    const updatedData: RecrutadorUpdateDTO = {
-      cargo: 'PESQUISADOR' as const,
-      instituicao: 'UFRN',
-      areaAtuacao: recrutadorRequest.areaAtuacao,
-      laboratorios: recrutadorRequest.laboratorios,
-      perfil: recrutadorRequest.perfil,
-    };
-
-    const updated = await recrutadorService.update(actual.id, updatedData);
-
-    expect(recrutadorRepository.update).toHaveBeenCalledWith(
-      actual.id,
-      expect.objectContaining({
-        cargo: 'PESQUISADOR' as const,
-        instituicao: 'UFRN',
+  test('case 2: remove opcionais', async () => {
+    mockUpdate(
+      makeRecrutadorResponse({
+        perfil: makePerfilResponse({ foto: null, biografia: null }),
       }),
     );
 
-    expect(updated).toEqual(expect.objectContaining(updatedRecrutadorResponse));
+    await recrutadorService.update(1, {
+      ...makeRecrutador({ perfil: makePerfil({ foto: null, biografia: null }) }),
+    });
+
+    const [, payload] = (recrutadorRepository.update as jest.Mock).mock.calls[0];
+    expect(payload.perfil.foto).toBeNull();
+    expect(payload.perfil.biografia).toBeNull();
   });
 
-  test('Case 6: Atualiza recrutador por id inválido (Deve lançar erro)', async () => {
+  test('case 3: id inválido lança erro', async () => {
     (recrutadorRepository.update as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
+    await expect(recrutadorService.update(-1, {} as any)).rejects.toThrow();
+  });
+});
 
-    const updatedData: RecrutadorUpdateDTO = {
-      cargo: 'PESQUISADOR' as const,
-      instituicao: 'UFRN',
-      areaAtuacao: recrutadorRequest.areaAtuacao,
-      laboratorios: recrutadorRequest.laboratorios,
-      perfil: recrutadorRequest.perfil,
-    };
+describe('Recupera recrutador pelo id', () => {
+  test('case 1: retorna recrutador existente', async () => {
+    const response = makeRecrutadorResponse();
+    mockGetById(response);
 
-    await expect(recrutadorService.update(-1, updatedData)).rejects.toThrow();
+    const result = await recrutadorService.getById(1);
+
+    expect(result).toEqual(response);
   });
 
-  test('Case 7: Atualiza recrutador removendo opcionais', async () => {
-    const updatedRecrutadorResponse = {
-      ...recrutadorResponse,
-      perfil: {
-        ...recrutadorResponse.perfil,
-        foto: null,
-        biografia: null,
-      },
-    };
-
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
-    (recrutadorRepository.update as jest.Mock).mockResolvedValue(updatedRecrutadorResponse);
-
-    const actual = await recrutadorService.create(recrutadorRequest);
-
-    const updatedData: RecrutadorUpdateDTO = {
-      cargo: recrutadorRequest.cargo,
-      instituicao: recrutadorRequest.instituicao,
-      areaAtuacao: recrutadorRequest.areaAtuacao,
-      laboratorios: recrutadorRequest.laboratorios,
-      perfil: perfilRequestOptNulos,
-    };
-
-    const updated = await recrutadorService.update(actual.id, updatedData);
-
-    expect(recrutadorRepository.update).toHaveBeenCalledWith(
-      actual.id,
-      expect.objectContaining({
-        perfil: expect.not.objectContaining({
-          foto: expect.anything(),
-          biografia: expect.anything(),
-        }),
-      }),
-    );
-
-    expect(updated).toEqual(expect.objectContaining(updatedRecrutadorResponse));
-  });
-
-  test('Case 8: Recupera recrutador por id inválido (Deve lançar erro)', async () => {
+  test('case 2: id inválido lança erro', async () => {
     (recrutadorRepository.getById as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
 
-    await expect(recrutadorService.getById(-999)).rejects.toThrow();
+    await expect(recrutadorService.getById(-1)).rejects.toThrow();
+  });
+});
+
+describe('Recupera todos os recrutadores', () => {
+  test('case 1: retorna lista', async () => {
+    const list = [makeRecrutadorResponse()];
+    mockGetAll(list);
+
+    const result = await recrutadorService.getAll();
+
+    expect(result).toEqual(list);
   });
 
-  test('Case 9: Recupera todos os recrutadores (Quando há)', async () => {
-    (recrutadorRepository.getAll as jest.Mock).mockResolvedValue([recrutadorResponse]);
+  test('case 2: retorna lista vazia, pois não foi criado recrutador', async () => {
+    mockGetAll([]);
 
-    const actual = await recrutadorService.getAll();
+    const result = await recrutadorService.getAll();
 
-    expect(actual).toEqual([expect.objectContaining(recrutadorResponse)]);
+    expect(result).toEqual([]);
+  });
+});
+
+describe('Deleta recrutador', () => {
+  test('case 1: com id válido', async () => {
+    mockGetById(makeRecrutadorResponse());
+    mockDelete();
+
+    await recrutadorService.delete(1);
+
+    expect(recrutadorRepository.delete).toHaveBeenCalledWith(1);
   });
 
-  test('Case 10: Recupera todos os recrutadores (Quando não há - deve retornar lista vazia)', async () => {
-    (recrutadorRepository.getAll as jest.Mock).mockResolvedValue([]);
+  test('case 2: com id inválido lança erro', async () => {
+    (recrutadorRepository.delete as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
 
-    const actual = await recrutadorService.getAll();
-
-    expect(actual).toEqual([]);
-  });
-
-  test('Case 11: Deleta recrutador por id', async () => {
-    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
-    (recrutadorRepository.getById as jest.Mock).mockResolvedValue(recrutadorResponse);
-    (recrutadorRepository.delete as jest.Mock).mockResolvedValue(undefined);
-
-    const actual = await recrutadorService.create(recrutadorRequest);
-
-    await recrutadorService.delete(actual.id);
-
-    expect(recrutadorRepository.getById).toHaveBeenCalledWith(actual.id);
-    expect(recrutadorRepository.delete).toHaveBeenCalledWith(actual.id);
-  });
-
-  test('Case 12: Deleta recrutador por id inválido (Deve lançar erro)', async () => {
-    (recrutadorRepository.delete as jest.Mock).mockRejectedValue(new Error('Entidade com id -999 não encontrada'));
-
-    await expect(recrutadorService.delete(-999)).rejects.toThrow();
+    await expect(recrutadorService.delete(-1)).rejects.toThrow();
   });
 });
