@@ -1,5 +1,10 @@
 import { EntityNotFoundError } from '../errors/EntityNotFoundException';
-import { RecrutadorCreateDTO, RecrutadorCreateSchema, RecrutadorResponseSchema } from '../models/RecrutadorSchema';
+import {
+  RecrutadorCreateDTO,
+  RecrutadorCreateSchema,
+  RecrutadorResponseSchema,
+  RecrutadorUpdateDTO,
+} from '../models/RecrutadorSchema';
 import { recrutadorRepository } from '../repositories/RecrutadorRepository';
 import { gerarHashSenha } from '../utils/authUtils';
 
@@ -26,6 +31,14 @@ class RecrutadorService {
   async getAll() {
     const result = await recrutadorRepository.getAll();
     return RecrutadorResponseSchema.array().parseAsync(result);
+  }
+
+  async update(id: number, data: RecrutadorUpdateDTO) {
+    const parsedData = RecrutadorCreateSchema.parse(data);
+    await this.getById(id);
+
+    const result = await recrutadorRepository.update(id, parsedData);
+    return RecrutadorResponseSchema.parseAsync(result);
   }
 
   async delete(id: number) {

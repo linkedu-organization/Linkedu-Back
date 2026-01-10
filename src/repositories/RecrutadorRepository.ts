@@ -1,6 +1,6 @@
 import { TipoPerfil } from '@prisma/client';
 
-import { RecrutadorCreateDTO } from '../models/RecrutadorSchema';
+import { RecrutadorCreateDTO, RecrutadorCreateSchema, RecrutadorUpdateDTO } from '../models/RecrutadorSchema';
 import { perfilRepository } from '../repositories/PerfilRepositoy';
 import prisma from '../utils/prisma';
 
@@ -26,6 +26,17 @@ class RecrutadorRepository {
   async getAll() {
     return prisma.recrutador.findMany({
       include: { perfil: true },
+    });
+  }
+
+  async update(id: number, data: RecrutadorUpdateDTO) {
+    const { perfil, ...recrutador } = data;
+    return prisma.recrutador.update({
+      where: { id },
+      data: {
+        ...recrutador,
+        ...(perfil && { perfil: { update: perfil } }),
+      },
     });
   }
 

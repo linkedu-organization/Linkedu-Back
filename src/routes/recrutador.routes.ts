@@ -16,6 +16,10 @@ recrutadorRoutes.get('/', async (req, res) => {
   await recrutadorController.getAll(req, res);
 });
 
+recrutadorRoutes.put('/:id', async (req, res) => {
+  await recrutadorController.update(req, res);
+});
+
 recrutadorRoutes.delete('/:id', async (req, res) => {
   await recrutadorController.delete(req, res);
 });

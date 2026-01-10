@@ -1,5 +1,6 @@
 import { recrutadorService } from '../../src/services/RecrutadorService';
 import { recrutadorRepository } from '../../src/repositories/RecrutadorRepository';
+import { RecrutadorUpdateDTO } from '../../src/models/RecrutadorSchema';
 
 jest.mock('../../src/repositories/RecrutadorRepository');
 
@@ -121,13 +122,98 @@ describe('RecrutadorService', () => {
     expect(actual).toEqual(searched);
   });
 
-  test('Case 5: Recupera recrutador por id inválido (Deve lançar erro)', async () => {
+  test('Case 5: Atualiza recrutador id e dados válidos', async () => {
+    const updatedRecrutadorResponse = {
+      ...recrutadorResponse,
+      cargo: 'PESQUISADOR' as const,
+      instituicao: 'UFRN',
+    };
+
+    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
+    (recrutadorRepository.update as jest.Mock).mockResolvedValue(updatedRecrutadorResponse);
+
+    const actual = await recrutadorService.create(recrutadorRequest);
+
+    const updatedData: RecrutadorUpdateDTO = {
+      cargo: 'PESQUISADOR' as const,
+      instituicao: 'UFRN',
+      areaAtuacao: recrutadorRequest.areaAtuacao,
+      laboratorios: recrutadorRequest.laboratorios,
+      perfil: recrutadorRequest.perfil,
+    };
+
+    const updated = await recrutadorService.update(actual.id, updatedData);
+
+    expect(recrutadorRepository.update).toHaveBeenCalledWith(
+      actual.id,
+      expect.objectContaining({
+        cargo: 'PESQUISADOR' as const,
+        instituicao: 'UFRN',
+      }),
+    );
+
+    expect(updated).toEqual(expect.objectContaining(updatedRecrutadorResponse));
+  });
+
+  test('Case 6: Atualiza recrutador por id inválido (Deve lançar erro)', async () => {
+    (recrutadorRepository.update as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
+
+    const updatedData: RecrutadorUpdateDTO = {
+      cargo: 'PESQUISADOR' as const,
+      instituicao: 'UFRN',
+      areaAtuacao: recrutadorRequest.areaAtuacao,
+      laboratorios: recrutadorRequest.laboratorios,
+      perfil: recrutadorRequest.perfil,
+    };
+
+    await expect(recrutadorService.update(-1, updatedData)).rejects.toThrow();
+  });
+
+  test('Case 7: Atualiza recrutador removendo opcionais', async () => {
+    const updatedRecrutadorResponse = {
+      ...recrutadorResponse,
+      perfil: {
+        ...recrutadorResponse.perfil,
+        foto: null,
+        biografia: null,
+      },
+    };
+
+    (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
+    (recrutadorRepository.update as jest.Mock).mockResolvedValue(updatedRecrutadorResponse);
+
+    const actual = await recrutadorService.create(recrutadorRequest);
+
+    const updatedData: RecrutadorUpdateDTO = {
+      cargo: recrutadorRequest.cargo,
+      instituicao: recrutadorRequest.instituicao,
+      areaAtuacao: recrutadorRequest.areaAtuacao,
+      laboratorios: recrutadorRequest.laboratorios,
+      perfil: perfilRequestOptNulos,
+    };
+
+    const updated = await recrutadorService.update(actual.id, updatedData);
+
+    expect(recrutadorRepository.update).toHaveBeenCalledWith(
+      actual.id,
+      expect.objectContaining({
+        perfil: expect.not.objectContaining({
+          foto: expect.anything(),
+          biografia: expect.anything(),
+        }),
+      }),
+    );
+
+    expect(updated).toEqual(expect.objectContaining(updatedRecrutadorResponse));
+  });
+
+  test('Case 8: Recupera recrutador por id inválido (Deve lançar erro)', async () => {
     (recrutadorRepository.getById as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
 
     await expect(recrutadorService.getById(-999)).rejects.toThrow();
   });
 
-  test('Case 6: Recupera todos os recrutadores (Quando há)', async () => {
+  test('Case 9: Recupera todos os recrutadores (Quando há)', async () => {
     (recrutadorRepository.getAll as jest.Mock).mockResolvedValue([recrutadorResponse]);
 
     const actual = await recrutadorService.getAll();
@@ -135,7 +221,7 @@ describe('RecrutadorService', () => {
     expect(actual).toEqual([expect.objectContaining(recrutadorResponse)]);
   });
 
-  test('Case 6: Recupera todos os recrutadores (Quando não há - deve retornar lista vazia)', async () => {
+  test('Case 10: Recupera todos os recrutadores (Quando não há - deve retornar lista vazia)', async () => {
     (recrutadorRepository.getAll as jest.Mock).mockResolvedValue([]);
 
     const actual = await recrutadorService.getAll();
@@ -143,7 +229,7 @@ describe('RecrutadorService', () => {
     expect(actual).toEqual([]);
   });
 
-  test('Case 7: Deleta recrutador por id', async () => {
+  test('Case 11: Deleta recrutador por id', async () => {
     (recrutadorRepository.create as jest.Mock).mockResolvedValue(recrutadorResponse);
     (recrutadorRepository.getById as jest.Mock).mockResolvedValue(recrutadorResponse);
     (recrutadorRepository.delete as jest.Mock).mockResolvedValue(undefined);
@@ -156,7 +242,7 @@ describe('RecrutadorService', () => {
     expect(recrutadorRepository.delete).toHaveBeenCalledWith(actual.id);
   });
 
-  test('Case 8: Deleta recrutador por id inválido (Deve lançar erro)', async () => {
+  test('Case 12: Deleta recrutador por id inválido (Deve lançar erro)', async () => {
     (recrutadorRepository.delete as jest.Mock).mockRejectedValue(new Error('Entidade com id -999 não encontrada'));
 
     await expect(recrutadorService.delete(-999)).rejects.toThrow();
