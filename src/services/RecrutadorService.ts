@@ -10,22 +10,35 @@ import { gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
 
 class RecrutadorService {
-  async create(data: RecrutadorCreateDTO) {
+  private async findOrThrow(id: number) {
+    const result = await recrutadorRepository.getById(id);
+    if (!result) throw new EntityNotFoundError(id);
+    return result;
+  }
+
+  private async normalizeCreate(data: RecrutadorCreateDTO) {
     const parsedData = RecrutadorCreateSchema.parse(data);
     const hashSenha = await gerarHashSenha(parsedData.perfil.senha);
     await perfilService.validarEmail(parsedData.perfil.email);
-    const result = await recrutadorRepository.create({
-      ...parsedData,
-      perfil: { ...parsedData.perfil, senha: hashSenha },
-    });
+    return { ...parsedData, perfil: { ...parsedData.perfil, senha: hashSenha } };
+  }
+
+  private async normalizeUpdate(id: number, data: RecrutadorUpdateDTO) {
+    const atual = await this.findOrThrow(id);
+    if (atual.perfil.email !== data.perfil.email) {
+      await perfilService.validarEmail(data.perfil.email);
+    }
+    return data;
+  }
+
+  async create(data: RecrutadorCreateDTO) {
+    const normalized = await this.normalizeCreate(data);
+    const result = await recrutadorRepository.create(normalized);
     return RecrutadorResponseSchema.parseAsync(result);
   }
 
   async getById(id: number) {
-    const result = await recrutadorRepository.getById(id);
-    if (!result) {
-      throw new EntityNotFoundError(id);
-    }
+    const result = await this.findOrThrow(id);
     return RecrutadorResponseSchema.parseAsync(result);
   }
 
@@ -35,15 +48,13 @@ class RecrutadorService {
   }
 
   async update(id: number, data: RecrutadorUpdateDTO) {
-    const parsedData = RecrutadorCreateSchema.parse(data);
-    await this.getById(id);
-
-    const result = await recrutadorRepository.update(id, parsedData);
+    const normalized = await this.normalizeUpdate(id, data);
+    const result = await recrutadorRepository.update(id, normalized);
     return RecrutadorResponseSchema.parseAsync(result);
   }
 
   async delete(id: number) {
-    await this.getById(id);
+    await this.findOrThrow(id);
     await recrutadorRepository.delete(id);
   }
 }
