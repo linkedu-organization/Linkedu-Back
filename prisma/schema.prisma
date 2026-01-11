@@ -1,7 +1,43 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum TipoPerfil {
+  CANDIDATO
+  RECRUTADOR
+}
+
+enum CargoRecrutador {
+  TECNICO
+  PROFESSOR
+  PESQUISADOR
+}
+
+model Perfil {
+  id           Int         @id @default(autoincrement())
+  nome         String
+  email        String
+  tipo         TipoPerfil
+  senha        String
+  biografia    String?
+  foto         String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  ultimoAcesso DateTime
+  recrutador   Recrutador?
+}
+
+model Recrutador {
+  id           Int             @id @default(autoincrement())
+  perfil_id    Int             @unique
+  cargo        CargoRecrutador
+  instituicao  String
+  areaAtuacao  String
+  laboratorios String?
+  perfil       Perfil          @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
 }
