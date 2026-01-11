@@ -1,5 +1,4 @@
 import { RecrutadorUpdateDTO } from '../../src/models/RecrutadorSchema';
-import { perfilRepository } from '../../src/repositories/PerfilRepositoy';
 import { recrutadorRepository } from '../../src/repositories/RecrutadorRepository';
 import { recrutadorService } from '../../src/services/RecrutadorService';
 import { perfilService } from '../../src/services/PerfilService';
