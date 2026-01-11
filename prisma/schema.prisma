@@ -12,12 +12,6 @@ enum TipoPerfil {
   RECRUTADOR
 }
 
-enum CargoRecrutador {
-  TECNICO
-  PROFESSOR
-  PESQUISADOR
-}
-
 model Perfil {
   id           Int         @id @default(autoincrement())
   nome         String
@@ -30,6 +24,13 @@ model Perfil {
   updatedAt    DateTime    @updatedAt
   ultimoAcesso DateTime
   recrutador   Recrutador?
+  candidato    Candidato?
+}
+
+enum CargoRecrutador {
+  TECNICO
+  PROFESSOR
+  PESQUISADOR
 }
 
 model Recrutador {
@@ -40,4 +41,44 @@ model Recrutador {
   areaAtuacao  String
   laboratorios String?
   perfil       Perfil          @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
+}
+
+enum CargoCandidato {
+  ALUNO
+  TECNICO
+}
+
+enum NivelEscolaridade {
+  FUNDAMENTAL_INCOMPLETO
+  FUNDAMENTAL_COMPLETO
+  MEDIO_INCOMPLETO
+  MEDIO_COMPLETO
+  SUPERIOR_INCOMPLETO
+  SUPERIOR_COMPLETO
+  POS_GRADUACAO
+}
+
+enum CargaHoraria {
+  ATE_10H
+  DE_10_A_20H
+  DE_20_A_30H
+  ACIMA_DE_30H
+}
+
+model Candidato {
+  id                Int               @id @default(autoincrement())
+  perfil_id         Int               @unique
+  cargo             CargoCandidato
+  instituicao       String
+  areaAtuacao       String
+  nivelEscolaridade NivelEscolaridade
+  periodoIngresso   String?
+  periodoConclusao  String?
+  disponivel        Boolean
+  tempoDisponivel   CargaHoraria
+  lattes            String?
+  linkedin          String?
+  areasInteressse   String[]
+  habilidades       String[]
+  perfil            Perfil            @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
 }
