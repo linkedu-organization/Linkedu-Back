@@ -16,24 +16,14 @@ class RecrutadorService {
     return result;
   }
 
-  private async normalizeCreate(data: RecrutadorCreateDTO) {
+  async create(data: RecrutadorCreateDTO) {
+    await perfilService.validarEmail(data.perfil.email);
     const parsedData = RecrutadorCreateSchema.parse(data);
     const hashSenha = await gerarHashSenha(parsedData.perfil.senha);
-    await perfilService.validarEmail(parsedData.perfil.email);
-    return { ...parsedData, perfil: { ...parsedData.perfil, senha: hashSenha } };
-  }
-
-  private async normalizeUpdate(id: number, data: RecrutadorUpdateDTO) {
-    const atual = await this.findOrThrow(id);
-    if (atual.perfil.email !== data.perfil.email) {
-      await perfilService.validarEmail(data.perfil.email);
-    }
-    return data;
-  }
-
-  async create(data: RecrutadorCreateDTO) {
-    const normalized = await this.normalizeCreate(data);
-    const result = await recrutadorRepository.create(normalized);
+    const result = await recrutadorRepository.create({
+      ...parsedData,
+      perfil: { ...parsedData.perfil, senha: hashSenha },
+    });
     return RecrutadorResponseSchema.parseAsync(result);
   }
 
@@ -48,8 +38,11 @@ class RecrutadorService {
   }
 
   async update(id: number, data: RecrutadorUpdateDTO) {
-    const normalized = await this.normalizeUpdate(id, data);
-    const result = await recrutadorRepository.update(id, normalized);
+    const atual = await this.findOrThrow(id);
+    if (atual.perfil.email !== data.perfil.email) {
+      await perfilService.validarEmail(data.perfil.email);
+    }
+    const result = await recrutadorRepository.update(id, data);
     return RecrutadorResponseSchema.parseAsync(result);
   }
 
