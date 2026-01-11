@@ -35,7 +35,7 @@ class RecrutadorRepository {
       where: { id },
       data: {
         ...recrutador,
-        ...(perfil && { perfil: { update: perfil } }),
+        ...{ perfil: { update: perfil } },
       },
       include: { perfil: true },
     });
