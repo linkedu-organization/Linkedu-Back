@@ -1,5 +1,6 @@
 import { Prisma, TipoPerfil } from '@prisma/client';
 
+import prisma from '../utils/prisma';
 import { PerfilCreateDTO } from '../models/PerfilSchema';
 
 class PerfilRepository {
@@ -13,6 +14,12 @@ class PerfilRepository {
     return tx.perfil.update({
       where: { id },
       data: { ...data, updatedAt: new Date() },
+    });
+  }
+
+  async getByEmail(email: string) {
+    return prisma.perfil.findFirst({
+      where: { email },
     });
   }
 }

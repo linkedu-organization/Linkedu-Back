@@ -1,6 +1,8 @@
 import { RecrutadorUpdateDTO } from '../../src/models/RecrutadorSchema';
+import { perfilRepository } from '../../src/repositories/PerfilRepositoy';
 import { recrutadorRepository } from '../../src/repositories/RecrutadorRepository';
 import { recrutadorService } from '../../src/services/RecrutadorService';
+import { perfilService } from '../../src/services/PerfilService';
 
 jest.mock('../../src/repositories/RecrutadorRepository', () => ({
   recrutadorRepository: {
@@ -95,6 +97,31 @@ describe('Cria recrutador', () => {
     });
 
     await expect(recrutadorService.create(recrutador)).rejects.toThrow();
+  });
+
+  test('case 4: com email único no sistema', async () => {
+    const recrutador = makeRecrutador();
+    const response = makeRecrutadorResponse();
+
+    jest.spyOn(perfilService, 'validarEmail').mockResolvedValue(undefined);
+    (recrutadorRepository.create as jest.Mock).mockResolvedValue(response);
+
+    const result = await recrutadorService.create(recrutador);
+
+    expect(perfilService.validarEmail).toHaveBeenCalledWith(recrutador.perfil.email);
+    expect(recrutadorRepository.create).toHaveBeenCalled();
+    expect(result).toEqual(response);
+  });
+
+  test('case 5: rejeita quando email já existe', async () => {
+    const recrutador = makeRecrutador();
+
+    jest.spyOn(perfilService, 'validarEmail').mockRejectedValue(new Error('Email já cadastrado'));
+
+    await expect(recrutadorService.create(recrutador)).rejects.toThrow('Email já cadastrado');
+
+    expect(perfilService.validarEmail).toHaveBeenCalledWith(recrutador.perfil.email);
+    expect(recrutadorRepository.create).not.toHaveBeenCalled();
   });
 });
 
