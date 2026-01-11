@@ -10,12 +10,6 @@ import { gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
 
 class RecrutadorService {
-  private async findOrThrow(id: number) {
-    const result = await recrutadorRepository.getById(id);
-    if (!result) throw new EntityNotFoundError(id);
-    return result;
-  }
-
   async create(data: RecrutadorCreateDTO) {
     await perfilService.validarEmail(data.perfil.email);
     const parsedData = RecrutadorCreateSchema.parse(data);
@@ -49,6 +43,12 @@ class RecrutadorService {
   async delete(id: number) {
     await this.findOrThrow(id);
     await recrutadorRepository.delete(id);
+  }
+
+  private async findOrThrow(id: number) {
+    const result = await recrutadorRepository.getById(id);
+    if (!result) throw new EntityNotFoundError(id);
+    return result;
   }
 }
 
