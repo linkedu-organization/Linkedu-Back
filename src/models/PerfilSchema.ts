@@ -6,7 +6,6 @@ export const PerfilCreateSchema = z.object({
   nome: z.string(),
   email: z.email(),
   senha: z.string().min(8),
-  tipo: TipoPerfilEnum,
   foto: z.string().nullable(),
   biografia: z.string().max(255).nullable(),
 });
@@ -17,6 +16,7 @@ export const PerfilUpdateSchema = PerfilCreateSchema.omit({
 
 export const PerfilResponseSchema = PerfilUpdateSchema.extend({
   id: z.number(),
+  tipo: TipoPerfilEnum,
   createdAt: z.date().or(z.iso.datetime()),
   updatedAt: z.date().or(z.iso.datetime()),
   ultimoAcesso: z.date().or(z.iso.datetime()),

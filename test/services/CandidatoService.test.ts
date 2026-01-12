@@ -17,7 +17,6 @@ const makePerfil = (overrides = {}) => ({
   nome: 'Chappell Roan',
   email: 'chappell.roan@ccc.ufcg.edu.br',
   senha: 'lollapalooza_2026',
-  tipo: 'CANDIDATO' as const,
   foto: 'https://drive.google.com',
   biografia: 'Biografia...',
   ...overrides,
@@ -88,7 +87,7 @@ describe('Cria candidato', () => {
     expect(candidatoRepository.create).toHaveBeenCalled();
     const payload = (candidatoRepository.create as jest.Mock).mock.calls[0][0];
     expect(payload.cargo).toBe('ALUNO');
-    expect(payload.perfil.tipo).toBe('CANDIDATO');
+    expect(payload.perfil.nome).toBe('Chappell Roan');
 
     expect(result.perfil).not.toHaveProperty('senha');
   });

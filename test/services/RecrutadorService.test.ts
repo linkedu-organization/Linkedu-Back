@@ -17,7 +17,6 @@ const makePerfil = (overrides = {}) => ({
   nome: 'Professor Medeiros',
   email: 'professor.medeiros@gmail.com',
   senha: 'cnh_brasil_2026',
-  tipo: 'RECRUTADOR' as const,
   foto: 'https://drive.google.com',
   biografia: 'Biografia...',
   ...overrides,
@@ -72,7 +71,7 @@ describe('Cria recrutador', () => {
     expect(recrutadorRepository.create).toHaveBeenCalled();
     const payload = (recrutadorRepository.create as jest.Mock).mock.calls[0][0];
     expect(payload.cargo).toBe('PROFESSOR');
-    expect(payload.perfil.tipo).toBe('RECRUTADOR');
+    expect(payload.perfil.nome).toBe('Professor Medeiros');
 
     expect(result.perfil).not.toHaveProperty('senha');
   });
