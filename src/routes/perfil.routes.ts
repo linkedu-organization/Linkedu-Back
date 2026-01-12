@@ -4,6 +4,6 @@ import { perfilController } from '../controllers/PerfilController';
 
 export const perfilRoutes = Router();
 
-perfilRoutes.post('/validar-email', async (req, res) => {
+perfilRoutes.get('/validar-email', async (req, res) => {
   await perfilController.validarEmail(req, res);
 });
