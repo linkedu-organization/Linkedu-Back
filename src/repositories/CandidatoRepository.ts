@@ -42,8 +42,12 @@ class CandidatoRepository {
   }
 
   async delete(id: number) {
-    return prisma.candidato.delete({
-      where: { id },
+    return prisma.$transaction(async tx => {
+      const candidato = await tx.candidato.delete({
+        where: { id },
+      });
+      await perfilRepository.delete(tx, candidato.perfil_id);
+      return candidato;
     });
   }
 }

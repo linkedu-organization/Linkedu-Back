@@ -17,6 +17,12 @@ class PerfilRepository {
     });
   }
 
+  async delete(tx: Prisma.TransactionClient, id: number) {
+    return tx.perfil.delete({
+      where: { id },
+    });
+  }
+
   async getByEmail(email: string) {
     return prisma.perfil.findFirst({
       where: { email },
