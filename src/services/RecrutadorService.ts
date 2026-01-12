@@ -3,6 +3,7 @@ import {
   RecrutadorCreateSchema,
   RecrutadorResponseSchema,
   RecrutadorUpdateDTO,
+  RecrutadorUpdateSchema,
 } from '../models/RecrutadorSchema';
 import { recrutadorRepository } from '../repositories/RecrutadorRepository';
 import { EntityNotFoundError } from '../errors/EntityNotFoundException';
@@ -33,10 +34,11 @@ class RecrutadorService {
 
   async update(id: number, data: RecrutadorUpdateDTO) {
     const atual = await this.findOrThrow(id);
-    if (atual.perfil.email !== data.perfil.email) {
-      await perfilService.validarEmail(data.perfil.email);
+    const parsedData = RecrutadorUpdateSchema.parse(data);
+    if (atual.perfil.email !== parsedData.perfil.email) {
+      await perfilService.validarEmail(parsedData.perfil.email);
     }
-    const result = await recrutadorRepository.update(id, data);
+    const result = await recrutadorRepository.update(id, parsedData);
     return RecrutadorResponseSchema.parseAsync(result);
   }
 

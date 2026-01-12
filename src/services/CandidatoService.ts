@@ -3,6 +3,7 @@ import {
   CandidatoCreateSchema,
   CandidatoResponseSchema,
   CandidatoUpdateDTO,
+  CandidatoUpdateSchema,
 } from '../models/CandidatoSchema';
 import { candidatoRepository } from '../repositories/CandidatoRepository';
 import { EntityNotFoundError } from '../errors/EntityNotFoundException';
@@ -33,10 +34,11 @@ class CandidatoService {
 
   async update(id: number, data: CandidatoUpdateDTO) {
     const atual = await this.findOrThrow(id);
-    if (atual.perfil.email !== data.perfil.email) {
-      await perfilService.validarEmail(data.perfil.email);
+    const parsedData = CandidatoUpdateSchema.parse(data);
+    if (atual.perfil.email !== parsedData.perfil.email) {
+      await perfilService.validarEmail(parsedData.perfil.email);
     }
-    const result = await candidatoRepository.update(id, data);
+    const result = await candidatoRepository.update(id, parsedData);
     return CandidatoResponseSchema.parseAsync(result);
   }
 

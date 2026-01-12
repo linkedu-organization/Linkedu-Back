@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { PerfilCreateSchema, PerfilResponseSchema } from './PerfilSchema';
+import { PerfilCreateSchema, PerfilResponseSchema, PerfilUpdateSchema } from './PerfilSchema';
 
 const CargoCandidato = z.enum(['ALUNO', 'TECNICO']);
 const NivelEscolaridade = z.enum([
@@ -33,10 +33,14 @@ export const CandidatoCreateSchema = CandidatoSchema.extend({
   perfil: z.lazy(() => PerfilCreateSchema),
 });
 
+export const CandidatoUpdateSchema = CandidatoSchema.extend({
+  perfil: z.lazy(() => PerfilUpdateSchema),
+});
+
 export const CandidatoResponseSchema = CandidatoSchema.extend({
   id: z.number(),
   perfil: z.lazy(() => PerfilResponseSchema),
 });
 
 export type CandidatoCreateDTO = z.infer<typeof CandidatoCreateSchema>;
-export type CandidatoUpdateDTO = z.infer<typeof CandidatoCreateSchema>;
+export type CandidatoUpdateDTO = z.infer<typeof CandidatoUpdateSchema>;
