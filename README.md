@@ -4,12 +4,12 @@ _Plataforma que conecta você às oportunidades acadêmicas._
 
 ## 📌 Table of Contents
 
-- [Introduction](https://github.com/Engenharia-de-Software-Grupo-1/AchadoseLidos-Back?tab=readme-ov-file#-introduction)
-- [Technologies](https://github.com/Engenharia-de-Software-Grupo-1/AchadoseLidos-Back?tab=readme-ov-file#%EF%B8%8F-technologies)
-- [Installation](https://github.com/Engenharia-de-Software-Grupo-1/AchadoseLidos-Back?tab=readme-ov-file#-installation)
-- [Usage](https://github.com/Engenharia-de-Software-Grupo-1/AchadoseLidos-Back?tab=readme-ov-file#-usage)
-- [Testing](https://github.com/Engenharia-de-Software-Grupo-1/AchadoseLidos-Back?tab=readme-ov-file#-testing)
-- [Development Tools](https://github.com/Engenharia-de-Software-Grupo-1/AchadoseLidos-Back?tab=readme-ov-file#%EF%B8%8F-development-tools)
+- [Introduction](https://github.com/linkedu-organization/Linkedu-Back?tab=readme-ov-file#-introduction)
+- [Technologies](https://github.com/linkedu-organization/Linkedu-Back?tab=readme-ov-file#%EF%B8%8F-technologies)
+- [Installation](https://github.com/linkedu-organization/Linkedu-Back?tab=readme-ov-file#-installation)
+- [Usage](https://github.com/linkedu-organization/Linkedu-Back?tab=readme-ov-file#-usage)
+- [Testing](https://github.com/linkedu-organization/Linkedu-Back?tab=readme-ov-file#-testing)
+- [Development Tools](https://github.com/linkedu-organization/Linkedu-Back?tab=readme-ov-file#%EF%B8%8F-development-tools)
 
 ## 📝 Introduction
 
