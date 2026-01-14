@@ -9,6 +9,13 @@ jest.mock('@prisma/client', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    candidato: {
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
     perfil: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -23,7 +30,7 @@ jest.mock('@prisma/client', () => {
     PrismaClient: jest.fn(() => mockPrismaClient),
     TipoPerfil: {
       RECRUTADOR: 'RECRUTADOR',
-      ALUNO: 'ALUNO',
+      CANDIDATO: 'CANDIDATO',
     },
   };
 });
