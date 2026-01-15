@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const Visibilidade = z.enum(['PÚBLICA', 'PRIVADA']);
+const Visibilidade = z.enum(['PUBLICA', 'PRIVADA']);
 const TipoVaga = z.enum(['VOLUNTARIA', 'REMUNERADA']);
 const PublicoAlvo = z.enum(['GRADUACAO', 'POS_GRADUACAO', 'TECNICO', 'PESQUISADOR']);
 
@@ -26,9 +26,22 @@ const VagaSchema = z.object({
   curso: z.string(),
   linkInscricao: z.string(),
   local: z.string(),
-  publicoAlvo: PublicoAlvo,
+  publicoAlvo: PublicoAlvo.array(),
   conhecimentosObrigatorios: z.string().array(),
   conhecimentosOpcionais: z.string().array().nullable(),
   visibilidade: Visibilidade,
   tipoVaga: TipoVaga,
 });
+
+export const VagaCreateSchema = VagaSchema;
+
+export const VagaUpdateSchema = VagaSchema.partial();
+
+export const VagaResponseSchema = VagaSchema.extend({
+  id: z.number(),
+  createdAt: z.date().or(z.iso.datetime()),
+  updatedAt: z.date().or(z.iso.datetime()),
+});
+
+export type VagaCreateDTO = z.infer<typeof VagaCreateSchema>;
+export type VagaUpdateDTO = z.infer<typeof VagaUpdateSchema>;

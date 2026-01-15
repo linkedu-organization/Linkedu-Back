@@ -41,6 +41,7 @@ model Recrutador {
   areaAtuacao  String
   laboratorios String?
   perfil       Perfil          @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
+  vagas        Vaga[]
 }
 
 enum CargoCandidato {
@@ -81,4 +82,53 @@ model Candidato {
   areasInteressse   String[]
   habilidades       String[]
   perfil            Perfil            @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
+}
+
+enum Visibilidade {
+  PUBLICA
+  PRIVADA
+}
+
+enum TipoVaga {
+  VOLUNTARIA
+  REMUNERADA
+}
+
+enum PublicoAlvo {
+  GRADUACAO
+  POS_GRADUACAO
+  TECNICO
+  PESQUISADOR
+}
+
+enum Categoria {
+  PESQUISA
+  PESQUISA_E_DESENVOLVIMENTO
+  PESQUISA_DESENVOLVIMENTO_E_INOVACAO
+  ORGANIZACAO_DE_EVENTOS
+  OUTROS
+}
+
+model Vaga {
+  id                        Int            @id @default(autoincrement())
+  recrutador_id             Int
+  recrutador                Recrutador     @relation(fields: [recrutador_id], references: [id], onDelete: Cascade)
+  titulo                    String
+  descricao                 String
+  categoria                 Categoria
+  tipo                      TipoVaga
+  ehPublica                 Boolean
+  ehRemunerada              Boolean
+  dataExpiracao             String?
+  cargaHoraria              CargaHoraria[]
+  duracao                   String?
+  instituicao               String
+  curso                     String
+  linkInscricao             String
+  local                     String
+  publicoAlvo               PublicoAlvo[]
+  conhecimentosObrigatorios String[]
+  conhecimentosOpcionais    String[]
+  visibilidade              Visibilidade
+  tipoVaga                  TipoVaga
 }
