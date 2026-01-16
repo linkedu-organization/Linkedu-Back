@@ -28,7 +28,7 @@ const VagaSchema = z.object({
   local: z.string(),
   publicoAlvo: PublicoAlvo.array(),
   conhecimentosObrigatorios: z.string().array(),
-  conhecimentosOpcionais: z.string().array().nullable(),
+  conhecimentosOpcionais: z.string().array(),
   visibilidade: Visibilidade,
   tipoVaga: TipoVaga,
 });

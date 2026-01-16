@@ -111,16 +111,15 @@ enum Categoria {
 
 model Vaga {
   id                        Int            @id @default(autoincrement())
-  recrutador_id             Int
-  recrutador                Recrutador     @relation(fields: [recrutador_id], references: [id], onDelete: Cascade)
+  recrutadorId              Int
+  recrutador                Recrutador     @relation(fields: [recrutadorId], references: [id], onDelete: Cascade)
   titulo                    String
   descricao                 String
   categoria                 Categoria
-  tipo                      TipoVaga
   ehPublica                 Boolean
   ehRemunerada              Boolean
   dataExpiracao             String?
-  cargaHoraria              CargaHoraria[]
+  cargaHoraria              Int[]
   duracao                   String?
   instituicao               String
   curso                     String
