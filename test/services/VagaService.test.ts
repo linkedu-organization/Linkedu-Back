@@ -59,8 +59,6 @@ const makeVagaResponse = (overrides = {}) => ({
   conhecimentosOpcionais: ['React', 'Node.js'],
   visibilidade: 'PUBLICA',
   tipoVaga: 'REMUNERADA',
-  createdAt: new Date(),
-  updatedAt: new Date(),
   ...overrides,
 });
 

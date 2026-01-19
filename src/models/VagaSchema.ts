@@ -39,8 +39,6 @@ export const VagaUpdateSchema = VagaSchema.partial();
 
 export const VagaResponseSchema = VagaSchema.extend({
   id: z.number(),
-  createdAt: z.date().or(z.iso.datetime()),
-  updatedAt: z.date().or(z.iso.datetime()),
 });
 
 export type VagaCreateDTO = z.infer<typeof VagaCreateSchema>;
