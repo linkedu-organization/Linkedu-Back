@@ -1,14 +1,8 @@
 -- CreateEnum
-CREATE TYPE "Visibilidade" AS ENUM ('PUBLICA', 'PRIVADA');
-
--- CreateEnum
-CREATE TYPE "TipoVaga" AS ENUM ('VOLUNTARIA', 'REMUNERADA');
-
--- CreateEnum
 CREATE TYPE "PublicoAlvo" AS ENUM ('GRADUACAO', 'POS_GRADUACAO', 'TECNICO', 'PESQUISADOR');
 
 -- CreateEnum
-CREATE TYPE "Categoria" AS ENUM ('PESQUISA', 'PESQUISA_E_DESENVOLVIMENTO', 'PESQUISA_DESENVOLVIMENTO_E_INOVACAO', 'ORGANIZACAO_DE_EVENTOS', 'OUTROS');
+CREATE TYPE "Categoria" AS ENUM ('PESQUISA', 'PESQUISA_E_DESENVOLVIMENTO', 'PESQUISA_DESENVOLVIMENTO_E_INOVACAO', 'ORGANIZACAO_DE_EVENTOS', 'EXTENSAO', 'MONITORIA', 'OUTROS');
 
 -- CreateTable
 CREATE TABLE "Vaga" (
@@ -20,7 +14,7 @@ CREATE TABLE "Vaga" (
     "ehPublica" BOOLEAN NOT NULL,
     "ehRemunerada" BOOLEAN NOT NULL,
     "dataExpiracao" TEXT,
-    "cargaHoraria" INTEGER[],
+    "cargaHoraria" INTEGER NOT NULL,
     "duracao" TEXT,
     "instituicao" TEXT NOT NULL,
     "curso" TEXT NOT NULL,
@@ -29,8 +23,6 @@ CREATE TABLE "Vaga" (
     "publicoAlvo" "PublicoAlvo"[],
     "conhecimentosObrigatorios" TEXT[],
     "conhecimentosOpcionais" TEXT[],
-    "visibilidade" "Visibilidade" NOT NULL,
-    "tipoVaga" "TipoVaga" NOT NULL,
 
     CONSTRAINT "Vaga_pkey" PRIMARY KEY ("id")
 );

@@ -25,7 +25,7 @@ const makeVaga = (overrides = {}) => ({
   ehPublica: true,
   ehRemunerada: true,
   dataExpiracao: null,
-  cargaHoraria: [20, 30],
+  cargaHoraria: 20,
   duracao: '6 meses',
   instituicao: 'UFCG',
   curso: 'Ciência da Computação',
@@ -34,8 +34,6 @@ const makeVaga = (overrides = {}) => ({
   publicoAlvo: ['GRADUACAO'] as ('GRADUACAO' | 'POS_GRADUACAO' | 'TECNICO' | 'PESQUISADOR')[],
   conhecimentosObrigatorios: ['JavaScript', 'TypeScript'],
   conhecimentosOpcionais: ['React', 'Node.js'],
-  visibilidade: 'PUBLICA' as 'PUBLICA' | 'PRIVADA',
-  tipoVaga: 'REMUNERADA' as 'REMUNERADA' | 'VOLUNTARIA',
   ...overrides,
 });
 
@@ -48,7 +46,7 @@ const makeVagaResponse = (overrides = {}) => ({
   ehPublica: true,
   ehRemunerada: true,
   dataExpiracao: null,
-  cargaHoraria: [20, 30],
+  cargaHoraria: 20,
   duracao: '6 meses',
   instituicao: 'UFCG',
   curso: 'Ciência da Computação',
@@ -57,8 +55,7 @@ const makeVagaResponse = (overrides = {}) => ({
   publicoAlvo: ['GRADUACAO'],
   conhecimentosObrigatorios: ['JavaScript', 'TypeScript'],
   conhecimentosOpcionais: ['React', 'Node.js'],
-  visibilidade: 'PUBLICA',
-  tipoVaga: 'REMUNERADA',
+
   ...overrides,
 });
 
@@ -110,7 +107,7 @@ describe('Atualiza vaga', () => {
       categoria: 'PESQUISA',
       ehPublica: false,
       ehRemunerada: true,
-      cargaHoraria: [30, 40],
+      cargaHoraria: 30,
       instituicao: 'UFRJ',
       curso: 'Engenharia de Software',
       linkInscricao: 'https://inscricao.atualizada.com',
@@ -118,8 +115,6 @@ describe('Atualiza vaga', () => {
       publicoAlvo: ['POS_GRADUACAO'],
       conhecimentosObrigatorios: ['Python', 'Django'],
       conhecimentosOpcionais: ['Docker', 'Kubernetes'],
-      visibilidade: 'PUBLICA',
-      tipoVaga: 'REMUNERADA',
     };
 
     const existingVaga = makeVagaResponse({ id: 1 });

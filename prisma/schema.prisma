@@ -84,16 +84,6 @@ model Candidato {
   perfil            Perfil            @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
 }
 
-enum Visibilidade {
-  PUBLICA
-  PRIVADA
-}
-
-enum TipoVaga {
-  VOLUNTARIA
-  REMUNERADA
-}
-
 enum PublicoAlvo {
   GRADUACAO
   POS_GRADUACAO
@@ -106,6 +96,8 @@ enum Categoria {
   PESQUISA_E_DESENVOLVIMENTO
   PESQUISA_DESENVOLVIMENTO_E_INOVACAO
   ORGANIZACAO_DE_EVENTOS
+  EXTENSAO
+  MONITORIA
   OUTROS
 }
 
@@ -119,7 +111,7 @@ model Vaga {
   ehPublica                 Boolean
   ehRemunerada              Boolean
   dataExpiracao             String?
-  cargaHoraria              Int[]
+  cargaHoraria              Int
   duracao                   String?
   instituicao               String
   curso                     String
@@ -128,6 +120,4 @@ model Vaga {
   publicoAlvo               PublicoAlvo[]
   conhecimentosObrigatorios String[]
   conhecimentosOpcionais    String[]
-  visibilidade              Visibilidade
-  tipoVaga                  TipoVaga
 }
