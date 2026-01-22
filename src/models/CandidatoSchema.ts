@@ -12,7 +12,6 @@ const NivelEscolaridade = z.enum([
   'SUPERIOR_COMPLETO',
   'POS_GRADUACAO',
 ]);
-const CargaHoraria = z.enum(['ATE_10H', 'DE_10_A_20H', 'DE_20_A_30H', 'ACIMA_DE_30H']);
 
 const CandidatoSchema = z.object({
   cargo: CargoCandidato,
@@ -22,7 +21,7 @@ const CandidatoSchema = z.object({
   periodoIngresso: z.string().nullable(),
   periodoConclusao: z.string().nullable(),
   disponivel: z.boolean(),
-  tempoDisponivel: CargaHoraria,
+  tempoDisponivel: z.number(),
   lattes: z.string().nullable(),
   linkedin: z.string().nullable(),
   areasInteressse: z.string().array(),
