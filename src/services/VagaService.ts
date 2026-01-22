@@ -11,7 +11,7 @@ import { vagaRepository } from '../repositories/VagaRepository';
 class VagaService {
   async create(data: VagaCreateDTO) {
     const parsedData = VagaCreateSchema.parse(data);
-    const result = await vagaRepository.create(parsedData);
+    const result = await vagaRepository.create(parsedData, 1);
     return VagaResponseSchema.parseAsync(result);
   }
 

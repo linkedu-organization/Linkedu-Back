@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-import { VagaResponseSchema } from './VagaSchema';
 import { PerfilCreateSchema, PerfilResponseSchema, PerfilUpdateSchema } from './PerfilSchema';
 
 const CargoRecrutador = z.enum(['PROFESSOR', 'PESQUISADOR', 'TECNICO']);
@@ -23,7 +22,6 @@ export const RecrutadorUpdateSchema = RecrutadorSchema.extend({
 export const RecrutadorResponseSchema = RecrutadorSchema.extend({
   id: z.number(),
   perfil: z.lazy(() => PerfilResponseSchema),
-  vagas: z.lazy(() => VagaResponseSchema.array()).optional(),
 });
 
 export type RecrutadorCreateDTO = z.infer<typeof RecrutadorCreateSchema>;
