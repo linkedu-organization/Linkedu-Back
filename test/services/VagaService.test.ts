@@ -16,11 +16,13 @@ const makeVaga = (overrides = {}) => ({
   recrutadorId: 1,
   titulo: 'Estágio em Desenvolvimento de Software',
   descricao: 'Descrição da vaga...',
-  categoria: 'PESQUISA' as
-    | 'PESQUISA'
-    | 'PESQUISA_E_DESENVOLVIMENTO'
-    | 'PESQUISA_DESENVOLVIMENTO_E_INOVACAO'
-    | 'ORGANIZACAO_DE_EVENTOS'
+  categoria: 'PROJETO_PESQUISA' as
+    | 'PROJETO_PESQUISA'
+    | 'PROJETO_PESQUISA_DESENVOLVIMENTO'
+    | 'PROJETO_PESQUISA_DESENVOLVIMENTO_INOVACAO'
+    | 'PROJETO_EXTENSAO'
+    | 'MONITORIA'
+    | 'ORGANIZACAO_EVENTO'
     | 'OUTROS',
   ehPublica: true,
   ehRemunerada: true,
@@ -31,7 +33,7 @@ const makeVaga = (overrides = {}) => ({
   curso: 'Ciência da Computação',
   linkInscricao: 'https://inscricao.vaga.com',
   local: 'Campina Grande - PB',
-  publicoAlvo: ['GRADUACAO'] as ('GRADUACAO' | 'POS_GRADUACAO' | 'TECNICO' | 'PESQUISADOR')[],
+  publicoAlvo: ['ALUNO_GRADUACAO'] as ('ALUNO_GRADUACAO' | 'ALUNO_POS_GRADUACAO' | 'TECNICO' | 'PESQUISADOR')[],
   conhecimentosObrigatorios: ['JavaScript', 'TypeScript'],
   conhecimentosOpcionais: ['React', 'Node.js'],
   ...overrides,
@@ -42,7 +44,7 @@ const makeVagaResponse = (overrides = {}) => ({
   recrutadorId: 1,
   titulo: 'Estágio em Desenvolvimento de Software',
   descricao: 'Descrição da vaga...',
-  categoria: 'PESQUISA',
+  categoria: 'PROJETO_PESQUISA',
   ehPublica: true,
   ehRemunerada: true,
   dataExpiracao: null,
@@ -52,7 +54,7 @@ const makeVagaResponse = (overrides = {}) => ({
   curso: 'Ciência da Computação',
   linkInscricao: 'https://inscricao.vaga.com',
   local: 'Campina Grande - PB',
-  publicoAlvo: ['GRADUACAO'],
+  publicoAlvo: ['ALUNO_GRADUACAO'],
   conhecimentosObrigatorios: ['JavaScript', 'TypeScript'],
   conhecimentosOpcionais: ['React', 'Node.js'],
 
@@ -104,7 +106,7 @@ describe('Atualiza vaga', () => {
     const vagaUpdate: VagaUpdateDTO = {
       titulo: 'Título Atualizado',
       descricao: 'Descrição Atualizada',
-      categoria: 'PESQUISA',
+      categoria: 'PROJETO_PESQUISA',
       ehPublica: false,
       ehRemunerada: true,
       cargaHoraria: 30,
@@ -112,7 +114,7 @@ describe('Atualiza vaga', () => {
       curso: 'Engenharia de Software',
       linkInscricao: 'https://inscricao.atualizada.com',
       local: 'Rio de Janeiro - RJ',
-      publicoAlvo: ['POS_GRADUACAO'],
+      publicoAlvo: ['ALUNO_POS_GRADUACAO'],
       conhecimentosObrigatorios: ['Python', 'Django'],
       conhecimentosOpcionais: ['Docker', 'Kubernetes'],
     };
