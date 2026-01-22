@@ -85,8 +85,8 @@ model Candidato {
 }
 
 enum PublicoAlvo {
-  GRADUACAO
-  POS_GRADUACAO
+  ALUNO_GRADUACAO
+  ALUNO_POS_GRADUACAO
   TECNICO
   PESQUISADOR
 }
