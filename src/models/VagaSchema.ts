@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { RecrutadorResponseSchema } from './RecrutadorSchema';
 
 const PublicoAlvo = z.enum(['ALUNO_GRADUACAO', 'ALUNO_POS_GRADUACAO', 'TECNICO', 'PESQUISADOR']);
