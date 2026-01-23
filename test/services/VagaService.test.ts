@@ -12,8 +12,30 @@ jest.mock('../../src/repositories/VagaRepository', () => ({
   },
 }));
 
+const makePerfilResponse = (overrides = {}) => ({
+  id: 1,
+  nome: 'Professor Medeiros',
+  email: 'professor.medeiros@gmail.com',
+  tipo: 'RECRUTADOR',
+  foto: 'https://drive.google.com',
+  biografia: 'Biografia...',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ultimoAcesso: new Date(),
+  ...overrides,
+});
+
+const makeRecrutadorResponse = (overrides = {}) => ({
+  id: 1,
+  cargo: 'PROFESSOR',
+  instituicao: 'UFCG',
+  areaAtuacao: 'Software Developing',
+  laboratorios: 'LSI',
+  perfil: makePerfilResponse(),
+  ...overrides,
+});
+
 const makeVaga = (overrides = {}) => ({
-  recrutadorId: 1,
   titulo: 'Estágio em Desenvolvimento de Software',
   descricao: 'Descrição da vaga...',
   categoria: 'PROJETO_PESQUISA' as
@@ -41,7 +63,7 @@ const makeVaga = (overrides = {}) => ({
 
 const makeVagaResponse = (overrides = {}) => ({
   id: 1,
-  recrutadorId: 1,
+  recrutador: makeRecrutadorResponse(),
   titulo: 'Estágio em Desenvolvimento de Software',
   descricao: 'Descrição da vaga...',
   categoria: 'PROJETO_PESQUISA',
@@ -74,9 +96,9 @@ describe('Cria vaga', () => {
 
     mockCreate(response);
 
-    const result = await vagaService.create(vaga);
+    const result = await vagaService.create(vaga, 1);
 
-    expect(vagaRepository.create).toHaveBeenCalledWith(vaga);
+    expect(vagaRepository.create).toHaveBeenCalledWith(vaga, 1);
     expect(result).toEqual(response);
   });
 
@@ -93,7 +115,7 @@ describe('Cria vaga', () => {
         conhecimentosOpcionais: [],
       }),
     );
-    await vagaService.create(vaga);
+    await vagaService.create(vaga, 1);
     const payload = (vagaRepository.create as jest.Mock).mock.calls[0][0];
     expect(payload.dataExpiracao).toBeNull();
     expect(payload.duracao).toBeNull();
