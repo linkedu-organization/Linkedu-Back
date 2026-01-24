@@ -26,15 +26,16 @@
   "homepage": "https://github.com/linkedu-organization/Linkedu-Back#readme",
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
-    "@prisma/client": "^7.1.0",
+    "@prisma/client": "^7.3.0",
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "pg": "^8.16.3",
-    "prisma": "^7.1.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.3",
@@ -46,6 +47,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.2.0",
+    "prisma": "^7.3.0",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",

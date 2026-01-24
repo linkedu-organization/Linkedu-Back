@@ -1,4 +1,5 @@
 import express, { ErrorRequestHandler } from 'express';
+import cors from 'cors';
 import { ZodError } from 'zod';
 
 import { routes } from './routes/routes';
@@ -7,6 +8,12 @@ import { AppError } from './errors/AppError';
 const app = express();
 const port = process.env.PORT ?? 3333;
 
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/api', routes);
 
