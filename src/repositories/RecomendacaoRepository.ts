@@ -1,4 +1,3 @@
-
 import { RecomendacaoCreateDTO } from '../models/RecomendacaoSchema';
 
 class RecomendacaoRepository {
