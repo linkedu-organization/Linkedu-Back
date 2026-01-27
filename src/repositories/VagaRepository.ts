@@ -2,10 +2,10 @@ import { VagaCreateDTO, VagaUpdateDTO } from '../models/VagaSchema';
 import prisma from '../utils/prisma';
 
 class VagaRepository {
-  async create(data: VagaCreateDTO) {
+  async create(data: VagaCreateDTO, recrutadorId: number) {
     return prisma.$transaction(async tx => {
       const vagaCriada = await tx.vaga.create({
-        data,
+        data: { ...data, recrutador: { connect: { id: recrutadorId } } },
       });
       return vagaCriada;
     });

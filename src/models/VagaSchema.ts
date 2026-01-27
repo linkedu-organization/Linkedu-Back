@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { RecrutadorResponseSchema } from './RecrutadorSchema';
+
 const PublicoAlvo = z.enum(['ALUNO_GRADUACAO', 'ALUNO_POS_GRADUACAO', 'TECNICO', 'PESQUISADOR']);
 
 const Categoria = z.enum([
@@ -13,7 +15,6 @@ const Categoria = z.enum([
 ]);
 
 const VagaSchema = z.object({
-  recrutadorId: z.number(),
   titulo: z.string(),
   descricao: z.string(),
   categoria: Categoria,
@@ -37,6 +38,7 @@ export const VagaUpdateSchema = VagaSchema.partial();
 
 export const VagaResponseSchema = VagaSchema.extend({
   id: z.number(),
+  recrutador: RecrutadorResponseSchema,
 });
 
 export type VagaCreateDTO = z.infer<typeof VagaCreateSchema>;

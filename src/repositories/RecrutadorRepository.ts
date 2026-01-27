@@ -19,13 +19,13 @@ class RecrutadorRepository {
   async getById(id: number) {
     return prisma.recrutador.findUnique({
       where: { id },
-      include: { perfil: true, vagas: true },
+      include: { perfil: true },
     });
   }
 
   async getAll() {
     return prisma.recrutador.findMany({
-      include: { perfil: true, vagas: true },
+      include: { perfil: true },
     });
   }
 
