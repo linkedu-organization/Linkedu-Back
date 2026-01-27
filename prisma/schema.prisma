@@ -59,13 +59,6 @@ enum NivelEscolaridade {
   POS_GRADUACAO
 }
 
-enum CargaHoraria {
-  ATE_10H
-  DE_10_A_20H
-  DE_20_A_30H
-  ACIMA_DE_30H
-}
-
 model Candidato {
   id                Int               @id @default(autoincrement())
   perfil_id         Int               @unique
@@ -76,10 +69,10 @@ model Candidato {
   periodoIngresso   String?
   periodoConclusao  String?
   disponivel        Boolean
-  tempoDisponivel   CargaHoraria
+  tempoDisponivel   Int
   lattes            String?
   linkedin          String?
-  areasInteressse   String[]
+  areasInteresse    String[]
   habilidades       String[]
   perfil            Perfil            @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
   vagasRecomendadas Recomendacao[]
@@ -103,9 +96,9 @@ enum Categoria {
 }
 
 model Vaga {
-  id                        Int            @id @default(autoincrement())
+  id                        Int           @id @default(autoincrement())
   recrutadorId              Int
-  recrutador                Recrutador     @relation(fields: [recrutadorId], references: [id], onDelete: Cascade)
+  recrutador                Recrutador    @relation(fields: [recrutadorId], references: [id], onDelete: Cascade)
   titulo                    String
   descricao                 String
   categoria                 Categoria
