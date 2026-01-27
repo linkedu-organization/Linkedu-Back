@@ -84,6 +84,16 @@ model Candidato {
   perfil            Perfil            @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
 }
 
+model CandidatosRecomendados {
+  candidatoId Int
+  vagaId      Int
+  dataProcessamento DateTime @default(now())
+  descricao   String
+
+  @@id([candidatoId, vagaId])
+  // falta candidato e vaga
+}
+
 enum PublicoAlvo {
   ALUNO_GRADUACAO
   ALUNO_POS_GRADUACAO
@@ -120,4 +130,14 @@ model Vaga {
   publicoAlvo               PublicoAlvo[]
   conhecimentosObrigatorios String[]
   conhecimentosOpcionais    String[]
+}
+
+model VagasRecomendadas {
+  vagaId     Int
+  candidatoId Int
+  dataProcessamento DateTime @default(now())
+  descricao String
+
+  @@id([vagaId, candidatoId])
+  // falta vaga e candidato
 }
