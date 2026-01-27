@@ -24,7 +24,7 @@ const CandidatoSchema = z.object({
   tempoDisponivel: z.number(),
   lattes: z.string().nullable(),
   linkedin: z.string().nullable(),
-  areasInteressse: z.string().array(),
+  areasInteresse: z.string().array(),
   habilidades: z.string().array(),
 });
 

@@ -21,7 +21,7 @@ CREATE TABLE "Candidato" (
     "tempoDisponivel" "CargaHoraria" NOT NULL,
     "lattes" TEXT,
     "linkedin" TEXT,
-    "areasInteressse" TEXT[],
+    "areasInteresse" TEXT[],
     "habilidades" TEXT[],
 
     CONSTRAINT "Candidato_pkey" PRIMARY KEY ("id")

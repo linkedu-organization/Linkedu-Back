@@ -72,7 +72,7 @@ model Candidato {
   tempoDisponivel   Int
   lattes            String?
   linkedin          String?
-  areasInteressse   String[]
+  areasInteresse    String[]
   habilidades       String[]
   perfil            Perfil            @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
 }
