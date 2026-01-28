@@ -1,7 +1,13 @@
 import { RecomendacaoCreateDTO } from '../models/RecomendacaoSchema';
+import prisma from '../utils/prisma';
 
 class RecomendacaoRepository {
   async create(data: RecomendacaoCreateDTO) {
-    // criar uma nova recomendação com IA e dados fornecidos
+    return prisma.$transaction(async tx => {
+      const recomendacaoCriada = await tx.recomendacao.create({
+        data,
+      });
+      return recomendacaoCriada;
+    });
   }
 }
