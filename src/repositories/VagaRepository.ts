@@ -6,6 +6,9 @@ class VagaRepository {
     return prisma.$transaction(async tx => {
       const vagaCriada = await tx.vaga.create({
         data: { ...data, recrutador: { connect: { id: recrutadorId } } },
+        include: {
+          recrutador: { include: { perfil: true } },
+        },
       });
       return vagaCriada;
     });
