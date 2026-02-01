@@ -10,9 +10,9 @@ import { vagaRepository } from '../repositories/VagaRepository';
 
 class VagaService {
   async create(data: VagaCreateDTO) {
-    // TODO: recuperar o recrutador logado
-    const authTokenId = 1;
     const parsedData = VagaCreateSchema.parse(data);
+    // TODO: recuperar o recrutador logado
+    const authTokenId = parsedData.recrutadorId;
     const result = await vagaRepository.create(parsedData, authTokenId);
     return VagaResponseSchema.parseAsync(result);
   }
