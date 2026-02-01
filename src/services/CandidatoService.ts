@@ -9,6 +9,7 @@ import { candidatoRepository } from '../repositories/CandidatoRepository';
 import { EntityNotFoundError } from '../errors/EntityNotFoundException';
 import { gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
+import { Filter, Sorter } from '../utils/filterUtils';
 
 class CandidatoService {
   async create(data: CandidatoCreateDTO) {
@@ -27,8 +28,8 @@ class CandidatoService {
     return CandidatoResponseSchema.parseAsync(result);
   }
 
-  async getAll() {
-    const result = await candidatoRepository.getAll();
+  async getAll(data: { filters: Filter[]; sorters: Sorter[] }) {
+    const result = await candidatoRepository.getAll(data);
     return CandidatoResponseSchema.array().parseAsync(result);
   }
 

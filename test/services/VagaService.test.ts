@@ -58,6 +58,7 @@ const makeVaga = (overrides = {}) => ({
   publicoAlvo: ['ALUNO_GRADUACAO'] as ('ALUNO_GRADUACAO' | 'ALUNO_POS_GRADUACAO' | 'TECNICO' | 'PESQUISADOR')[],
   conhecimentosObrigatorios: ['JavaScript', 'TypeScript'],
   conhecimentosOpcionais: ['React', 'Node.js'],
+  recrutadorId: 1,
   ...overrides,
 });
 
@@ -96,7 +97,7 @@ describe('Cria vaga', () => {
 
     mockCreate(response);
 
-    const result = await vagaService.create(vaga, 1);
+    const result = await vagaService.create(vaga);
 
     expect(vagaRepository.create).toHaveBeenCalledWith(vaga, 1);
     expect(result).toEqual(response);
@@ -115,7 +116,7 @@ describe('Cria vaga', () => {
         conhecimentosOpcionais: [],
       }),
     );
-    await vagaService.create(vaga, 1);
+    await vagaService.create(vaga);
     const payload = (vagaRepository.create as jest.Mock).mock.calls[0][0];
     expect(payload.dataExpiracao).toBeNull();
     expect(payload.duracao).toBeNull();
