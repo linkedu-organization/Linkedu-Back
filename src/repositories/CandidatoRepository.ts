@@ -8,7 +8,7 @@ class CandidatoRepository {
   async create(data: CandidatoCreateDTO) {
     const { perfil, ...candidato } = data;
     return prisma.$transaction(async tx => {
-      const perfilCriado = await perfilRepository.create(tx, perfil, TipoPerfil.RECRUTADOR);
+      const perfilCriado = await perfilRepository.create(tx, perfil, TipoPerfil.CANDIDATO);
       const candidatoCriado = await tx.candidato.create({
         data: { ...candidato, perfil: { connect: { id: perfilCriado.id } } },
       });
