@@ -13,25 +13,27 @@ export function buildWhereClause(filters: Filter[] = []) {
   const where: Record<string, any> = {};
 
   filters.forEach(({ campo, operador, valor }) => {
+    const { parent, field } = getObjectPath(where, campo);
+
     switch (operador) {
       case 'like':
-        where[campo].contains = valor;
-        where[campo].mode = 'insensitive';
+        parent[field].contains = valor;
+        parent[field].mode = 'insensitive';
         break;
       case '>=':
-        where[campo].gte = valor;
+        parent[field].gte = valor;
         break;
       case '<=':
-        where[campo].lte = valor;
+        parent[field].lte = valor;
         break;
       case 'in':
-        where[campo].in = valor;
+        parent[field].in = valor;
         break;
       case 'hasSome':
-        where[campo].hasSome = valor;
+        parent[field].hasSome = valor;
         break;
       default:
-        where[campo] = valor;
+        parent[field] = valor;
     }
   });
 
@@ -42,4 +44,26 @@ export function buildOrderClause(sorters: Sorter[] = []) {
   return sorters.map(sorter => ({
     [sorter.campo]: sorter.ordem.toLowerCase(),
   }));
+}
+
+function getObjectPath(where: Record<string, any>, campo: string) {
+  const path = campo.split('.');
+  let current = where;
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i] as string;
+
+    if (!current[key]) {
+      current[key] = {};
+    }
+    current = current[key];
+  }
+
+  const field = path[path.length - 1] as string;
+
+  if (!current[field]) {
+    current[field] = {};
+  }
+
+  return { parent: current, field };
 }
