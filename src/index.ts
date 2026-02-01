@@ -1,7 +1,6 @@
 import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import { ZodError } from 'zod';
-import cors from 'cors';
 
 import { routes } from './routes/routes';
 import { AppError } from './errors/AppError';
