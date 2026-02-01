@@ -3,6 +3,7 @@ import { TipoPerfil } from '@prisma/client';
 import { RecrutadorCreateDTO, RecrutadorUpdateDTO } from '../models/RecrutadorSchema';
 import { perfilRepository } from '../repositories/PerfilRepositoy';
 import prisma from '../utils/prisma';
+import { vagaRepository } from './VagaRepository';
 
 class RecrutadorRepository {
   async create(data: RecrutadorCreateDTO) {
@@ -42,8 +43,12 @@ class RecrutadorRepository {
   }
 
   async delete(id: number) {
-    return prisma.recrutador.delete({
-      where: { id },
+    return prisma.$transaction(async tx => {
+      const recrutador = await tx.recrutador.delete({
+        where: { id },
+      });
+      perfilRepository.delete(tx, recrutador.perfilId);
+      return recrutador;
     });
   }
 }

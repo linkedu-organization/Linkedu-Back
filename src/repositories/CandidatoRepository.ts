@@ -46,7 +46,7 @@ class CandidatoRepository {
       const candidato = await tx.candidato.delete({
         where: { id },
       });
-      await perfilRepository.delete(tx, candidato.perfil_id);
+      await perfilRepository.delete(tx, candidato.perfilId);
       return candidato;
     });
   }

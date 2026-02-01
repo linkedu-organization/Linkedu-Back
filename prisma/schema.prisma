@@ -35,12 +35,12 @@ enum CargoRecrutador {
 
 model Recrutador {
   id           Int             @id @default(autoincrement())
-  perfil_id    Int             @unique
+  perfilId     Int             @unique
   cargo        CargoRecrutador
   instituicao  String
   areaAtuacao  String
   laboratorios String?
-  perfil       Perfil          @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
+  perfil       Perfil          @relation(fields: [perfilId], references: [id], onDelete: Cascade)
   vagas        Vaga[]
 }
 
@@ -61,7 +61,7 @@ enum NivelEscolaridade {
 
 model Candidato {
   id                Int               @id @default(autoincrement())
-  perfil_id         Int               @unique
+  perfilId          Int               @unique
   cargo             CargoCandidato
   instituicao       String
   areaAtuacao       String
@@ -74,7 +74,8 @@ model Candidato {
   linkedin          String?
   areasInteresse    String[]
   habilidades       String[]
-  perfil            Perfil            @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
+  perfil            Perfil            @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  experiencias      Experiencia[]
 }
 
 enum PublicoAlvo {
@@ -113,4 +114,17 @@ model Vaga {
   publicoAlvo               PublicoAlvo[]
   conhecimentosObrigatorios String[]
   conhecimentosOpcionais    String[]
+}
+
+model Experiencia {
+  id            Int       @id @default(autoincrement())
+  candidatoId   Int
+  candidato     Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  titulo        String
+  descricao     String
+  orientador    String
+  instituicao   String
+  periodoInicio String
+  periodoFim    String?
+  local         String?
 }
