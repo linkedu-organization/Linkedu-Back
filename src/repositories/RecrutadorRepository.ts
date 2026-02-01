@@ -3,7 +3,6 @@ import { TipoPerfil } from '@prisma/client';
 import { RecrutadorCreateDTO, RecrutadorUpdateDTO } from '../models/RecrutadorSchema';
 import { perfilRepository } from '../repositories/PerfilRepositoy';
 import prisma from '../utils/prisma';
-import { vagaRepository } from './VagaRepository';
 
 class RecrutadorRepository {
   async create(data: RecrutadorCreateDTO) {

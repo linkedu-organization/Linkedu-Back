@@ -19,13 +19,13 @@ class CandidatoRepository {
   async getById(id: number) {
     return prisma.candidato.findUnique({
       where: { id },
-      include: { perfil: true },
+      include: { perfil: true, experiencias: true },
     });
   }
 
   async getAll() {
     return prisma.candidato.findMany({
-      include: { perfil: true },
+      include: { perfil: true, experiencias: true },
     });
   }
 
@@ -37,7 +37,7 @@ class CandidatoRepository {
         ...candidato,
         ...{ perfil: { update: perfil } },
       },
-      include: { perfil: true },
+      include: { perfil: true, experiencias: true },
     });
   }
 
