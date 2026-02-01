@@ -3,6 +3,7 @@ import { TipoPerfil } from '@prisma/client';
 import { RecrutadorCreateDTO, RecrutadorUpdateDTO } from '../models/RecrutadorSchema';
 import { perfilRepository } from '../repositories/PerfilRepositoy';
 import prisma from '../utils/prisma';
+import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
 
 class RecrutadorRepository {
   async create(data: RecrutadorCreateDTO) {
@@ -23,9 +24,11 @@ class RecrutadorRepository {
     });
   }
 
-  async getAll() {
+  async getAll(data: { filters: Filter[]; sorters: Sorter[] }) {
     return prisma.recrutador.findMany({
       include: { perfil: true },
+      where: buildWhereClause(data.filters),
+      orderBy: buildOrderClause(data.sorters),
     });
   }
 

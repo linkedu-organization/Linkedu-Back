@@ -1,5 +1,6 @@
 import { VagaCreateDTO, VagaUpdateDTO } from '../models/VagaSchema';
 import prisma from '../utils/prisma';
+import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
 
 class VagaRepository {
   async create(data: VagaCreateDTO, recrutadorId: number) {
@@ -18,9 +19,11 @@ class VagaRepository {
     });
   }
 
-  async getAll() {
+  async getAll(data: { filters: Filter[]; sorters: Sorter[] }) {
     return prisma.vaga.findMany({
       include: { recrutador: { include: { perfil: true } } },
+      where: buildWhereClause(data.filters),
+      orderBy: buildOrderClause(data.sorters),
     });
   }
 

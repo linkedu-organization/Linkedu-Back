@@ -7,6 +7,7 @@ import {
 } from '../models/VagaSchema';
 import { EntityNotFoundError } from '../errors/EntityNotFoundException';
 import { vagaRepository } from '../repositories/VagaRepository';
+import { Filter, Sorter } from '../utils/filterUtils';
 
 class VagaService {
   async create(data: VagaCreateDTO) {
@@ -22,8 +23,8 @@ class VagaService {
     return VagaResponseSchema.parseAsync(result);
   }
 
-  async getAll() {
-    const result = await vagaRepository.getAll();
+  async getAll(data: { filters: Filter[]; sorters: Sorter[] }) {
+    const result = await vagaRepository.getAll(data);
     return VagaResponseSchema.array().parseAsync(result);
   }
 

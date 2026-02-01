@@ -15,7 +15,10 @@ class VagaController {
   }
 
   async getAll(req: Request, res: Response) {
-    const result = await vagaService.getAll();
+    const filters = JSON.parse((req.query?.filters as string) || '[]');
+    const sorters = JSON.parse((req.query?.sorters as string) || '[]');
+
+    const result = await vagaService.getAll({ filters, sorters });
     res.status(200).json(result);
   }
 

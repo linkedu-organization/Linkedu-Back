@@ -15,7 +15,10 @@ class CandidatoController {
   }
 
   async getAll(req: Request, res: Response) {
-    const result = await candidatoService.getAll();
+    const filters = JSON.parse((req.query?.filters as string) || '[]');
+    const sorters = JSON.parse((req.query?.sorters as string) || '[]');
+
+    const result = await candidatoService.getAll({ filters, sorters });
     res.status(200).json(result);
   }
 
