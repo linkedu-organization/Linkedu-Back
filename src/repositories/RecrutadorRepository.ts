@@ -49,7 +49,7 @@ class RecrutadorRepository {
       const recrutador = await tx.recrutador.delete({
         where: { id },
       });
-      perfilRepository.delete(tx, recrutador.perfilId);
+      await perfilRepository.delete(tx, recrutador.perfilId);
       return recrutador;
     });
   }

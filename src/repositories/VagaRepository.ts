@@ -7,6 +7,7 @@ class VagaRepository {
     return prisma.$transaction(async tx => {
       const vagaCriada = await tx.vaga.create({
         data: { ...data, recrutadorId },
+        include: { recrutador: { include: { perfil: true } } },
       });
       return vagaCriada;
     });
@@ -31,6 +32,7 @@ class VagaRepository {
     return prisma.vaga.update({
       where: { id },
       data: Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)),
+      include: { recrutador: { include: { perfil: true } } },
     });
   }
 
