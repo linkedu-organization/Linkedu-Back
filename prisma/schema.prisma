@@ -1,10 +1,12 @@
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "binary"
+  provider        = "prisma-client-js"
+  engineType      = "binary"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 enum TipoPerfil {
@@ -60,8 +62,8 @@ enum NivelEscolaridade {
 }
 
 model Candidato {
-  id                Int               @id @default(autoincrement())
-  perfilId          Int               @unique
+  id                Int                          @id @default(autoincrement())
+  perfilId          Int                          @unique
   cargo             CargoCandidato
   instituicao       String
   areaAtuacao       String
@@ -74,9 +76,10 @@ model Candidato {
   linkedin          String?
   areasInteresse    String[]
   habilidades       String[]
-  perfil            Perfil            @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  perfil            Perfil                       @relation(fields: [perfilId], references: [id], onDelete: Cascade)
   experiencias      Experiencia[]
   vagasRecomendadas Recomendacao[]
+  embedding         Unsupported("vector(1536)")?
 }
 
 enum PublicoAlvo {
@@ -97,9 +100,9 @@ enum Categoria {
 }
 
 model Vaga {
-  id                        Int           @id @default(autoincrement())
+  id                        Int                          @id @default(autoincrement())
   recrutadorId              Int
-  recrutador                Recrutador    @relation(fields: [recrutadorId], references: [id], onDelete: Cascade)
+  recrutador                Recrutador                   @relation(fields: [recrutadorId], references: [id], onDelete: Cascade)
   titulo                    String
   descricao                 String
   categoria                 Categoria
@@ -115,7 +118,8 @@ model Vaga {
   publicoAlvo               PublicoAlvo[]
   conhecimentosObrigatorios String[]
   conhecimentosOpcionais    String[]
-  candidadosRecomendados       Recomendacao[]
+  candidadosRecomendados    Recomendacao[]
+  embedding                 Unsupported("vector(1536)")?
 }
 
 model Experiencia {
@@ -134,6 +138,7 @@ model Experiencia {
 model Recomendacao {
   vagaId      Int
   candidatoId Int
+  score       Float
   updatedAt   DateTime         @default(now())
   descricao   String
   tipo        TipoRecomendacao
@@ -146,10 +151,4 @@ model Recomendacao {
 enum TipoRecomendacao {
   VAGAS_PARA_CANDIDATO
   CANDIDATOS_PARA_VAGA
-}
-
-model Document {
-  id        Int                    @id @default(autoincrement())
-  title     String
-  embedding Unsupported("vector")?
 }
