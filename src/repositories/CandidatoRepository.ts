@@ -3,6 +3,7 @@ import { TipoPerfil } from '@prisma/client';
 import { CandidatoCreateDTO, CandidatoUpdateDTO } from '../models/CandidatoSchema';
 import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
+import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
 
 class CandidatoRepository {
   async create(data: CandidatoCreateDTO) {
@@ -19,13 +20,15 @@ class CandidatoRepository {
   async getById(id: number) {
     return prisma.candidato.findUnique({
       where: { id },
-      include: { perfil: true },
+      include: { perfil: true, experiencias: true },
     });
   }
 
-  async getAll() {
+  async getAll(data: { filters: Filter[]; sorters: Sorter[] }) {
     return prisma.candidato.findMany({
-      include: { perfil: true },
+      include: { perfil: true, experiencias: true },
+      where: buildWhereClause(data.filters),
+      orderBy: buildOrderClause(data.sorters),
     });
   }
 
@@ -37,7 +40,7 @@ class CandidatoRepository {
         ...candidato,
         ...{ perfil: { update: perfil } },
       },
-      include: { perfil: true },
+      include: { perfil: true, experiencias: true },
     });
   }
 
@@ -46,7 +49,7 @@ class CandidatoRepository {
       const candidato = await tx.candidato.delete({
         where: { id },
       });
-      await perfilRepository.delete(tx, candidato.perfil_id);
+      await perfilRepository.delete(tx, candidato.perfilId);
       return candidato;
     });
   }

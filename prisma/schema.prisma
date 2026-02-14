@@ -7,6 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TipoPerfil {
+  CANDIDATO
+  RECRUTADOR
+}
+
 model Perfil {
   id           Int         @id @default(autoincrement())
   nome         String
@@ -18,83 +23,25 @@ model Perfil {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   ultimoAcesso DateTime
-  candidato    Candidato?
   recrutador   Recrutador?
-}
-
-model Recrutador {
-  id           Int             @id @default(autoincrement())
-  perfil_id    Int             @unique
-  cargo        CargoRecrutador
-  instituicao  String
-  areaAtuacao  String
-  laboratorios String?
-  perfil       Perfil          @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
-  vagas        Vaga[]
-}
-
-model Candidato {
-  id                Int               @id @default(autoincrement())
-  perfil_id         Int               @unique
-  cargo             CargoCandidato
-  instituicao       String
-  areaAtuacao       String
-  nivelEscolaridade NivelEscolaridade
-  periodoIngresso   String?
-  periodoConclusao  String?
-  disponivel        Boolean
-  lattes            String?
-  linkedin          String?
-  areasInteresse    String[]
-  habilidades       String[]
-  tempoDisponivel   Int
-  perfil            Perfil            @relation(fields: [perfil_id], references: [id], onDelete: Cascade)
-  vagasRecomendadas Recomendacao[]
-}
-
-model Vaga {
-  id                        Int            @id @default(autoincrement())
-  recrutadorId              Int
-  titulo                    String
-  descricao                 String
-  categoria                 Categoria
-  ehPublica                 Boolean
-  ehRemunerada              Boolean
-  dataExpiracao             String?
-  cargaHoraria              Int
-  duracao                   String?
-  instituicao               String
-  curso                     String
-  linkInscricao             String
-  local                     String
-  publicoAlvo               PublicoAlvo[]
-  conhecimentosObrigatorios String[]
-  conhecimentosOpcionais    String[]
-  candidatosRecomendados    Recomendacao[]
-  recrutador                Recrutador     @relation(fields: [recrutadorId], references: [id], onDelete: Cascade)
-}
-
-model Recomendacao {
-  vagaId      Int
-  candidatoId Int
-  updatedAt   DateTime         @default(now())
-  descricao   String
-  tipo        TipoRecomendacao
-  candidato   Candidato        @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
-  vaga        Vaga             @relation(fields: [vagaId], references: [id], onDelete: Cascade)
-
-  @@id([vagaId, candidatoId])
-}
-
-enum TipoPerfil {
-  CANDIDATO
-  RECRUTADOR
+  candidato    Candidato?
 }
 
 enum CargoRecrutador {
   TECNICO
   PROFESSOR
   PESQUISADOR
+}
+
+model Recrutador {
+  id           Int             @id @default(autoincrement())
+  perfilId     Int             @unique
+  cargo        CargoRecrutador
+  instituicao  String
+  areaAtuacao  String
+  laboratorios String?
+  perfil       Perfil          @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  vagas        Vaga[]
 }
 
 enum CargoCandidato {
@@ -112,6 +59,26 @@ enum NivelEscolaridade {
   POS_GRADUACAO
 }
 
+model Candidato {
+  id                Int               @id @default(autoincrement())
+  perfilId          Int               @unique
+  cargo             CargoCandidato
+  instituicao       String
+  areaAtuacao       String
+  nivelEscolaridade NivelEscolaridade
+  periodoIngresso   String?
+  periodoConclusao  String?
+  disponivel        Boolean
+  tempoDisponivel   Int
+  lattes            String?
+  linkedin          String?
+  areasInteresse    String[]
+  habilidades       String[]
+  perfil            Perfil            @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  experiencias      Experiencia[]
+  vagasRecomendadas Recomendacao[]
+}
+
 enum PublicoAlvo {
   ALUNO_GRADUACAO
   ALUNO_POS_GRADUACAO
@@ -127,6 +94,53 @@ enum Categoria {
   MONITORIA
   ORGANIZACAO_EVENTO
   OUTROS
+}
+
+model Vaga {
+  id                        Int           @id @default(autoincrement())
+  recrutadorId              Int
+  recrutador                Recrutador    @relation(fields: [recrutadorId], references: [id], onDelete: Cascade)
+  titulo                    String
+  descricao                 String
+  categoria                 Categoria
+  ehPublica                 Boolean
+  ehRemunerada              Boolean
+  dataExpiracao             String?
+  cargaHoraria              Int
+  duracao                   String?
+  instituicao               String
+  curso                     String
+  linkInscricao             String
+  local                     String
+  publicoAlvo               PublicoAlvo[]
+  conhecimentosObrigatorios String[]
+  conhecimentosOpcionais    String[]
+  candidadosRecomendados       Recomendacao[]
+}
+
+model Experiencia {
+  id            Int       @id @default(autoincrement())
+  candidatoId   Int
+  candidato     Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  titulo        String
+  descricao     String
+  orientador    String
+  instituicao   String
+  periodoInicio String
+  periodoFim    String?
+  local         String?
+}
+
+model Recomendacao {
+  vagaId      Int
+  candidatoId Int
+  updatedAt   DateTime         @default(now())
+  descricao   String
+  tipo        TipoRecomendacao
+  candidato   Candidato        @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  vaga        Vaga             @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+
+  @@id([vagaId, candidatoId])
 }
 
 enum TipoRecomendacao {

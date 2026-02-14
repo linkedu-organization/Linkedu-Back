@@ -9,6 +9,7 @@ import { recrutadorRepository } from '../repositories/RecrutadorRepository';
 import { EntityNotFoundError } from '../errors/EntityNotFoundException';
 import { gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
+import { Filter, Sorter } from '../utils/filterUtils';
 
 class RecrutadorService {
   async create(data: RecrutadorCreateDTO) {
@@ -27,8 +28,8 @@ class RecrutadorService {
     return RecrutadorResponseSchema.parseAsync(result);
   }
 
-  async getAll() {
-    const result = await recrutadorRepository.getAll();
+  async getAll(data: { filters: Filter[]; sorters: Sorter[] }) {
+    const result = await recrutadorRepository.getAll(data);
     return RecrutadorResponseSchema.array().parseAsync(result);
   }
 

@@ -1,38 +1,35 @@
 import { Request, Response } from 'express';
 
-import { vagaService } from '../services/VagaService';
+import { experienciaService } from '../services/ExperienciaService';
 
-class VagaController {
+class ExperienciaController {
   async create(req: Request, res: Response) {
-    const result = await vagaService.create(req.body);
+    const result = await experienciaService.create(req.body);
     return res.status(201).json(result);
   }
 
   async getById(req: Request, res: Response) {
     const { id } = req.params;
-    const result = await vagaService.getById(Number(id));
+    const result = await experienciaService.getById(Number(id));
     res.status(200).json(result);
   }
 
   async getAll(req: Request, res: Response) {
-    const filters = JSON.parse((req.query?.filters as string) || '[]');
-    const sorters = JSON.parse((req.query?.sorters as string) || '[]');
-
-    const result = await vagaService.getAll({ filters, sorters });
+    const result = await experienciaService.getAll();
     res.status(200).json(result);
   }
 
   async update(req: Request, res: Response) {
     const { id } = req.params;
-    const result = await vagaService.update(Number(id), req.body);
+    const result = await experienciaService.update(Number(id), req.body);
     res.status(200).json(result);
   }
 
   async delete(req: Request, res: Response) {
     const { id } = req.params;
-    await vagaService.delete(Number(id));
+    await experienciaService.delete(Number(id));
     res.status(204).send();
   }
 }
 
-export const vagaController = new VagaController();
+export const experienciaController = new ExperienciaController();

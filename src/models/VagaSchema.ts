@@ -32,7 +32,9 @@ const VagaSchema = z.object({
   conhecimentosOpcionais: z.string().array(),
 });
 
-export const VagaCreateSchema = VagaSchema;
+export const VagaCreateSchema = VagaSchema.extend({
+  recrutadorId: z.number(),
+});
 
 export const VagaUpdateSchema = VagaSchema.partial();
 
