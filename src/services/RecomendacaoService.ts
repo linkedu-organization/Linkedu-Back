@@ -1,10 +1,10 @@
-import { RecomendacaoCreateDTO } from '../models/RecomendacaoSchema';
+import { RecomendacaoCandidatoResponse } from '../models/RecomendacaoSchema';
 import { candidatoService } from './CandidatoService';
 import { vagaService } from './VagaService';
 
 class RecomendacaoService {
   // TODO: Verificar necessidade de deixar os id's opcionais no tipo RecomendacaoCreateDTO
-  async create(data: RecomendacaoCreateDTO) {
+  async create(data: RecomendacaoCandidatoResponse) {
     if (data.tipo == 'VAGAS_PARA_CANDIDATO') {
       this.geraRecomendacaoVagas(data);
     } else {
@@ -12,7 +12,7 @@ class RecomendacaoService {
     }
   }
 
-  geraRecomendacaoVagas = async (data: RecomendacaoCreateDTO) => {
+  geraRecomendacaoVagas = async (data: RecomendacaoCandidatoResponse) => {
     const {
       areaAtuacao,
       nivelEscolaridade,
@@ -22,8 +22,9 @@ class RecomendacaoService {
       lattes,
       areasInteresse,
       habilidades,
+      embedding,
     } = await candidatoService.getById(data.candidatoId);
   };
 
-  geraRecomendacaoCandidatos = (data: RecomendacaoCreateDTO) => {};
+  geraRecomendacaoCandidatos = (data: RecomendacaoCandidatoResponse) => {};
 }

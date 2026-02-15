@@ -16,9 +16,11 @@ class CandidatoService {
     await perfilService.validarEmail(data.perfil.email);
     const parsedData = CandidatoCreateSchema.parse(data);
     const hashSenha = await gerarHashSenha(parsedData.perfil.senha);
+    const embedding = this.gerarEmbedding(parsedData);
     const result = await candidatoRepository.create({
       ...parsedData,
       perfil: { ...parsedData.perfil, senha: hashSenha },
+      embedding,
     });
     return CandidatoResponseSchema.parseAsync(result);
   }
@@ -52,6 +54,46 @@ class CandidatoService {
     const result = await candidatoRepository.getById(id);
     if (!result) throw new EntityNotFoundError(id);
     return result;
+  }
+
+  private gerarEmbedding(candidato: CandidatoCreateDTO): string[] {
+    const {
+      areaAtuacao,
+      nivelEscolaridade,
+      periodoConclusao,
+      disponivel,
+      tempoDisponivel,
+      lattes,
+      areasInteresse,
+      habilidades,
+    } = candidato;
+
+    const embedding: string[] = [
+      String(nivelEscolaridade),
+      this.limpaTexto(areaAtuacao),
+      String(periodoConclusao),
+      disponivel ? 'sim' : 'nao',
+      String(tempoDisponivel),
+      this.limpaTexto(lattes ?? ''),
+      this.limpaTexto(areasInteresse.join(' ')),
+      this.limpaTexto(habilidades.join(' ')),
+    ];
+    return embedding;
+  }
+
+  private limpaTexto(frase: string) {
+    // lib para stopWords
+    const wordExcludePtBr = ['por', 'favor', 'qual', 'valor'];
+    return frase
+      .trim()
+      .toLowerCase()
+      .replace(/\s\s+/g, '')
+      .replace(/[.,/#!$%^&*;:{}=\-_`~()@]/g, '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .split(' ')
+      .filter(value => !wordExcludePtBr.includes(value))
+      .join(' ');
   }
 }
 

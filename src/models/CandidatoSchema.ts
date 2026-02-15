@@ -27,6 +27,8 @@ const CandidatoSchema = z.object({
   linkedin: z.string().nullable(),
   areasInteresse: z.string().array(),
   habilidades: z.string().array(),
+  vagasRecomendadas: z.array(z.object({})).optional(),
+  embedding: z.array(z.string()),
 });
 
 export const CandidatoCreateSchema = CandidatoSchema.extend({
