@@ -56,7 +56,7 @@ class CandidatoService {
     return result;
   }
 
-  private gerarEmbedding(candidato: CandidatoCreateDTO): string[] {
+  private async gerarEmbedding(candidato: CandidatoCreateDTO): Promise<string> {
     const {
       areaAtuacao,
       nivelEscolaridade,
@@ -68,17 +68,14 @@ class CandidatoService {
       habilidades,
     } = candidato;
 
-    const embedding: string[] = [
-      String(nivelEscolaridade),
-      this.limpaTexto(areaAtuacao),
-      String(periodoConclusao),
-      disponivel ? 'sim' : 'nao',
-      String(tempoDisponivel),
-      this.limpaTexto(lattes ?? ''),
-      this.limpaTexto(areasInteresse.join(' ')),
-      this.limpaTexto(habilidades.join(' ')),
-    ];
-    return embedding;
+    const textoEmbedding = `Candidato com atuação em ${this.limpaTexto(areaAtuacao)},
+    nível ${nivelEscolaridade}. Habilidades: ${this.limpaTexto(habilidades.join(' '))}. 
+    Interesses: ${this.limpaTexto(areasInteresse.join(' '))}. Link Lattes: ${this.limpaTexto(lattes ?? 'sem link')}
+    Disponibilidade: ${disponivel ? 'sim' : 'nao'}. Tempo disponível: ${tempoDisponivel} Período de conclusão: ${periodoConclusao ?? ''}.`;
+    // TODO: INTEGRAR COM API EXTERNA PARA MODELO GERAR EMBEDDING.
+    // const embedding = await gerarEmbedding(textoEmbedding);
+    // return embedding;
+    return textoEmbedding; // Deixando assim por enquanto
   }
 
   private limpaTexto(frase: string) {
