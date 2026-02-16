@@ -10,13 +10,14 @@ import { EntityNotFoundError } from '../errors/EntityNotFoundException';
 import { gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
 import { Filter, Sorter } from '../utils/filterUtils';
+import { limpaTexto, criarEmbedding } from '../utils/matchUtils';
 
 class CandidatoService {
   async create(data: CandidatoCreateDTO) {
     await perfilService.validarEmail(data.perfil.email);
     const parsedData = CandidatoCreateSchema.parse(data);
     const hashSenha = await gerarHashSenha(parsedData.perfil.senha);
-    const embedding = this.gerarEmbedding(parsedData);
+    const embedding = await this.gerarEmbedding(parsedData);
     const result = await candidatoRepository.create({
       ...parsedData,
       perfil: { ...parsedData.perfil, senha: hashSenha },
@@ -56,41 +57,22 @@ class CandidatoService {
     return result;
   }
 
-  private async gerarEmbedding(candidato: CandidatoCreateDTO): Promise<string> {
+  private async gerarEmbedding(candidato: CandidatoCreateDTO): Promise<number[]> {
     const {
+      instituicao,
       areaAtuacao,
       nivelEscolaridade,
       periodoConclusao,
-      disponivel,
       tempoDisponivel,
-      lattes,
       areasInteresse,
       habilidades,
     } = candidato;
+    const textoEmbedding = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
+    Nível de escolaridade: ${nivelEscolaridade}, com conclusão prevista para ${periodoConclusao ?? 'não informada'}. 
+    Competências e conhecimentos técnicos: ${habilidades.join(', ')}. Áreas de interesse e objetivos: ${areasInteresse.join(', ')}. Disponibilidade de tempo: ${tempoDisponivel}.`;
 
-    const textoEmbedding = `Candidato com atuação em ${this.limpaTexto(areaAtuacao)},
-    nível ${nivelEscolaridade}. Habilidades: ${this.limpaTexto(habilidades.join(' '))}. 
-    Interesses: ${this.limpaTexto(areasInteresse.join(' '))}. Link Lattes: ${this.limpaTexto(lattes ?? 'sem link')}
-    Disponibilidade: ${disponivel ? 'sim' : 'nao'}. Tempo disponível: ${tempoDisponivel} Período de conclusão: ${periodoConclusao ?? ''}.`;
-    // TODO: INTEGRAR COM API EXTERNA PARA MODELO GERAR EMBEDDING.
-    // const embedding = await gerarEmbedding(textoEmbedding);
-    // return embedding;
-    return textoEmbedding; // Deixando assim por enquanto
-  }
-
-  private limpaTexto(frase: string) {
-    // lib para stopWords
-    const wordExcludePtBr = ['por', 'favor', 'qual', 'valor'];
-    return frase
-      .trim()
-      .toLowerCase()
-      .replace(/\s\s+/g, '')
-      .replace(/[.,/#!$%^&*;:{}=\-_`~()@]/g, '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .split(' ')
-      .filter(value => !wordExcludePtBr.includes(value))
-      .join(' ');
+    const embedding = await criarEmbedding(textoEmbedding);
+    return embedding.values;
   }
 }
 

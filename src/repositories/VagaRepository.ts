@@ -4,11 +4,21 @@ import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/fil
 
 class VagaRepository {
   async create(data: VagaCreateDTO, recrutadorId: number) {
+    const { embedding, ...vagaData } = data;
     return prisma.$transaction(async tx => {
       const vagaCriada = await tx.vaga.create({
-        data: { ...data, recrutadorId },
+        data: { ...vagaData, recrutadorId },
         include: { recrutador: { include: { perfil: true } } },
       });
+
+      if (embedding && embedding.length > 0) {
+        const vectorString = `[${embedding.map(Number).join(',')}]`;
+        await tx.$executeRawUnsafe(
+          `UPDATE "Vaga" SET embedding = $1::vector WHERE id = $2`,
+          vectorString,
+          vagaCriada.id,
+        );
+      }
       return vagaCriada;
     });
   }

@@ -79,7 +79,7 @@ model Candidato {
   perfil            Perfil                       @relation(fields: [perfilId], references: [id], onDelete: Cascade)
   experiencias      Experiencia[]
   vagasRecomendadas Recomendacao[]
-  embedding         Unsupported("vector(1536)")?
+  embedding         Unsupported("vector(3072)")?
 }
 
 enum PublicoAlvo {
@@ -119,7 +119,7 @@ model Vaga {
   conhecimentosObrigatorios String[]
   conhecimentosOpcionais    String[]
   candidadosRecomendados    Recomendacao[]
-  embedding                 Unsupported("vector(1536)")?
+  embedding                 Unsupported("vector(3072)")?
 }
 
 model Experiencia {

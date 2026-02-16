@@ -7,12 +7,26 @@ import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/fil
 
 class CandidatoRepository {
   async create(data: CandidatoCreateDTO) {
-    const { perfil, ...candidato } = data;
+    const { perfil, embedding, ...candidatoData } = data;
+
     return prisma.$transaction(async tx => {
       const perfilCriado = await perfilRepository.create(tx, perfil, TipoPerfil.CANDIDATO);
       const candidatoCriado = await tx.candidato.create({
-        data: { ...candidato, perfil: { connect: { id: perfilCriado.id } } },
+        data: {
+          ...candidatoData,
+          perfil: { connect: { id: perfilCriado.id } },
+        },
       });
+
+      if (embedding && embedding.length > 0) {
+        const vectorString = `[${embedding.map(Number).join(',')}]`;
+        await tx.$executeRawUnsafe(
+          `UPDATE "Candidato" SET embedding = $1::vector WHERE id = $2`,
+          vectorString,
+          candidatoCriado.id,
+        );
+      }
+
       return { ...candidatoCriado, perfil: perfilCriado };
     });
   }

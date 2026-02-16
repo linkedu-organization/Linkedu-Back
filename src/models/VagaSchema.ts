@@ -30,7 +30,7 @@ const VagaSchema = z.object({
   publicoAlvo: PublicoAlvo.array(),
   conhecimentosObrigatorios: z.string().array(),
   conhecimentosOpcionais: z.string().array(),
-  embedding: z.array(z.number()).length(1536).optional(),
+  embedding: z.array(z.number()).length(3072).optional(),
 });
 
 export const VagaCreateSchema = VagaSchema.extend({
