@@ -3,7 +3,7 @@ import { JwtPayload } from 'jsonwebtoken';
 
 import { AppError } from '../errors/AppError';
 import { perfilRepository } from '../repositories/PerfilRepositoy';
-import { EntityNotFoundError } from '../errors/EntityNotFoundException';
+import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { gerarAuthToken } from '../utils/authUtils';
 import { PerfilExtendedResponseSchema } from '../models/PerfilSchema';
 

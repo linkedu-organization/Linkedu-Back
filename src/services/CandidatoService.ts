@@ -6,7 +6,7 @@ import {
   CandidatoUpdateSchema,
 } from '../models/CandidatoSchema';
 import { candidatoRepository } from '../repositories/CandidatoRepository';
-import { EntityNotFoundError } from '../errors/EntityNotFoundException';
+import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
 import { Filter, Sorter } from '../utils/filterUtils';

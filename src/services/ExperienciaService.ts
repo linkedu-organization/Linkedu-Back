@@ -5,7 +5,7 @@ import {
   ExperienciaUpdateDTO,
   ExperienciaUpdateSchema,
 } from '../models/ExperienciaSchema';
-import { EntityNotFoundError } from '../errors/EntityNotFoundException';
+import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { experienciaRepository } from '../repositories/ExperienciaRepository';
 
 class ExperienciaService {

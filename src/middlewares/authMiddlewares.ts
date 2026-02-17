@@ -20,7 +20,7 @@ const getDecryptedToken = (token: string) => {
   }
 };
 
-const getAuth = (req: Request, res: Response, next: NextFunction) => {
+export const getAuth = (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies.authToken;
   if (!token) {
     res.status(200).json({ autenticado: false });
@@ -31,7 +31,7 @@ const getAuth = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
-const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies.authToken;
   if (!token) {
     throw new TokenNotProvidedError();
@@ -58,7 +58,5 @@ const ensureRole = (role: TipoPerfil) => {
   };
 };
 
-const ensureIsRerutador = ensureRole(TipoPerfil.RECRUTADOR);
-const ensureIsCandidato = ensureRole(TipoPerfil.CANDIDATO);
-
-export { getAuth, requireAuth, ensureIsRerutador, ensureIsCandidato };
+export const ensureIsRerutador = ensureRole(TipoPerfil.RECRUTADOR);
+export const ensureIsCandidato = ensureRole(TipoPerfil.CANDIDATO);

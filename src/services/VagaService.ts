@@ -5,7 +5,7 @@ import {
   VagaUpdateDTO,
   VagaUpdateSchema,
 } from '../models/VagaSchema';
-import { EntityNotFoundError } from '../errors/EntityNotFoundException';
+import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { vagaRepository } from '../repositories/VagaRepository';
 import { Filter, Sorter } from '../utils/filterUtils';
 
