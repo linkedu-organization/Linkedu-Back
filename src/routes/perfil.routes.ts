@@ -13,8 +13,8 @@ perfilRoutes.get('/login', async (req, res) => {
   await perfilController.login(req, res);
 });
 
-perfilRoutes.get('/', getAuth, async (req, res) => {
-  await perfilController.getPerfilLogado(req, res);
+perfilRoutes.get('/autenticado', getAuth, async (req, res) => {
+  await perfilController.getPerfilAutenticado(req, res);
 });
 
 perfilRoutes.post('/logout', requireAuth, async (req, res) => {

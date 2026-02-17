@@ -24,9 +24,9 @@ class PerfilController {
     res.status(200).send();
   }
 
-  async getPerfilLogado(req: Request, res: Response) {
+  async getPerfilAutenticado(req: Request, res: Response) {
     const authToken = res.locals.decryptedToken;
-    const result = await perfilService.getPerfilLogado(authToken);
+    const result = await perfilService.getPerfilAutenticado(authToken);
     res.status(200).json(result);
   }
 

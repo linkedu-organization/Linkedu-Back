@@ -29,7 +29,7 @@ class PerfilService {
     return gerarAuthToken(perfil);
   }
 
-  async getPerfilLogado(authToken: JwtPayload) {
+  async getPerfilAutenticado(authToken: JwtPayload) {
     if (!authToken) {
       return { autenticado: false };
     }
