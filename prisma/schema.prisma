@@ -145,7 +145,7 @@ model Recomendacao {
   candidato   Candidato        @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
   vaga        Vaga             @relation(fields: [vagaId], references: [id], onDelete: Cascade)
 
-  @@id([vagaId, candidatoId])
+  @@id([vagaId, candidatoId, tipo])
 }
 
 enum TipoRecomendacao {

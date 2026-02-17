@@ -1,30 +1,27 @@
-// import { RecomendacaoCandidatoResponse } from '../models/RecomendacaoSchema';
-// import { candidatoService } from './CandidatoService';
-// import { vagaService } from './VagaService';
+import { RecomendacaoCandidatoResponse } from '../models/RecomendacaoSchema';
+import { RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
+import { candidatoService } from './CandidatoService';
+import { vagaService } from './VagaService';
+import { recomendacaoRepository } from '../repositories/RecomendacaoRepository';
 
-// class RecomendacaoService {
-//   // TODO: Verificar necessidade de deixar os id's opcionais no tipo RecomendacaoCreateDTO
-//   async create(data: RecomendacaoCandidatoResponse) {
-//     if (data.tipo == 'VAGAS_PARA_CANDIDATO') {
-//       this.geraRecomendacaoVagas(data);
-//     } else {
-//       this.geraRecomendacaoCandidatos(data);
-//     }
-//   }
+class RecomendacaoService {
+  async createRecomendacoesVaga(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
+    await candidatoService.getById(candidatoId);
+    return recomendacaoRepository.createRecomendacoesVaga(candidatoId);
+  }
 
-//   geraRecomendacaoVagas = async (data: RecomendacaoCandidatoResponse) => {
-//     const {
-//       areaAtuacao,
-//       nivelEscolaridade,
-//       periodoConclusao,
-//       disponivel,
-//       tempoDisponivel,
-//       lattes,
-//       areasInteresse,
-//       habilidades,
-//       embedding,
-//     } = await candidatoService.getById(data.candidatoId);
-//   };
+  async createRecomendacoesCandidato(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+    await vagaService.getById(vagaId);
+    return recomendacaoRepository.createRecomendacoesCandidato(vagaId);
+  }
 
-//   geraRecomendacaoCandidatos = (data: RecomendacaoCandidatoResponse) => {};
-// }
+  async getCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+    return recomendacaoRepository.getCandidatos(vagaId);
+  }
+
+  async getVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
+    return recomendacaoRepository.getVagas(candidatoId);
+  }
+}
+
+export const recomendacaoService = new RecomendacaoService();
