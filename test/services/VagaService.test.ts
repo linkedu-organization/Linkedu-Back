@@ -1,6 +1,7 @@
 import { VagaUpdateDTO } from '../../src/models/VagaSchema';
 import { vagaRepository } from '../../src/repositories/VagaRepository';
 import { vagaService } from '../../src/services/VagaService';
+import { criarEmbedding } from '../../src/utils/matchUtils';
 
 jest.mock('../../src/repositories/VagaRepository', () => ({
   vagaRepository: {
@@ -11,6 +12,8 @@ jest.mock('../../src/repositories/VagaRepository', () => ({
     delete: jest.fn(),
   },
 }));
+
+jest.mock('../../src/utils/matchUtils');
 
 const makePerfilResponse = (overrides = {}) => ({
   id: 1,
@@ -95,11 +98,19 @@ describe('Cria vaga', () => {
     const vaga = makeVaga();
     const response = makeVagaResponse();
 
+    const embedding = (criarEmbedding as jest.Mock).mockResolvedValue([0.1, 0.2, 0.3]);
+
     mockCreate(response);
 
     const result = await vagaService.create(vaga);
-
-    expect(vagaRepository.create).toHaveBeenCalledWith(vaga, 1);
+    expect(embedding).toHaveBeenCalledTimes(1);
+    expect(vagaRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...vaga,
+        embedding: expect.anything(),
+      }),
+      1,
+    );
     expect(result).toEqual(response);
   });
 
@@ -150,8 +161,8 @@ describe('Atualiza vaga', () => {
 
     const result = await vagaService.update(1, vagaUpdate);
 
-    expect(vagaRepository.getById).toHaveBeenCalledWith(1);
     expect(vagaRepository.update).toHaveBeenCalledWith(1, vagaUpdate);
+    expect(vagaRepository.getById).toHaveBeenCalledWith(1);
     expect(result).toEqual(updatedVaga);
   });
 });

@@ -7,6 +7,7 @@ import { recomendacaoRepository } from '../repositories/RecomendacaoRepository';
 class RecomendacaoService {
   async createRecomendacoesVaga(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
     await candidatoService.getById(candidatoId);
+    // Aqui nas recomendações de vaga poderia pegar o usuário logado, mas deixa assim por enquanto
     return recomendacaoRepository.createRecomendacoesVaga(candidatoId);
   }
 
