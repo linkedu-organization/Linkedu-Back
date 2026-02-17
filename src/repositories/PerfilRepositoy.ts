@@ -23,6 +23,16 @@ class PerfilRepository {
     });
   }
 
+  async getById(id: number) {
+    return prisma.perfil.findUnique({
+      where: { id },
+      include: {
+        recrutador: true,
+        candidato: true,
+      },
+    });
+  }
+
   async getByEmail(email: string) {
     return prisma.perfil.findFirst({
       where: { email },
