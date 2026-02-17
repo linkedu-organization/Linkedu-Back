@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { candidatoController } from '../controllers/CandidatoController';
+import { ensureIsCandidato } from '../middlewares/authMiddlewares';
 
 export const candidatoRoutes = Router();
 
@@ -16,10 +17,10 @@ candidatoRoutes.get('/', async (req, res) => {
   await candidatoController.getAll(req, res);
 });
 
-candidatoRoutes.put('/:id', async (req, res) => {
+candidatoRoutes.put('/:id', ensureIsCandidato, async (req, res) => {
   await candidatoController.update(req, res);
 });
 
-candidatoRoutes.delete('/:id', async (req, res) => {
+candidatoRoutes.delete('/:id', ensureIsCandidato, async (req, res) => {
   await candidatoController.delete(req, res);
 });

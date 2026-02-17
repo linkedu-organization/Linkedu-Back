@@ -1,8 +1,10 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Candidato, Perfil, Recrutador } from '@prisma/client';
+import { Candidato, Perfil, Recrutador, TipoPerfil } from '@prisma/client';
 
 import { InternalServerError } from '../errors/InternalServerError';
+import { NoPermissionError } from '../errors/NoPermissionError';
+import { InvalidTokenError } from '../errors/InvalidTokenError';
 
 type PerfilWithRelations = Perfil & {
   recrutador?: Recrutador | null;
@@ -34,4 +36,27 @@ export const gerarAuthToken = (perfil: PerfilWithRelations) => {
   });
 
   return `Bearer ${token}`;
+};
+
+export const getAuthTokenId = (authToken: unknown) => {
+  if (!authToken || typeof authToken !== 'object' || !('id' in authToken)) {
+    throw new InvalidTokenError();
+  }
+  return Number(authToken.id);
+};
+
+export const getAuthTokenIdAndRole = (authToken: unknown) => {
+  if (!authToken || typeof authToken !== 'object' || !('id' in authToken) || !('role' in authToken)) {
+    throw new InvalidTokenError();
+  }
+  const authTokenId = Number(authToken.id);
+  const role = authToken.role as TipoPerfil;
+  return { authTokenId, role };
+};
+
+export const ensureSelfTargetedAction = (id: number, authToken: unknown) => {
+  const authTokenId = getAuthTokenId(authToken);
+  if (id !== authTokenId) {
+    throw new NoPermissionError();
+  }
 };

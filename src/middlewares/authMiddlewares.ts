@@ -58,5 +58,5 @@ const ensureRole = (role: TipoPerfil) => {
   };
 };
 
-export const ensureIsRerutador = ensureRole(TipoPerfil.RECRUTADOR);
+export const ensureIsRecrutador = ensureRole(TipoPerfil.RECRUTADOR);
 export const ensureIsCandidato = ensureRole(TipoPerfil.CANDIDATO);
