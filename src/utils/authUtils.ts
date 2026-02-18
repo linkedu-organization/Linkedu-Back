@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { Response } from 'express';
 import { Candidato, Perfil, Recrutador, TipoPerfil } from '@prisma/client';
 
 import { InternalServerError } from '../errors/InternalServerError';
@@ -37,6 +38,8 @@ export const gerarAuthToken = (perfil: PerfilWithRelations) => {
 
   return `Bearer ${token}`;
 };
+
+export const getAuthToken = (res: Response) => res.locals.decryptedToken;
 
 export const getAuthTokenId = (authToken: unknown) => {
   if (!authToken || typeof authToken !== 'object' || !('id' in authToken)) {

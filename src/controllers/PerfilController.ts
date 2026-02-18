@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { perfilService } from '../services/PerfilService';
-import { COOKIE_EXPIRATION_MS } from '../utils/authUtils';
+import { COOKIE_EXPIRATION_MS, getAuthToken } from '../utils/authUtils';
 
 class PerfilController {
   async validarEmail(req: Request, res: Response) {
@@ -25,7 +25,7 @@ class PerfilController {
   }
 
   async getPerfilAutenticado(req: Request, res: Response) {
-    const authToken = res.locals.decryptedToken;
+    const authToken = getAuthToken(res);
     const result = await perfilService.getPerfilAutenticado(authToken);
     res.status(200).json(result);
   }
