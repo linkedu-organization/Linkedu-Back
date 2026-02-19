@@ -152,8 +152,8 @@ class RecomendacaoRepository {
 
   async calculaSimilaridade(
     embedding: string,
-    tableName: 'Candidato' | 'Vaga',
-    additionalFilter: Prisma.Sql = Prisma.sql`1=1`,
+    nomeTabela: 'Candidato' | 'Vaga',
+    filtrosAdicionais: Prisma.Sql = Prisma.sql`1=1`,
   ): Promise<Similaridade[]> {
     const vetorEmbedding = Prisma.sql`${embedding}::vector`;
 
@@ -161,10 +161,10 @@ class RecomendacaoRepository {
       SELECT 
         id,
         1 - (embedding <=> ${vetorEmbedding}) as score
-      FROM ${Prisma.raw(`"${tableName}"`)}
+      FROM ${Prisma.raw(`"${nomeTabela}"`)}
       WHERE 
         embedding IS NOT NULL
-        AND ${additionalFilter}
+        AND ${filtrosAdicionais}
       ORDER BY 
         embedding <=> ${vetorEmbedding} ASC
       LIMIT 10;
@@ -203,7 +203,7 @@ class RecomendacaoRepository {
       orderBy: { score: 'desc' },
     });
 
-    return salvos as unknown as RecomendacaoCandidatoResponse[];
+    return salvos as RecomendacaoCandidatoResponse[];
   }
 
   async getRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
@@ -222,7 +222,7 @@ class RecomendacaoRepository {
       orderBy: { score: 'desc' },
     });
 
-    return salvos as unknown as RecomendacaoVagaResponse[];
+    return salvos as RecomendacaoVagaResponse[];
   }
 }
 
