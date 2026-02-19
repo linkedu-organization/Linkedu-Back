@@ -5,23 +5,23 @@ import { vagaService } from './VagaService';
 import { recomendacaoRepository } from '../repositories/RecomendacaoRepository';
 
 class RecomendacaoService {
-  async createRecomendacoesVaga(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
+  async createRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
     await candidatoService.getById(candidatoId);
     // Aqui nas recomendações de vaga poderia pegar o usuário logado, mas deixa assim por enquanto
-    return recomendacaoRepository.createRecomendacoesVaga(candidatoId);
+    return recomendacaoRepository.createRecomendacaoVagas(candidatoId);
   }
 
-  async createRecomendacoesCandidato(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+  async createRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
     await vagaService.getById(vagaId);
-    return recomendacaoRepository.createRecomendacoesCandidato(vagaId);
+    return recomendacaoRepository.createRecomendacaoCandidatos(vagaId);
   }
 
-  async getCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
-    return recomendacaoRepository.getCandidatos(vagaId);
+  async getRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+    return recomendacaoRepository.getRecomendacaoCandidatos(vagaId);
   }
 
-  async getVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
-    return recomendacaoRepository.getVagas(candidatoId);
+  async getRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
+    return recomendacaoRepository.getRecomendacaoVagas(candidatoId);
   }
 }
 

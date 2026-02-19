@@ -5,17 +5,17 @@ import { recomendacaoController } from '../controllers/RecomendacaoController';
 export const recomendacaoRoutes = Router();
 
 recomendacaoRoutes.post('/vaga/:candidatoId', async (req, res) => {
-  await recomendacaoController.createRecomendacoesVaga(req, res);
+  await recomendacaoController.createRecomendacaoVagas(req, res);
 });
 
 recomendacaoRoutes.post('/candidato/:vagaId', async (req, res) => {
-  await recomendacaoController.createRecomendacoesCandidato(req, res);
+  await recomendacaoController.createRecomendacaoCandidatos(req, res);
 });
 
 recomendacaoRoutes.get('/vaga/:candidatoId', async (req, res) => {
-  await recomendacaoController.getVagas(req, res);
+  await recomendacaoController.getRecomendacaoVagas(req, res);
 });
 
 recomendacaoRoutes.get('/candidato/:vagaId', async (req, res) => {
-  await recomendacaoController.getCandidatos(req, res);
+  await recomendacaoController.getRecomendacaoCandidatos(req, res);
 });

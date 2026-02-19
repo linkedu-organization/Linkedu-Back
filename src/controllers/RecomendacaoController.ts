@@ -3,27 +3,27 @@ import { Request, Response } from 'express';
 import { recomendacaoService } from '../services/RecomendacaoService';
 
 class RecomendacaoController {
-  async createRecomendacoesVaga(req: Request, res: Response) {
+  async createRecomendacaoVagas(req: Request, res: Response) {
     const { candidatoId } = req.params;
-    const resultado = await recomendacaoService.createRecomendacoesVaga(Number(candidatoId));
+    const resultado = await recomendacaoService.createRecomendacaoVagas(Number(candidatoId));
     res.status(200).json(resultado);
   }
 
-  async createRecomendacoesCandidato(req: Request, res: Response) {
+  async createRecomendacaoCandidatos(req: Request, res: Response) {
     const { vagaId } = req.params;
-    const resultado = await recomendacaoService.createRecomendacoesCandidato(Number(vagaId));
+    const resultado = await recomendacaoService.createRecomendacaoCandidatos(Number(vagaId));
     res.status(200).json(resultado);
   }
 
-  async getVagas(req: Request, res: Response) {
+  async getRecomendacaoVagas(req: Request, res: Response) {
     const { candidatoId } = req.params;
-    const resultado = await recomendacaoService.getVagas(Number(candidatoId));
+    const resultado = await recomendacaoService.getRecomendacaoVagas(Number(candidatoId));
     res.status(200).json(resultado);
   }
 
-  async getCandidatos(req: Request, res: Response) {
+  async getRecomendacaoCandidatos(req: Request, res: Response) {
     const { vagaId } = req.params;
-    const resultado = await recomendacaoService.getCandidatos(Number(vagaId));
+    const resultado = await recomendacaoService.getRecomendacaoCandidatos(Number(vagaId));
     res.status(200).json(resultado);
   }
 }

@@ -3,7 +3,7 @@ import { RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
 import prisma from '../utils/prisma';
 
 class RecomendacaoRepository {
-  async createRecomendacoesVaga(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
+  async createRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
     const candidato = await prisma.$queryRaw<Array<{ embedding: string }>>`
       SELECT embedding::text 
       FROM "Candidato" 
@@ -84,7 +84,7 @@ class RecomendacaoRepository {
     return resultadoFinal;
   }
 
-  async createRecomendacoesCandidato(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+  async createRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
     const vaga = await prisma.$queryRaw<Array<{ embedding: string }>>`
       SELECT embedding::text 
       FROM "Vaga" 
@@ -167,7 +167,7 @@ class RecomendacaoRepository {
     return resultadoFinal;
   }
 
-  async getCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+  async getRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
     const salvos = await prisma.recomendacao.findMany({
       where: {
         vagaId: vagaId,
@@ -187,7 +187,7 @@ class RecomendacaoRepository {
     return salvos as unknown as RecomendacaoCandidatoResponse[];
   }
 
-  async getVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
+  async getRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
     const salvos = await prisma.recomendacao.findMany({
       where: {
         candidatoId: candidatoId,
