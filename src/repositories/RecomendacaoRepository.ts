@@ -1,46 +1,67 @@
+import { Prisma, TipoRecomendacao } from '@prisma/client';
+
 import { RecomendacaoCandidatoResponse } from '../models/RecomendacaoSchema';
 import { RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
 import prisma from '../utils/prisma';
 
+interface Similaridade {
+  id: number;
+  score: number;
+}
+
 class RecomendacaoRepository {
   async createRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
-    const candidato = await prisma.$queryRaw<Array<{ embedding: string }>>`
+    const vetorEmbeddingCandidato = await prisma.$queryRaw<Array<{ embedding: string }>>`
       SELECT embedding::text 
       FROM "Candidato" 
       WHERE id = ${candidatoId}
     `;
 
-    if (candidato.length === 0 || !candidato[0]?.embedding) {
+    if (vetorEmbeddingCandidato.length === 0 || !vetorEmbeddingCandidato[0]?.embedding) {
       return [];
     }
 
-    const vetorCandidato = candidato[0].embedding;
+    const candidatoEmbedding = vetorEmbeddingCandidato[0].embedding;
 
-    const vagasRaw = await prisma.$queryRaw<{ id: number; score: number }[]>`
-      SELECT 
-        v.id,
-        1 - (v.embedding <=> ${vetorCandidato}::vector) as score
-      FROM "Vaga" v
-      WHERE 
-        v.embedding IS NOT NULL
-        AND (v."dataExpiracao" IS NULL OR TO_DATE(v."dataExpiracao", 'DD/MM/YYYY') >= CURRENT_DATE) 
-      ORDER BY 
-        v.embedding <=> ${vetorCandidato}::vector ASC
-      LIMIT 10;
-    `;
+    const vagasRecomendadas = await this.calculaSimilaridade(
+      candidatoEmbedding,
+      'Vaga',
+      Prisma.sql`(v."dataExpiracao" IS NULL OR TO_DATE(v."dataExpiracao", 'DD/MM/YYYY') >= CURRENT_DATE)`,
+    );
 
-    if (vagasRaw.length === 0) return [];
+    if (vagasRecomendadas.length === 0) return [];
 
+    const resultadoFinal = await this.getVagasPayload(vagasRecomendadas, candidatoId);
+
+    this.deletaRecomendacoesAntigas('candidatoId', candidatoId, 'VAGAS_PARA_CANDIDATO');
+
+    const dadosParaSalvar = resultadoFinal.map(item => ({
+      vagaId: item.vagaId,
+      candidatoId: item.candidatoId,
+      tipo: item.tipo,
+      score: item.score!,
+      descricao: item.descricao,
+      updatedAt: item.updatedAt,
+    }));
+
+    if (dadosParaSalvar.length > 0) {
+      this.salvaNovasRecomendacoes(dadosParaSalvar);
+    }
+
+    return resultadoFinal;
+  }
+
+  async getVagasPayload(vagasRecomendadas: Similaridade[], candidatoId: number) {
     const vagasCompletas = await prisma.vaga.findMany({
       where: {
-        id: { in: vagasRaw.map(v => v.id) },
+        id: { in: vagasRecomendadas.map(v => v.id) },
       },
       include: { recrutador: { include: { perfil: true } } },
     });
 
-    const resultadoFinal = vagasRaw
-      .map(raw => {
-        const dadosVaga = vagasCompletas.find(v => v.id === raw.id);
+    return vagasRecomendadas
+      .map(vaga => {
+        const dadosVaga = vagasCompletas.find(v => v.id === vaga.id);
 
         if (!dadosVaga) return null;
 
@@ -50,22 +71,42 @@ class RecomendacaoRepository {
           updatedAt: new Date(),
           descricao: 'Compatibilidade via IA',
           tipo: 'VAGAS_PARA_CANDIDATO' as const,
-          score: raw.score,
+          score: vaga.score,
           vaga: dadosVaga,
         } as RecomendacaoVagaResponse;
       })
       .filter((item): item is RecomendacaoVagaResponse => item !== null)
       .sort((a, b) => (b.score || 0) - (a.score || 0));
+  }
 
-    await prisma.$transaction(async tx => {
-      await tx.recomendacao.deleteMany({
-        where: {
-          candidatoId: candidatoId,
-          tipo: 'VAGAS_PARA_CANDIDATO',
-        },
-      });
+  async createRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+    const vetorEmbeddingVaga = await prisma.$queryRaw<Array<{ embedding: string }>>`
+      SELECT embedding::text 
+      FROM "Vaga" 
+      WHERE id = ${vagaId}
+    `;
 
-      const dadosParaSalvar = resultadoFinal.map(item => ({
+    if (vetorEmbeddingVaga.length === 0 || !vetorEmbeddingVaga[0]?.embedding) {
+      return [];
+    }
+
+    const vagaEmbedding = vetorEmbeddingVaga[0].embedding;
+
+    const cadidatosParaVaga = await this.calculaSimilaridade(
+      vagaEmbedding,
+      'Candidato',
+      Prisma.sql`c.disponivel = true`,
+    );
+
+    if (cadidatosParaVaga.length === 0) return [];
+
+    const resultadoFinal = await this.getCandidatoPayload(cadidatosParaVaga, vagaId);
+
+    this.deletaRecomendacoesAntigas('vagaId', vagaId, 'CANDIDATOS_PARA_VAGA');
+
+    const dadosParaSalvar = resultadoFinal
+      .filter((item): item is RecomendacaoCandidatoResponse => item !== null && item.score !== null)
+      .map(item => ({
         vagaId: item.vagaId,
         candidatoId: item.candidatoId,
         tipo: item.tipo,
@@ -74,47 +115,15 @@ class RecomendacaoRepository {
         updatedAt: item.updatedAt,
       }));
 
-      if (dadosParaSalvar.length > 0) {
-        await tx.recomendacao.createMany({
-          data: dadosParaSalvar,
-        });
-      }
-    });
+    this.salvaNovasRecomendacoes(dadosParaSalvar);
 
     return resultadoFinal;
   }
 
-  async createRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
-    const vaga = await prisma.$queryRaw<Array<{ embedding: string }>>`
-      SELECT embedding::text 
-      FROM "Vaga" 
-      WHERE id = ${vagaId}
-    `;
-
-    if (vaga.length === 0 || !vaga[0]?.embedding) {
-      return [];
-    }
-
-    const vetorVaga = vaga[0].embedding;
-
-    const candidatosRaw = await prisma.$queryRaw<{ id: number; score: number }[]>`
-      SELECT 
-        c.id,
-        1 - (c.embedding <=> ${vetorVaga}::vector) as score
-      FROM "Candidato" c
-      WHERE 
-        c.disponivel = true 
-        AND c.embedding IS NOT NULL
-      ORDER BY 
-        c.embedding <=> ${vetorVaga}::vector ASC
-      LIMIT 10;
-    `;
-
-    if (candidatosRaw.length === 0) return [];
-
+  async getCandidatoPayload(candidatosRecomendados: Similaridade[], vagaId: number) {
     const candidatosCompletos = await prisma.candidato.findMany({
       where: {
-        id: { in: candidatosRaw.map(c => c.id) },
+        id: { in: candidatosRecomendados.map(c => c.id) },
       },
       include: {
         perfil: true,
@@ -122,9 +131,9 @@ class RecomendacaoRepository {
       },
     });
 
-    const resultadoFinal = candidatosRaw
-      .map(raw => {
-        const dadosCandidato = candidatosCompletos.find(c => c.id === raw.id);
+    return candidatosRecomendados
+      .map(candidato => {
+        const dadosCandidato = candidatosCompletos.find(c => c.id === candidato.id);
         if (!dadosCandidato) return null;
 
         return {
@@ -132,39 +141,49 @@ class RecomendacaoRepository {
           candidatoId: dadosCandidato.id,
           updatedAt: new Date() as Date,
           tipo: 'CANDIDATOS_PARA_VAGA' as const,
-          score: raw.score,
+          score: candidato.score,
           descricao: 'Compatibilidade via IA',
           candidato: dadosCandidato,
         } as RecomendacaoCandidatoResponse;
       })
       .filter((item): item is RecomendacaoCandidatoResponse => item !== null)
       .sort((a, b) => (b.score || 0) - (a.score || 0));
+  }
 
-    await prisma.$transaction(async tx => {
-      await tx.recomendacao.deleteMany({
-        where: {
-          vagaId: vagaId,
-          tipo: 'CANDIDATOS_PARA_VAGA',
-        },
-      });
+  async calculaSimilaridade(
+    embedding: string,
+    tableName: 'Candidato' | 'Vaga',
+    additionalFilter: Prisma.Sql = Prisma.sql`1=1`,
+  ): Promise<{ id: number; score: number }[]> {
+    const vetorEmbedding = Prisma.sql`${embedding}::vector`;
 
-      const dadosParaSalvar = resultadoFinal
-        .filter((item): item is RecomendacaoCandidatoResponse => item !== null && item.score !== null)
-        .map(item => ({
-          vagaId: item.vagaId,
-          candidatoId: item.candidatoId,
-          tipo: item.tipo,
-          score: item.score!,
-          descricao: item.descricao,
-          updatedAt: item.updatedAt,
-        }));
+    return prisma.$queryRaw<{ id: number; score: number }[]>`
+      SELECT 
+        id,
+        1 - (embedding <=> ${vetorEmbedding}) as score
+      FROM ${Prisma.raw(`"${tableName}"`)}
+      WHERE 
+        embedding IS NOT NULL
+        AND ${additionalFilter}
+      ORDER BY 
+        embedding <=> ${vetorEmbedding} ASC
+      LIMIT 10;
+    `;
+  }
 
-      await tx.recomendacao.createMany({
-        data: dadosParaSalvar,
-      });
+  async deletaRecomendacoesAntigas(entidade: 'vagaId' | 'candidatoId', id: number, tipo: TipoRecomendacao) {
+    await prisma.recomendacao.deleteMany({
+      where: {
+        [entidade]: id,
+        tipo: tipo,
+      },
     });
+  }
 
-    return resultadoFinal;
+  async salvaNovasRecomendacoes(dados: Prisma.RecomendacaoCreateManyInput[]) {
+    await prisma.recomendacao.createMany({
+      data: dados,
+    });
   }
 
   async getRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
