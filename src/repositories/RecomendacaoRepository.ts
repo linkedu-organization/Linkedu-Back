@@ -154,10 +154,10 @@ class RecomendacaoRepository {
     embedding: string,
     tableName: 'Candidato' | 'Vaga',
     additionalFilter: Prisma.Sql = Prisma.sql`1=1`,
-  ): Promise<{ id: number; score: number }[]> {
+  ): Promise<Similaridade[]> {
     const vetorEmbedding = Prisma.sql`${embedding}::vector`;
 
-    return prisma.$queryRaw<{ id: number; score: number }[]>`
+    return prisma.$queryRaw<Similaridade[]>`
       SELECT 
         id,
         1 - (embedding <=> ${vetorEmbedding}) as score
