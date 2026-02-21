@@ -26,7 +26,7 @@ class RecomendacaoRepository {
     const vagasRecomendadas = await this.calculaSimilaridade(
       candidatoEmbedding,
       'Vaga',
-      Prisma.sql`(v."dataExpiracao" IS NULL OR TO_DATE(v."dataExpiracao", 'DD/MM/YYYY') >= CURRENT_DATE)`,
+      Prisma.sql`("dataExpiracao" IS NULL OR TO_DATE("dataExpiracao", 'DD/MM/YYYY') >= CURRENT_DATE)`,
     );
 
     if (vagasRecomendadas.length === 0) return [];
@@ -92,11 +92,7 @@ class RecomendacaoRepository {
 
     const vagaEmbedding = vetorEmbeddingVaga[0].embedding;
 
-    const cadidatosParaVaga = await this.calculaSimilaridade(
-      vagaEmbedding,
-      'Candidato',
-      Prisma.sql`c.disponivel = true`,
-    );
+    const cadidatosParaVaga = await this.calculaSimilaridade(vagaEmbedding, 'Candidato', Prisma.sql`disponivel = true`);
 
     if (cadidatosParaVaga.length === 0) return [];
 
