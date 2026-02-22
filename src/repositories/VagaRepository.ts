@@ -1,7 +1,7 @@
 import { VagaCreateDTO, VagaUpdateDTO } from '../models/VagaSchema';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
-import { createEmbedding } from '../utils/matchUtils';
+import { camposVaga, createEmbedding, gerarEmbedding } from '../utils/matchUtils';
 
 class VagaRepository {
   async create(data: VagaCreateDTO, recrutadorId: number, embedding: number[]) {
@@ -39,31 +39,13 @@ class VagaRepository {
         include: { recrutador: { include: { perfil: true } } },
       });
 
-      // const camposQueAfetamEmbedding = [
-      //   'titulo',
-      //   'descricao',
-      //   'cargaHoraria',
-      //   'duracao',
-      //   'instituicao',
-      //   'curso',
-      //   'conhecimentosObrigatorios',
-      //   'conhecimentosOpcionais',
-      //   'publicoAlvo',
-      // ];
+      const camposModificados = camposVaga.some(campo => data[campo as keyof typeof data] !== undefined);
 
-      // const deveRecalcularEmbedding = camposQueAfetamEmbedding.some(
-      //   campo => data[campo as keyof typeof data] !== undefined,
-      // );
+      if (camposModificados) {
+        const embedding = await gerarEmbedding(vagaAtualizada as VagaCreateDTO);
+        await createEmbedding('Vaga', tx, vagaAtualizada.id, embedding);
+      }
 
-      // if (deveRecalcularEmbedding && embedding && embedding.length > 0) {
-      //   const vectorString = `[${embedding.map(Number).join(',')}]`;
-
-      //   await tx.$executeRawUnsafe(
-      //     `UPDATE "Vaga" SET embedding = $1::vector WHERE id = $2`,
-      //     vectorString,
-      //     vagaAtualizada.id,
-      //   );
-      // }
       return vagaAtualizada;
     });
   }

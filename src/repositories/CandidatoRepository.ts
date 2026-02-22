@@ -4,7 +4,7 @@ import { CandidatoCreateDTO, CandidatoUpdateDTO } from '../models/CandidatoSchem
 import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
-import { createEmbedding } from '../utils/matchUtils';
+import { camposCandidato, createEmbedding, gerarEmbedding } from '../utils/matchUtils';
 
 class CandidatoRepository {
   async create(data: CandidatoCreateDTO, embedding: number[]) {
@@ -42,13 +42,24 @@ class CandidatoRepository {
 
   async update(id: number, data: CandidatoUpdateDTO) {
     const { perfil, ...candidato } = data;
-    return prisma.candidato.update({
-      where: { id },
-      data: {
-        ...candidato,
-        ...{ perfil: { update: perfil } },
-      },
-      include: { perfil: true, experiencias: true },
+    return prisma.$transaction(async tx => {
+      const candidatoAtualizado = await tx.candidato.update({
+        where: { id },
+        data: {
+          ...candidato,
+          ...{ perfil: { update: perfil } },
+        },
+        include: { perfil: true, experiencias: true },
+      });
+
+      const camposModificados = camposCandidato.some(campo => data[campo as keyof typeof data] !== undefined);
+
+      if (camposModificados) {
+        const embedding = await gerarEmbedding(candidatoAtualizado as CandidatoCreateDTO);
+        await createEmbedding('Candidato', tx, candidatoAtualizado.id, embedding);
+      }
+
+      return candidatoAtualizado;
     });
   }
 

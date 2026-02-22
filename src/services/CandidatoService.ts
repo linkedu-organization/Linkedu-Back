@@ -10,14 +10,14 @@ import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { ensureSelfTargetedAction, gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
 import { Filter, Sorter } from '../utils/filterUtils';
-import { criarEmbedding } from '../utils/matchUtils';
+import { gerarEmbedding } from '../utils/matchUtils';
 
 class CandidatoService {
   async create(data: CandidatoCreateDTO) {
     await perfilService.validarEmail(data.perfil.email);
     const parsedData = CandidatoCreateSchema.parse(data);
     const hashSenha = await gerarHashSenha(parsedData.perfil.senha);
-    const embedding = await this.gerarEmbedding(parsedData);
+    const embedding = await gerarEmbedding(parsedData);
     const result = await candidatoRepository.create(
       {
         ...parsedData,
@@ -63,24 +63,6 @@ class CandidatoService {
     const result = await candidatoRepository.getById(id);
     if (!result) throw new EntityNotFoundError(id);
     return result;
-  }
-
-  private async gerarEmbedding(candidato: CandidatoCreateDTO): Promise<number[]> {
-    const {
-      instituicao,
-      areaAtuacao,
-      nivelEscolaridade,
-      periodoConclusao,
-      tempoDisponivel,
-      areasInteresse,
-      habilidades,
-    } = candidato;
-    const textoEmbedding = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
-    Nível de escolaridade: ${nivelEscolaridade}, com conclusão prevista para ${periodoConclusao ?? 'não informada'}. 
-    Competências e conhecimentos técnicos: ${habilidades.join(', ')}. Áreas de interesse e objetivos: ${areasInteresse.join(', ')}. Disponibilidade de tempo: ${tempoDisponivel}.`;
-
-    const embedding = await criarEmbedding(textoEmbedding);
-    return embedding.values;
   }
 }
 
