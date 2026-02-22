@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import { recrutadorService } from '../services/RecrutadorService';
+import { getAuthToken } from '../utils/authUtils';
 
 class RecrutadorController {
   async create(req: Request, res: Response) {
@@ -24,13 +25,17 @@ class RecrutadorController {
 
   async update(req: Request, res: Response) {
     const { id } = req.params;
-    const result = await recrutadorService.update(Number(id), req.body);
+    const authToken = getAuthToken(res);
+
+    const result = await recrutadorService.update(Number(id), req.body, authToken);
     res.status(200).json(result);
   }
 
   async delete(req: Request, res: Response) {
     const { id } = req.params;
-    await recrutadorService.delete(Number(id));
+    const authToken = getAuthToken(res);
+
+    await recrutadorService.delete(Number(id), authToken);
     res.status(204).send();
   }
 }

@@ -2,6 +2,7 @@ import { CandidatoUpdateDTO } from '../../src/models/CandidatoSchema';
 import { candidatoRepository } from '../../src/repositories/CandidatoRepository';
 import { candidatoService } from '../../src/services/CandidatoService';
 import { perfilService } from '../../src/services/PerfilService';
+import * as authUtils from '../../src/utils/authUtils';
 
 jest.mock('../../src/repositories/CandidatoRepository', () => ({
   candidatoRepository: {
@@ -70,6 +71,7 @@ const makeCandidatoResponse = (overrides = {}) => ({
   ...overrides,
 });
 
+const AUTH_TOKEN = 'testAuthToken';
 const mockCreate = (v: any) => (candidatoRepository.create as jest.Mock).mockResolvedValue(v);
 const mockUpdate = (v: any) => (candidatoRepository.update as jest.Mock).mockResolvedValue(v);
 const mockGetById = (v: any) => (candidatoRepository.getById as jest.Mock).mockResolvedValue(v);
@@ -153,8 +155,12 @@ describe('Atualiza candidato', () => {
       ...response,
       perfil: makePerfil(),
     };
-    const result = await candidatoService.update(1, dto);
+
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    const result = await candidatoService.update(1, dto, AUTH_TOKEN);
     const [, payload] = (candidatoRepository.update as jest.Mock).mock.calls[0];
+
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(payload.cargo).toBe('TECNICO');
     expect(payload.instituicao).toBe('UFPB');
 
@@ -168,18 +174,26 @@ describe('Atualiza candidato', () => {
       }),
     );
 
-    await candidatoService.update(1, {
-      ...makeCandidato({ perfil: makePerfil({ foto: null, biografia: null }) }),
-    });
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    await candidatoService.update(
+      1,
+      {
+        ...makeCandidato({ perfil: makePerfil({ foto: null, biografia: null }) }),
+      },
+      AUTH_TOKEN,
+    );
 
     const [, payload] = (candidatoRepository.update as jest.Mock).mock.calls[0];
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(payload.perfil.foto).toBeNull();
     expect(payload.perfil.biografia).toBeNull();
   });
 
   test('case 3: id inválido lança erro', async () => {
+    jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
     (candidatoRepository.update as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
-    await expect(candidatoService.update(-1, {} as any)).rejects.toThrow();
+
+    await expect(candidatoService.update(-1, {} as any, AUTH_TOKEN)).rejects.toThrow();
   });
 });
 
@@ -205,7 +219,7 @@ describe('Recupera todos os candidatoes', () => {
     const list = [makeCandidatoResponse()];
     mockGetAll(list);
 
-    const result = await candidatoService.getAll();
+    const result = await candidatoService.getAll({ filters: [], sorters: [] });
 
     expect(result).toEqual(list);
   });
@@ -213,7 +227,7 @@ describe('Recupera todos os candidatoes', () => {
   test('case 2: retorna lista vazia, pois não foi criado candidato', async () => {
     mockGetAll([]);
 
-    const result = await candidatoService.getAll();
+    const result = await candidatoService.getAll({ filters: [], sorters: [] });
 
     expect(result).toEqual([]);
   });
@@ -224,14 +238,17 @@ describe('Deleta candidato', () => {
     mockGetById(makeCandidatoResponse());
     mockDelete();
 
-    await candidatoService.delete(1);
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    await candidatoService.delete(1, AUTH_TOKEN);
 
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(candidatoRepository.delete).toHaveBeenCalledWith(1);
   });
 
   test('case 2: com id inválido lança erro', async () => {
+    jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
     (candidatoRepository.delete as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
 
-    await expect(candidatoService.delete(-1)).rejects.toThrow();
+    await expect(candidatoService.delete(-1, AUTH_TOKEN)).rejects.toThrow();
   });
 });

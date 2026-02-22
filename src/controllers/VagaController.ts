@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 
 import { vagaService } from '../services/VagaService';
+import { getAuthToken } from '../utils/authUtils';
 
 class VagaController {
   async create(req: Request, res: Response) {
-    const result = await vagaService.create(req.body);
+    const authToken = getAuthToken(res);
+
+    const result = await vagaService.create(req.body, authToken);
     return res.status(201).json(result);
   }
 
@@ -24,13 +27,17 @@ class VagaController {
 
   async update(req: Request, res: Response) {
     const { id } = req.params;
-    const result = await vagaService.update(Number(id), req.body);
+    const authToken = getAuthToken(res);
+
+    const result = await vagaService.update(Number(id), req.body, authToken);
     res.status(200).json(result);
   }
 
   async delete(req: Request, res: Response) {
     const { id } = req.params;
-    await vagaService.delete(Number(id));
+    const authToken = getAuthToken(res);
+
+    await vagaService.delete(Number(id), authToken);
     res.status(204).send();
   }
 }

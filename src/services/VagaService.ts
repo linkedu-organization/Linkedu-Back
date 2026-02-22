@@ -5,16 +5,16 @@ import {
   VagaUpdateDTO,
   VagaUpdateSchema,
 } from '../models/VagaSchema';
-import { EntityNotFoundError } from '../errors/EntityNotFoundException';
+import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { vagaRepository } from '../repositories/VagaRepository';
 import { Filter, Sorter } from '../utils/filterUtils';
+import { ensureSelfTargetedAction, getAuthTokenId } from '../utils/authUtils';
 import { criarEmbedding } from '../utils/matchUtils';
 
 class VagaService {
-  async create(data: VagaCreateDTO) {
+  async create(data: VagaCreateDTO, authToken: unknown) {
     const parsedData = VagaCreateSchema.parse(data);
-    // TODO: recuperar o recrutador logado
-    const authTokenId = parsedData.recrutadorId;
+    const authTokenId = getAuthTokenId(authToken);
     const embedding = await this.gerarEmbedding(parsedData);
     const result = await vagaRepository.create({ ...parsedData, embedding }, authTokenId);
     return VagaResponseSchema.parseAsync(result);
@@ -30,15 +30,19 @@ class VagaService {
     return VagaResponseSchema.array().parseAsync(result);
   }
 
-  async update(id: number, data: VagaUpdateDTO) {
-    await this.findOrThrow(id);
+  async update(id: number, data: VagaUpdateDTO, authToken: unknown) {
+    const vaga = await this.findOrThrow(id);
     const parsedData = VagaUpdateSchema.parse(data);
+    ensureSelfTargetedAction(vaga.recrutador.id, authToken);
+
     const result = await vagaRepository.update(id, parsedData);
     return VagaResponseSchema.parseAsync(result);
   }
 
-  async delete(id: number) {
-    await this.findOrThrow(id);
+  async delete(id: number, authToken: unknown) {
+    const vaga = await this.findOrThrow(id);
+    ensureSelfTargetedAction(vaga.recrutador.id, authToken);
+
     await vagaRepository.delete(id);
   }
 
