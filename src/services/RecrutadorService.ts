@@ -1,7 +1,7 @@
 import {
   RecrutadorCreateDTO,
   RecrutadorCreateSchema,
-  RecrutadorResponseSchema,
+  RecrutadorExtendedResponseSchema,
   RecrutadorUpdateDTO,
   RecrutadorUpdateSchema,
 } from '../models/RecrutadorSchema';
@@ -21,17 +21,17 @@ class RecrutadorService {
       ...parsedData,
       perfil: { ...parsedData.perfil, senha: hashSenha },
     });
-    return RecrutadorResponseSchema.parseAsync(result);
+    return RecrutadorExtendedResponseSchema.parseAsync(result);
   }
 
   async getById(id: number) {
     const result = await this.findOrThrow(id);
-    return RecrutadorResponseSchema.parseAsync(result);
+    return RecrutadorExtendedResponseSchema.parseAsync(result);
   }
 
   async getAll(data: { filters: Filter[]; sorters: Sorter[] }) {
     const result = await recrutadorRepository.getAll(data);
-    return RecrutadorResponseSchema.array().parseAsync(result);
+    return RecrutadorExtendedResponseSchema.array().parseAsync(result);
   }
 
   async update(id: number, data: RecrutadorUpdateDTO, authToken: unknown) {
@@ -45,7 +45,7 @@ class RecrutadorService {
     }
 
     const result = await recrutadorRepository.update(id, parsedData);
-    return RecrutadorResponseSchema.parseAsync(result);
+    return RecrutadorExtendedResponseSchema.parseAsync(result);
   }
 
   async delete(id: number, authToken: unknown) {

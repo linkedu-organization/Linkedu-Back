@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { RecrutadorResponseSchema } from './RecrutadorSchema';
+import { RecrutadorExtendedResponseSchema } from './RecrutadorSchema';
 
 const PublicoAlvo = z.enum(['ALUNO_GRADUACAO', 'ALUNO_POS_GRADUACAO', 'TECNICO', 'PESQUISADOR']);
 
@@ -44,7 +44,7 @@ export const VagaUpdateSchema = VagaSchema.partial();
 
 export const VagaResponseSchema = VagaSchema.extend({
   id: z.number(),
-  recrutador: RecrutadorResponseSchema,
+  recrutador: RecrutadorExtendedResponseSchema,
 });
 
 export type VagaCreateDTO = z.infer<typeof VagaCreateSchema>;

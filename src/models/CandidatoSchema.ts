@@ -43,8 +43,11 @@ export const CandidatoUpdateSchema = CandidatoSchema.extend({
 
 export const CandidatoResponseSchema = CandidatoSchema.extend({
   id: z.number(),
-  perfil: z.lazy(() => PerfilResponseSchema),
   experiencias: z.array(z.lazy(() => ExperienciaResponseSchema)).optional(),
+});
+
+export const CandidatoExtendedResponseSchema = CandidatoResponseSchema.extend({
+  perfil: z.lazy(() => PerfilResponseSchema),
 });
 
 export type CandidatoCreateDTO = z.infer<typeof CandidatoCreateSchema>;

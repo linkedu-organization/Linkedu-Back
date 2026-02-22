@@ -1,7 +1,7 @@
 import {
   CandidatoCreateDTO,
   CandidatoCreateSchema,
-  CandidatoResponseSchema,
+  CandidatoExtendedResponseSchema,
   CandidatoUpdateDTO,
   CandidatoUpdateSchema,
 } from '../models/CandidatoSchema';
@@ -25,17 +25,17 @@ class CandidatoService {
       },
       embedding,
     );
-    return CandidatoResponseSchema.parseAsync(result);
+    return CandidatoExtendedResponseSchema.parseAsync(result);
   }
 
   async getById(id: number) {
     const result = await this.findOrThrow(id);
-    return CandidatoResponseSchema.parseAsync(result);
+    return CandidatoExtendedResponseSchema.parseAsync(result);
   }
 
   async getAll(data: { filters: Filter[]; sorters: Sorter[] }) {
     const result = await candidatoRepository.getAll(data);
-    return CandidatoResponseSchema.array().parseAsync(result);
+    return CandidatoExtendedResponseSchema.array().parseAsync(result);
   }
 
   async update(id: number, data: CandidatoUpdateDTO, authToken: unknown) {
@@ -49,7 +49,7 @@ class CandidatoService {
     }
 
     const result = await candidatoRepository.update(id, parsedData);
-    return CandidatoResponseSchema.parseAsync(result);
+    return CandidatoExtendedResponseSchema.parseAsync(result);
   }
 
   async delete(id: number, authToken: unknown) {

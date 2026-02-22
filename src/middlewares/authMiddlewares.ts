@@ -2,10 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { TipoPerfil } from '@prisma/client';
 
-import { AppError } from '../errors/AppError';
 import { InternalServerError } from '../errors/InternalServerError';
 import { TokenNotProvidedError } from '../errors/TokenNotProvidedError';
 import { NoPermissionError } from '../errors/NoPermissionError';
+import { InvalidTokenError } from '../errors/InvalidTokenError';
 
 const getDecryptedToken = (token: string) => {
   if (!process.env.JWT_SECRET) {
@@ -16,7 +16,7 @@ const getDecryptedToken = (token: string) => {
     const tokenWithoutBearer = token.split(' ')[1] || token;
     return jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET) as JwtPayload;
   } catch {
-    throw new AppError('Token inválido', 401);
+    throw new InvalidTokenError();
   }
 };
 
