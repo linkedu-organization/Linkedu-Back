@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+import { RecrutadorResponseSchema } from './RecrutadorSchema';
+import { CandidatoResponseSchema } from './CandidatoSchema';
+
 const TipoPerfilEnum = z.enum(['CANDIDATO', 'RECRUTADOR']);
 
 export const PerfilCreateSchema = z.object({
@@ -20,6 +23,17 @@ export const PerfilResponseSchema = PerfilUpdateSchema.extend({
   createdAt: z.date().or(z.iso.datetime()),
   updatedAt: z.date().or(z.iso.datetime()),
   ultimoAcesso: z.date().or(z.iso.datetime()),
+});
+
+export const PerfilExtendedResponseSchema = PerfilResponseSchema.extend({
+  recrutador: z
+    .lazy(() => RecrutadorResponseSchema)
+    .nullable()
+    .optional(),
+  candidato: z
+    .lazy(() => CandidatoResponseSchema)
+    .nullable()
+    .optional(),
 });
 
 export type PerfilCreateDTO = z.infer<typeof PerfilCreateSchema>;

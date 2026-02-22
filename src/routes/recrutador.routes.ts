@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { recrutadorController } from '../controllers/RecrutadorController';
+import { ensureIsRecrutador } from '../middlewares/authMiddlewares';
 
 export const recrutadorRoutes = Router();
 
@@ -16,10 +17,10 @@ recrutadorRoutes.get('/', async (req, res) => {
   await recrutadorController.getAll(req, res);
 });
 
-recrutadorRoutes.put('/:id', async (req, res) => {
+recrutadorRoutes.put('/:id', ensureIsRecrutador, async (req, res) => {
   await recrutadorController.update(req, res);
 });
 
-recrutadorRoutes.delete('/:id', async (req, res) => {
+recrutadorRoutes.delete('/:id', ensureIsRecrutador, async (req, res) => {
   await recrutadorController.delete(req, res);
 });

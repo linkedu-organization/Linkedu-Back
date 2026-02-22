@@ -5,14 +5,15 @@ import {
   ExperienciaUpdateDTO,
   ExperienciaUpdateSchema,
 } from '../models/ExperienciaSchema';
-import { EntityNotFoundError } from '../errors/EntityNotFoundException';
+import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { experienciaRepository } from '../repositories/ExperienciaRepository';
+import { ensureSelfTargetedAction, getAuthTokenId } from '../utils/authUtils';
 
 class ExperienciaService {
-  async create(data: ExperienciaCreateDTO) {
+  async create(data: ExperienciaCreateDTO, authToken: unknown) {
     const parsedData = ExperienciaCreateSchema.parse(data);
-    // TODO: recuperar o candidato logado
-    const authTokenId = parsedData.candidatoId;
+    const authTokenId = getAuthTokenId(authToken);
+
     const result = await experienciaRepository.create(parsedData, authTokenId);
     return ExperienciaResponseSchema.parseAsync(result);
   }
@@ -27,15 +28,19 @@ class ExperienciaService {
     return ExperienciaResponseSchema.array().parseAsync(result);
   }
 
-  async update(id: number, data: ExperienciaUpdateDTO) {
-    await this.findOrThrow(id);
+  async update(id: number, data: ExperienciaUpdateDTO, authToken: unknown) {
+    const experiencia = await this.findOrThrow(id);
     const parsedData = ExperienciaUpdateSchema.parse(data);
+    ensureSelfTargetedAction(experiencia.candidatoId, authToken);
+
     const result = await experienciaRepository.update(id, parsedData);
     return ExperienciaResponseSchema.parseAsync(result);
   }
 
-  async delete(id: number) {
-    await this.findOrThrow(id);
+  async delete(id: number, authToken: unknown) {
+    const experiencia = await this.findOrThrow(id);
+    ensureSelfTargetedAction(experiencia.candidatoId, authToken);
+
     await experienciaRepository.delete(id);
   }
 

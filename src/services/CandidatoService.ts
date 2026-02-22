@@ -6,8 +6,8 @@ import {
   CandidatoUpdateSchema,
 } from '../models/CandidatoSchema';
 import { candidatoRepository } from '../repositories/CandidatoRepository';
-import { EntityNotFoundError } from '../errors/EntityNotFoundException';
-import { gerarHashSenha } from '../utils/authUtils';
+import { EntityNotFoundError } from '../errors/EntityNotFoundError';
+import { ensureSelfTargetedAction, gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
 import { Filter, Sorter } from '../utils/filterUtils';
 
@@ -16,6 +16,7 @@ class CandidatoService {
     await perfilService.validarEmail(data.perfil.email);
     const parsedData = CandidatoCreateSchema.parse(data);
     const hashSenha = await gerarHashSenha(parsedData.perfil.senha);
+
     const result = await candidatoRepository.create({
       ...parsedData,
       perfil: { ...parsedData.perfil, senha: hashSenha },
@@ -33,17 +34,23 @@ class CandidatoService {
     return CandidatoResponseSchema.array().parseAsync(result);
   }
 
-  async update(id: number, data: CandidatoUpdateDTO) {
+  async update(id: number, data: CandidatoUpdateDTO, authToken: unknown) {
+    ensureSelfTargetedAction(id, authToken);
+
     const atual = await this.findOrThrow(id);
     const parsedData = CandidatoUpdateSchema.parse(data);
+
     if (atual.perfil.email !== parsedData.perfil.email) {
       await perfilService.validarEmail(parsedData.perfil.email);
     }
+
     const result = await candidatoRepository.update(id, parsedData);
     return CandidatoResponseSchema.parseAsync(result);
   }
 
-  async delete(id: number) {
+  async delete(id: number, authToken: unknown) {
+    ensureSelfTargetedAction(id, authToken);
+
     await this.findOrThrow(id);
     await candidatoRepository.delete(id);
   }

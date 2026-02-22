@@ -1,6 +1,7 @@
 import { VagaUpdateDTO } from '../../src/models/VagaSchema';
 import { vagaRepository } from '../../src/repositories/VagaRepository';
 import { vagaService } from '../../src/services/VagaService';
+import * as authUtils from '../../src/utils/authUtils';
 
 jest.mock('../../src/repositories/VagaRepository', () => ({
   vagaRepository: {
@@ -84,6 +85,7 @@ const makeVagaResponse = (overrides = {}) => ({
   ...overrides,
 });
 
+const AUTH_TOKEN = 'testAuthToken';
 const mockCreate = (v: any) => (vagaRepository.create as jest.Mock).mockResolvedValue(v);
 const mockUpdate = (v: any) => (vagaRepository.update as jest.Mock).mockResolvedValue(v);
 const mockGetById = (v: any) => (vagaRepository.getById as jest.Mock).mockResolvedValue(v);
@@ -97,8 +99,10 @@ describe('Cria vaga', () => {
 
     mockCreate(response);
 
-    const result = await vagaService.create(vaga);
+    const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
+    const result = await vagaService.create(vaga, AUTH_TOKEN);
 
+    expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
     expect(vagaRepository.create).toHaveBeenCalledWith(vaga, 1);
     expect(result).toEqual(response);
   });
@@ -109,6 +113,7 @@ describe('Cria vaga', () => {
       duracao: null,
       conhecimentosOpcionais: [],
     });
+
     mockCreate(
       makeVagaResponse({
         dataExpiracao: null,
@@ -116,8 +121,12 @@ describe('Cria vaga', () => {
         conhecimentosOpcionais: [],
       }),
     );
-    await vagaService.create(vaga);
+
+    const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
+    await vagaService.create(vaga, AUTH_TOKEN);
     const payload = (vagaRepository.create as jest.Mock).mock.calls[0][0];
+
+    expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
     expect(payload.dataExpiracao).toBeNull();
     expect(payload.duracao).toBeNull();
     expect(payload.conhecimentosOpcionais).toEqual([]);
@@ -148,8 +157,10 @@ describe('Atualiza vaga', () => {
     mockGetById(existingVaga);
     mockUpdate(updatedVaga);
 
-    const result = await vagaService.update(1, vagaUpdate);
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    const result = await vagaService.update(1, vagaUpdate, AUTH_TOKEN);
 
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(vagaRepository.getById).toHaveBeenCalledWith(1);
     expect(vagaRepository.update).toHaveBeenCalledWith(1, vagaUpdate);
     expect(result).toEqual(updatedVaga);
@@ -179,7 +190,7 @@ describe('Recupera todas as vagas', () => {
     const response = [makeVagaResponse(), makeVagaResponse({ id: 2 })];
     mockGetAll(response);
 
-    const result = await vagaService.getAll();
+    const result = await vagaService.getAll({ filters: [], sorters: [] });
 
     expect(vagaRepository.getAll).toHaveBeenCalled();
     expect(result).toEqual(response);
@@ -191,14 +202,17 @@ describe('Deleta vaga', () => {
     mockGetById(makeVagaResponse());
     mockDelete();
 
-    await vagaService.delete(1);
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    await vagaService.delete(1, AUTH_TOKEN);
 
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(vagaRepository.delete).toHaveBeenCalledWith(1);
   });
 
   test('case 2: com id inválido lança erro', async () => {
+    jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
     (vagaRepository.delete as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
 
-    await expect(vagaService.delete(-1)).rejects.toThrow('Entidade com id -1 não encontrada');
+    await expect(vagaService.delete(-1, AUTH_TOKEN)).rejects.toThrow('Entidade com id -1 não encontrada');
   });
 });
