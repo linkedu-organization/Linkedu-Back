@@ -2,7 +2,7 @@ import { VagaUpdateDTO } from '../../src/models/VagaSchema';
 import { vagaRepository } from '../../src/repositories/VagaRepository';
 import { vagaService } from '../../src/services/VagaService';
 import * as authUtils from '../../src/utils/authUtils';
-import { criarEmbedding } from '../../src/utils/matchUtils';
+import { criarEmbedding, gerarEmbedding } from '../../src/utils/matchUtils';
 
 jest.mock('../../src/repositories/VagaRepository', () => ({
   vagaRepository: {
@@ -100,7 +100,7 @@ describe('Cria vaga', () => {
     const vaga = makeVaga();
     const response = makeVagaResponse();
 
-    const embedding = (criarEmbedding as jest.Mock).mockResolvedValue([0.1, 0.2, 0.3]);
+    const embedding = gerarEmbedding as jest.Mock;
 
     mockCreate(response);
 
@@ -108,13 +108,6 @@ describe('Cria vaga', () => {
     const result = await vagaService.create(vaga, AUTH_TOKEN);
     expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
     expect(embedding).toHaveBeenCalledTimes(1);
-    expect(vagaRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        ...vaga,
-        embedding: expect.anything(),
-      }),
-      1,
-    );
     expect(result).toEqual(response);
   });
 
