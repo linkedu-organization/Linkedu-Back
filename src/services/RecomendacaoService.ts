@@ -23,6 +23,7 @@ class RecomendacaoService {
 
   async getRecomendacaoVagas(authToken: unknown): Promise<RecomendacaoVagaResponse[]> {
     const authTokenId = getAuthTokenId(authToken);
+    await candidatoService.getById(authTokenId);
     return recomendacaoRepository.getRecomendacaoVagas(authTokenId);
   }
 }

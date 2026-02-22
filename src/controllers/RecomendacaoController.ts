@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 
 import { recomendacaoService } from '../services/RecomendacaoService';
+import { getAuthToken } from '../utils/authUtils';
 
 class RecomendacaoController {
   async createRecomendacaoVagas(req: Request, res: Response) {
-    const { candidatoId } = req.params;
-    const resultado = await recomendacaoService.createRecomendacaoVagas(Number(candidatoId));
+    const authToken = getAuthToken(res);
+    const resultado = await recomendacaoService.createRecomendacaoVagas(authToken);
     res.status(200).json(resultado);
   }
 
@@ -16,8 +17,8 @@ class RecomendacaoController {
   }
 
   async getRecomendacaoVagas(req: Request, res: Response) {
-    const { candidatoId } = req.params;
-    const resultado = await recomendacaoService.getRecomendacaoVagas(Number(candidatoId));
+    const authToken = getAuthToken(res);
+    const resultado = await recomendacaoService.getRecomendacaoVagas(authToken);
     res.status(200).json(resultado);
   }
 
