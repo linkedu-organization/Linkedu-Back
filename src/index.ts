@@ -1,12 +1,15 @@
 import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import { ZodError } from 'zod';
+import cookieParser from 'cookie-parser';
 
 import { routes } from './routes/routes';
 import { AppError } from './errors/AppError';
 
 const app = express();
 const port = process.env.PORT ?? 3333;
+
+app.disable('x-powered-by');
 
 const corsOptions = {
   origin: process.env.FRONTEND_URL,
@@ -15,11 +18,8 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 app.use('/api', routes);
-
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
 
 const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof ZodError) {
@@ -40,3 +40,4 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 };
 
 app.use(errorHandler);
+app.listen(port, () => console.log(`Server running on http://localhost:${port}`));

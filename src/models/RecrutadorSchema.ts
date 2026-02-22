@@ -21,6 +21,9 @@ export const RecrutadorUpdateSchema = RecrutadorSchema.extend({
 
 export const RecrutadorResponseSchema = RecrutadorSchema.extend({
   id: z.number(),
+});
+
+export const RecrutadorExtendedResponseSchema = RecrutadorResponseSchema.extend({
   perfil: z.lazy(() => PerfilResponseSchema),
 });
 

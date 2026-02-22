@@ -36,6 +36,10 @@ class PerfilRepository {
   async getByEmail(email: string) {
     return prisma.perfil.findFirst({
       where: { email },
+      include: {
+        recrutador: true,
+        candidato: true,
+      },
     });
   }
 }
