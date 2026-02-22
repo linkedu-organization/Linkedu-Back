@@ -10,7 +10,7 @@ import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { ensureSelfTargetedAction, gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
 import { Filter, Sorter } from '../utils/filterUtils';
-import { limpaTexto, criarEmbedding } from '../utils/matchUtils';
+import { criarEmbedding } from '../utils/matchUtils';
 
 class CandidatoService {
   async create(data: CandidatoCreateDTO) {
@@ -18,11 +18,13 @@ class CandidatoService {
     const parsedData = CandidatoCreateSchema.parse(data);
     const hashSenha = await gerarHashSenha(parsedData.perfil.senha);
     const embedding = await this.gerarEmbedding(parsedData);
-    const result = await candidatoRepository.create({
-      ...parsedData,
-      perfil: { ...parsedData.perfil, senha: hashSenha },
+    const result = await candidatoRepository.create(
+      {
+        ...parsedData,
+        perfil: { ...parsedData.perfil, senha: hashSenha },
+      },
       embedding,
-    });
+    );
     return CandidatoResponseSchema.parseAsync(result);
   }
 

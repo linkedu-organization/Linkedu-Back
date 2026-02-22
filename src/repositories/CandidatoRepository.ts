@@ -4,10 +4,11 @@ import { CandidatoCreateDTO, CandidatoUpdateDTO } from '../models/CandidatoSchem
 import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
+import { createEmbedding } from '../utils/matchUtils';
 
 class CandidatoRepository {
-  async create(data: CandidatoCreateDTO) {
-    const { perfil, embedding, ...candidatoData } = data;
+  async create(data: CandidatoCreateDTO, embedding: number[]) {
+    const { perfil, ...candidatoData } = data;
 
     return prisma.$transaction(async tx => {
       const perfilCriado = await perfilRepository.create(tx, perfil, TipoPerfil.CANDIDATO);
@@ -18,14 +19,7 @@ class CandidatoRepository {
         },
       });
 
-      if (embedding && embedding.length > 0) {
-        const vectorString = `[${embedding.map(Number).join(',')}]`;
-        await tx.$executeRawUnsafe(
-          `UPDATE "Candidato" SET embedding = $1::vector WHERE id = $2`,
-          vectorString,
-          candidatoCriado.id,
-        );
-      }
+      await createEmbedding('Candidato', tx, candidatoCriado.id, embedding);
 
       return { ...candidatoCriado, perfil: perfilCriado };
     });

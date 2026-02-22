@@ -9,17 +9,9 @@ export async function criarEmbedding(texto: string) {
   return embedding;
 }
 
-export function limpaTexto(frase: string) {
-  // lib para stopWords
-  const wordExcludePtBr = ['por', 'favor', 'qual', 'valor'];
-  return frase
-    .trim()
-    .toLowerCase()
-    .replace(/\s\s+/g, '')
-    .replace(/[.,/#!$%^&*;:{}=\-_`~()@]/g, '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .split(' ')
-    .filter(value => !wordExcludePtBr.includes(value))
-    .join(' ');
+export async function createEmbedding(tableName: 'Vaga' | 'Candidato', tx: any, id: number, embedding: number[]) {
+  if (embedding && embedding.length > 0) {
+    const vectorString = `[${embedding.map(Number).join(',')}]`;
+    await tx.$executeRawUnsafe(`UPDATE "${tableName}" SET embedding = $1::vector WHERE id = $2`, vectorString, id);
+  }
 }

@@ -40,7 +40,6 @@ class RecomendacaoRepository {
       candidatoId: item.candidatoId,
       tipo: item.tipo,
       score: item.score!,
-      descricao: item.descricao,
       updatedAt: item.updatedAt,
     }));
 
@@ -69,7 +68,6 @@ class RecomendacaoRepository {
           vagaId: dadosVaga.id,
           candidatoId: candidatoId,
           updatedAt: new Date(),
-          descricao: 'Compatibilidade via IA',
           tipo: 'VAGAS_PARA_CANDIDATO' as const,
           score: vaga.score,
           vaga: dadosVaga,
@@ -107,7 +105,6 @@ class RecomendacaoRepository {
         candidatoId: item.candidatoId,
         tipo: item.tipo,
         score: item.score!,
-        descricao: item.descricao,
         updatedAt: item.updatedAt,
       }));
 
@@ -138,7 +135,6 @@ class RecomendacaoRepository {
           updatedAt: new Date() as Date,
           tipo: 'CANDIDATOS_PARA_VAGA' as const,
           score: candidato.score,
-          descricao: 'Compatibilidade via IA',
           candidato: dadosCandidato,
         } as RecomendacaoCandidatoResponse;
       })

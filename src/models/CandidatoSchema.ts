@@ -27,7 +27,10 @@ const CandidatoSchema = z.object({
   linkedin: z.string().nullable(),
   areasInteresse: z.string().array(),
   habilidades: z.string().array(),
-  embedding: z.array(z.number()).length(3072).optional(),
+});
+
+const CandidadoSchemaEmbedding = CandidatoSchema.extend({
+  embedding: z.array(z.number()).length(3072).nullable().default(null),
 });
 
 export const CandidatoCreateSchema = CandidatoSchema.extend({
@@ -46,3 +49,4 @@ export const CandidatoResponseSchema = CandidatoSchema.extend({
 
 export type CandidatoCreateDTO = z.infer<typeof CandidatoCreateSchema>;
 export type CandidatoUpdateDTO = z.infer<typeof CandidatoUpdateSchema>;
+export type CandidatoEmbeddingDTO = z.infer<typeof CandidadoSchemaEmbedding>;

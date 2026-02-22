@@ -4,7 +4,7 @@ import { recomendacaoController } from '../controllers/RecomendacaoController';
 
 export const recomendacaoRoutes = Router();
 
-recomendacaoRoutes.post('/vaga/:candidatoId', async (req, res) => {
+recomendacaoRoutes.post('/vaga/', async (req, res) => {
   await recomendacaoController.createRecomendacaoVagas(req, res);
 });
 
@@ -12,7 +12,7 @@ recomendacaoRoutes.post('/candidato/:vagaId', async (req, res) => {
   await recomendacaoController.createRecomendacaoCandidatos(req, res);
 });
 
-recomendacaoRoutes.get('/vaga/:candidatoId', async (req, res) => {
+recomendacaoRoutes.get('/vaga/', async (req, res) => {
   await recomendacaoController.getRecomendacaoVagas(req, res);
 });
 

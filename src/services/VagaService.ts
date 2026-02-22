@@ -16,7 +16,7 @@ class VagaService {
     const parsedData = VagaCreateSchema.parse(data);
     const authTokenId = getAuthTokenId(authToken);
     const embedding = await this.gerarEmbedding(parsedData);
-    const result = await vagaRepository.create({ ...parsedData, embedding }, authTokenId);
+    const result = await vagaRepository.create(parsedData, authTokenId, embedding);
     return VagaResponseSchema.parseAsync(result);
   }
 

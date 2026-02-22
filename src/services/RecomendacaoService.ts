@@ -3,12 +3,13 @@ import { RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
 import { candidatoService } from './CandidatoService';
 import { vagaService } from './VagaService';
 import { recomendacaoRepository } from '../repositories/RecomendacaoRepository';
+import { getAuthTokenId } from '../utils/authUtils';
 
 class RecomendacaoService {
-  async createRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
-    await candidatoService.getById(candidatoId);
-    // Aqui nas recomendações de vaga poderia pegar o usuário logado, mas deixa assim por enquanto
-    return recomendacaoRepository.createRecomendacaoVagas(candidatoId);
+  async createRecomendacaoVagas(authToken: unknown): Promise<RecomendacaoVagaResponse[]> {
+    const authTokenId = getAuthTokenId(authToken);
+    await candidatoService.getById(authTokenId);
+    return recomendacaoRepository.createRecomendacaoVagas(authTokenId);
   }
 
   async createRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
@@ -20,8 +21,9 @@ class RecomendacaoService {
     return recomendacaoRepository.getRecomendacaoCandidatos(vagaId);
   }
 
-  async getRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
-    return recomendacaoRepository.getRecomendacaoVagas(candidatoId);
+  async getRecomendacaoVagas(authToken: unknown): Promise<RecomendacaoVagaResponse[]> {
+    const authTokenId = getAuthTokenId(authToken);
+    return recomendacaoRepository.getRecomendacaoVagas(authTokenId);
   }
 }
 

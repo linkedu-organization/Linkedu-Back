@@ -30,7 +30,10 @@ const VagaSchema = z.object({
   publicoAlvo: PublicoAlvo.array(),
   conhecimentosObrigatorios: z.string().array(),
   conhecimentosOpcionais: z.string().array(),
-  embedding: z.array(z.number()).length(3072).optional(),
+});
+
+export const VagaSchemaEmbedding = VagaSchema.extend({
+  embedding: z.array(z.number()).length(3072).nullable().default(null),
 });
 
 export const VagaCreateSchema = VagaSchema.extend({
@@ -46,3 +49,4 @@ export const VagaResponseSchema = VagaSchema.extend({
 
 export type VagaCreateDTO = z.infer<typeof VagaCreateSchema>;
 export type VagaUpdateDTO = z.infer<typeof VagaUpdateSchema>;
+export type VagaEmbeddingDTO = z.infer<typeof VagaSchemaEmbedding>;
