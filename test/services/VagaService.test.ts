@@ -151,8 +151,8 @@ describe('Atualiza vaga', () => {
       conhecimentosOpcionais: ['Docker', 'Kubernetes'],
     };
 
-    const existingVaga = makeVagaResponse({ id: 1 });
-    const updatedVaga = makeVagaResponse({ id: 1, ...vagaUpdate });
+    const existingVaga = makeVagaResponse();
+    const updatedVaga = makeVagaResponse({ ...vagaUpdate });
 
     mockGetById(existingVaga);
     mockUpdate(updatedVaga);
