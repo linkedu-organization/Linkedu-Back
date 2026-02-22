@@ -2,6 +2,7 @@ import { RecrutadorUpdateDTO } from '../../src/models/RecrutadorSchema';
 import { recrutadorRepository } from '../../src/repositories/RecrutadorRepository';
 import { recrutadorService } from '../../src/services/RecrutadorService';
 import { perfilService } from '../../src/services/PerfilService';
+import * as authUtils from '../../src/utils/authUtils';
 
 jest.mock('../../src/repositories/RecrutadorRepository', () => ({
   recrutadorRepository: {
@@ -54,6 +55,7 @@ const makeRecrutadorResponse = (overrides = {}) => ({
   ...overrides,
 });
 
+const AUTH_TOKEN = 'testAuthToken';
 const mockCreate = (v: any) => (recrutadorRepository.create as jest.Mock).mockResolvedValue(v);
 const mockUpdate = (v: any) => (recrutadorRepository.update as jest.Mock).mockResolvedValue(v);
 const mockGetById = (v: any) => (recrutadorRepository.getById as jest.Mock).mockResolvedValue(v);
@@ -140,8 +142,12 @@ describe('Atualiza recrutador', () => {
       laboratorios: response.laboratorios,
       perfil: makePerfil(),
     };
-    const result = await recrutadorService.update(1, dto);
+
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    const result = await recrutadorService.update(1, dto, AUTH_TOKEN);
     const [, payload] = (recrutadorRepository.update as jest.Mock).mock.calls[0];
+
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(payload.cargo).toBe('PESQUISADOR');
     expect(payload.instituicao).toBe('UFPB');
 
@@ -155,18 +161,26 @@ describe('Atualiza recrutador', () => {
       }),
     );
 
-    await recrutadorService.update(1, {
-      ...makeRecrutador({ perfil: makePerfil({ foto: null, biografia: null }) }),
-    });
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    await recrutadorService.update(
+      1,
+      {
+        ...makeRecrutador({ perfil: makePerfil({ foto: null, biografia: null }) }),
+      },
+      AUTH_TOKEN,
+    );
 
     const [, payload] = (recrutadorRepository.update as jest.Mock).mock.calls[0];
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(payload.perfil.foto).toBeNull();
     expect(payload.perfil.biografia).toBeNull();
   });
 
   test('case 3: id inválido lança erro', async () => {
+    jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
     (recrutadorRepository.update as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
-    await expect(recrutadorService.update(-1, {} as any)).rejects.toThrow();
+
+    await expect(recrutadorService.update(-1, {} as any, AUTH_TOKEN)).rejects.toThrow();
   });
 });
 
@@ -192,7 +206,7 @@ describe('Recupera todos os recrutadores', () => {
     const list = [makeRecrutadorResponse()];
     mockGetAll(list);
 
-    const result = await recrutadorService.getAll();
+    const result = await recrutadorService.getAll({ filters: [], sorters: [] });
 
     expect(result).toEqual(list);
   });
@@ -200,7 +214,7 @@ describe('Recupera todos os recrutadores', () => {
   test('case 2: retorna lista vazia, pois não foi criado recrutador', async () => {
     mockGetAll([]);
 
-    const result = await recrutadorService.getAll();
+    const result = await recrutadorService.getAll({ filters: [], sorters: [] });
 
     expect(result).toEqual([]);
   });
@@ -211,14 +225,17 @@ describe('Deleta recrutador', () => {
     mockGetById(makeRecrutadorResponse());
     mockDelete();
 
-    await recrutadorService.delete(1);
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    await recrutadorService.delete(1, AUTH_TOKEN);
 
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(recrutadorRepository.delete).toHaveBeenCalledWith(1);
   });
 
   test('case 2: com id inválido lança erro', async () => {
+    jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
     (recrutadorRepository.delete as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
 
-    await expect(recrutadorService.delete(-1)).rejects.toThrow();
+    await expect(recrutadorService.delete(-1, AUTH_TOKEN)).rejects.toThrow();
   });
 });

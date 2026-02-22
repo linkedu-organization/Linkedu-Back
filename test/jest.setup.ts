@@ -36,5 +36,5 @@ jest.mock('@prisma/client', () => {
 });
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  jest.restoreAllMocks();
 });
