@@ -9,7 +9,7 @@ perfilRoutes.get('/validar-email', async (req, res) => {
   await perfilController.validarEmail(req, res);
 });
 
-perfilRoutes.get('/login', async (req, res) => {
+perfilRoutes.post('/login', async (req, res) => {
   await perfilController.login(req, res);
 });
 
