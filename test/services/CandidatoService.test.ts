@@ -3,6 +3,7 @@ import { candidatoRepository } from '../../src/repositories/CandidatoRepository'
 import { candidatoService } from '../../src/services/CandidatoService';
 import { perfilService } from '../../src/services/PerfilService';
 import * as authUtils from '../../src/utils/authUtils';
+import * as matchUtils from '../../src/utils/matchUtils';
 
 jest.mock('../../src/repositories/CandidatoRepository', () => ({
   candidatoRepository: {
@@ -82,10 +83,12 @@ describe('Cria candidato', () => {
   test('case 1: com todos os campos', async () => {
     const candidato = makeCandidato();
     const response = makeCandidatoResponse();
+    const embedding = jest.spyOn(matchUtils, 'gerarEmbedding').mockResolvedValue(new Array(3072).fill(0));
 
     mockCreate(response);
     const result = await candidatoService.create(candidato);
 
+    expect(embedding).toHaveBeenCalledTimes(1);
     expect(candidatoRepository.create).toHaveBeenCalled();
     const payload = (candidatoRepository.create as jest.Mock).mock.calls[0][0];
     expect(payload.cargo).toBe('ALUNO');
