@@ -1,7 +1,15 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Prisma, TipoRecomendacao } from '@prisma/client';
 
 import { VagaCreateDTO } from '../models/VagaSchema';
 import { CandidatoCreateDTO } from '../models/CandidatoSchema';
+import prisma from './prisma';
+import { RecomendacaoCandidatoResponse, RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
+
+interface Similaridade {
+  id: number;
+  score: number;
+}
 
 export const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
 
@@ -75,4 +83,109 @@ export async function gerarEmbedding(tableName: CandidatoCreateDTO | VagaCreateD
 
   const embedding = await criarEmbedding(textoEmbedding);
   return embedding.values;
+}
+
+export async function salvaNovasRecomendacoes(dados: Prisma.RecomendacaoCreateManyInput[]) {
+  await prisma.recomendacao.createMany({
+    data: dados,
+  });
+}
+
+export async function calculaSimilaridade(
+  embedding: string,
+  nomeTabela: 'Candidato' | 'Vaga',
+  filtrosAdicionais: Prisma.Sql = Prisma.sql`1=1`,
+): Promise<Similaridade[]> {
+  const vetorEmbedding = Prisma.sql`${embedding}::vector`;
+
+  return prisma.$queryRaw<Similaridade[]>`
+      SELECT 
+        id,
+        1 - (embedding <=> ${vetorEmbedding}) as score
+      FROM ${Prisma.raw(`"${nomeTabela}"`)}
+      WHERE 
+        embedding IS NOT NULL
+        AND ${filtrosAdicionais}
+      ORDER BY 
+        embedding <=> ${vetorEmbedding} ASC
+      LIMIT 10;
+    `;
+}
+
+export async function getVagasPayload(vagasRecomendadas: Similaridade[], candidatoId: number) {
+  const vagasCompletas = await prisma.vaga.findMany({
+    where: {
+      id: { in: vagasRecomendadas.map(v => v.id) },
+    },
+    include: { recrutador: { include: { perfil: true } } },
+  });
+
+  return vagasRecomendadas
+    .map(vaga => {
+      const dadosVaga = vagasCompletas.find(v => v.id === vaga.id);
+
+      if (!dadosVaga) return null;
+
+      return {
+        vagaId: dadosVaga.id,
+        candidatoId: candidatoId,
+        updatedAt: new Date(),
+        tipo: 'VAGAS_PARA_CANDIDATO' as const,
+        score: vaga.score,
+        vaga: dadosVaga,
+      } as RecomendacaoVagaResponse;
+    })
+    .filter((item): item is RecomendacaoVagaResponse => item !== null)
+    .sort((a, b) => (b.score || 0) - (a.score || 0));
+}
+
+export async function getCandidatoPayload(candidatosRecomendados: Similaridade[], vagaId: number) {
+  const candidatosCompletos = await prisma.candidato.findMany({
+    where: {
+      id: { in: candidatosRecomendados.map(c => c.id) },
+    },
+    include: {
+      perfil: true,
+      experiencias: true,
+    },
+  });
+
+  return candidatosRecomendados
+    .map(candidato => {
+      const dadosCandidato = candidatosCompletos.find(c => c.id === candidato.id);
+      if (!dadosCandidato) return null;
+
+      return {
+        vagaId: vagaId,
+        candidatoId: dadosCandidato.id,
+        updatedAt: new Date() as Date,
+        tipo: 'CANDIDATOS_PARA_VAGA' as const,
+        score: candidato.score,
+        candidato: dadosCandidato,
+      } as RecomendacaoCandidatoResponse;
+    })
+    .filter((item): item is RecomendacaoCandidatoResponse => item !== null)
+    .sort((a, b) => (b.score || 0) - (a.score || 0));
+}
+
+export async function deletaRecomendacoes(entidade: 'vagaId' | 'candidatoId', id: number, tipo: TipoRecomendacao) {
+  await prisma.recomendacao.deleteMany({
+    where: {
+      [entidade]: id,
+      tipo: tipo,
+    },
+  });
+}
+
+export async function getVectorEmbedding(entidade: 'Candidato' | 'Vaga', id: number): Promise<string> {
+  const resultado = await prisma.$queryRaw<Array<{ embedding: string }>>`
+      SELECT embedding::text 
+      FROM "${entidade}" 
+      WHERE id = ${id}
+    `;
+  if (resultado.length === 0 || !resultado[0]?.embedding) {
+    return '';
+  }
+
+  return resultado[0].embedding;
 }
