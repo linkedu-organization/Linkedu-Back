@@ -103,8 +103,10 @@ describe('Cria candidato', () => {
     });
 
     mockCreate(makeCandidatoResponse({ perfil: makePerfilResponse({ foto: null, biografia: null }) }));
+    const embedding = jest.spyOn(matchUtils, 'gerarEmbedding').mockResolvedValue(new Array(3072).fill(0));
     await candidatoService.create(candidato);
 
+    expect(embedding).toHaveBeenCalledTimes(1);
     const payload = (candidatoRepository.create as jest.Mock).mock.calls[0][0];
     expect(payload.perfil.foto).toBeNull();
     expect(payload.perfil.biografia).toBeNull();
@@ -124,9 +126,10 @@ describe('Cria candidato', () => {
 
     jest.spyOn(perfilService, 'validarEmail').mockResolvedValue(undefined);
     (candidatoRepository.create as jest.Mock).mockResolvedValue(response);
-
+    const embedding = jest.spyOn(matchUtils, 'gerarEmbedding').mockResolvedValue(new Array(3072).fill(0));
     const result = await candidatoService.create(candidato);
 
+    expect(embedding).toHaveBeenCalledTimes(1);
     expect(perfilService.validarEmail).toHaveBeenCalledWith(candidato.perfil.email);
     expect(candidatoRepository.create).toHaveBeenCalled();
     expect(result).toEqual(response);
