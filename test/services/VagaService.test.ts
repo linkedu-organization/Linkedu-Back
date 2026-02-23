@@ -2,7 +2,6 @@ import { VagaUpdateDTO } from '../../src/models/VagaSchema';
 import { vagaRepository } from '../../src/repositories/VagaRepository';
 import { vagaService } from '../../src/services/VagaService';
 import * as authUtils from '../../src/utils/authUtils';
-import * as matchUtils from '../../src/utils/matchUtils';
 
 jest.mock('../../src/repositories/VagaRepository', () => ({
   vagaRepository: {
