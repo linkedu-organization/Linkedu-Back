@@ -20,18 +20,17 @@ const makeExperiencia = (overrides = {}) => ({
   orientador: 'Claudio Baptista',
   instituicao: 'UFCG',
   periodoInicio: '01/2026',
-  periodoFim: null,
-  local: 'LSI',
+  periodoFim: null as string | null,
+  local: 'LSI' as string | null,
   ...overrides,
 });
 
 const makeExperienciaResponse = (overrides = {}) => {
   const { candidatoId, ...experiencia } = makeExperiencia();
-  console.log(JSON.stringify(experiencia));
-
+  const temp = experiencia;
   return {
     id: 1,
-    ...experiencia,
+    ...temp,
     ...overrides,
   };
 };
@@ -73,28 +72,27 @@ describe('Cria Experiência', () => {
   });
 });
 
-// describe('Atualiza vaga', () => {
-//   test('case 1: atualiza campos da experiência', async () => {
-//     const experiencia = makeExperiencia();
-//     const updateOverrides = { descricao: 'Muito agradável!', local: 'LSI - Bloco CN' };
+describe('Atualiza vaga', () => {
+  test('case 1: atualiza campos da experiência', async () => {
+    const experiencia = makeExperiencia();
+    const updateExperiencia: ExperienciaUpdateDTO = {
+      ...experiencia,
+      descricao: 'Muito agradável!',
+      local: 'LSI - Bloco CN',
+    };
 
-//     const experienciaUpdate: ExperienciaUpdateDTO = {
-//       ...experiencia,
-//       ...updateOverrides,
-//     };
+    const experienciaUpdatedResponse = makeExperienciaResponse(updateExperiencia);
 
-//     const experienciaAtual = makeExperienciaResponse();
-//     const experienciaAtualizada = makeExperienciaResponse({ candidatoId: 1, ...experienciaUpdate });
+    mockGetById(experienciaUpdatedResponse);
+    mockUpdate(experienciaUpdatedResponse);
 
-//     mockGetById(experienciaAtual);
-//     mockUpdate(experienciaAtualizada);
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    const result = await experienciaService.update(1, updateExperiencia, AUTH_TOKEN);
 
-//     const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
-//     const result = await experienciaService.update(1, experienciaUpdate, AUTH_TOKEN);
-
-//     // expect(ensureSelfTargetedAction).toHaveBeenCalledWith(experiencia.candidatoId, AUTH_TOKEN);
-//     expect(experienciaRepository.getById).toHaveBeenCalledWith(1);
-//     expect(experienciaRepository.update).toHaveBeenCalledWith(1, experienciaAtualizada);
-//     expect(result).toEqual(experienciaAtualizada);
-//   });
-// });
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
+    expect(experienciaRepository.update).toHaveBeenCalled();
+    console.log('experienciaUpdatedResponse:', experienciaUpdatedResponse);
+    console.log('result:', result);
+    expect(result).toEqual(experienciaUpdatedResponse);
+  });
+});

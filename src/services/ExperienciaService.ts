@@ -34,7 +34,7 @@ class ExperienciaService {
     ensureSelfTargetedAction(experiencia.candidatoId, authToken);
 
     const result = await experienciaRepository.update(id, parsedData);
-    return ExperienciaResponseSchema.parseAsync(result);
+    return await ExperienciaResponseSchema.parseAsync(result);
   }
 
   async delete(id: number, authToken: unknown) {
