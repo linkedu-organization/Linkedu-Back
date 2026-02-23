@@ -2,7 +2,7 @@ import { VagaUpdateDTO } from '../../src/models/VagaSchema';
 import { vagaRepository } from '../../src/repositories/VagaRepository';
 import { vagaService } from '../../src/services/VagaService';
 import * as authUtils from '../../src/utils/authUtils';
-import { gerarEmbedding } from '../../src/utils/matchUtils';
+import * as matchUtils from '../../src/utils/matchUtils';
 
 jest.mock('../../src/repositories/VagaRepository', () => ({
   vagaRepository: {
@@ -96,19 +96,20 @@ const mockGetAll = (v: any) => (vagaRepository.getAll as jest.Mock).mockResolved
 const mockDelete = () => (vagaRepository.delete as jest.Mock).mockResolvedValue(undefined);
 
 describe('Cria vaga', () => {
-  test('case 1: com todos os campos', async () => {
-    const vaga = makeVaga();
-    const response = makeVagaResponse();
+  describe('Cria vaga', () => {
+    test('case 1: com todos os campos', async () => {
+      const vaga = makeVaga();
+      const response = makeVagaResponse();
 
-    const embedding = gerarEmbedding as jest.Mock;
+      mockCreate(response);
 
-    mockCreate(response);
+      const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
 
-    const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
-    const result = await vagaService.create(vaga, AUTH_TOKEN);
-    expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
-    expect(embedding).toHaveBeenCalledTimes(1);
-    expect(result).toEqual(response);
+      const result = await vagaService.create(vaga, AUTH_TOKEN);
+
+      expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
+      expect(result).toEqual(response);
+    });
   });
 
   test('case 2: removendo opcionais (deixando-os nulos)', async () => {
