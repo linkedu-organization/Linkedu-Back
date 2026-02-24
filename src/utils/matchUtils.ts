@@ -88,6 +88,7 @@ export async function gerarEmbedding(tableName: CandidatoCreateDTO | VagaCreateD
 export async function salvaNovasRecomendacoes(dados: Prisma.RecomendacaoCreateManyInput[]) {
   await prisma.recomendacao.createMany({
     data: dados,
+    skipDuplicates: true,
   });
 }
 

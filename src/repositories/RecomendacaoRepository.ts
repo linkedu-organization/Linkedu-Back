@@ -40,7 +40,7 @@ class RecomendacaoRepository {
     }));
 
     if (dadosParaSalvar.length > 0) {
-      salvaNovasRecomendacoes(dadosParaSalvar);
+      await salvaNovasRecomendacoes(dadosParaSalvar);
     }
 
     return resultadoFinal;
@@ -71,7 +71,7 @@ class RecomendacaoRepository {
         updatedAt: item.updatedAt,
       }));
 
-    salvaNovasRecomendacoes(dadosParaSalvar);
+    await salvaNovasRecomendacoes(dadosParaSalvar);
 
     return resultadoFinal;
   }
