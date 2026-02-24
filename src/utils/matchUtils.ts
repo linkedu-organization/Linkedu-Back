@@ -178,14 +178,13 @@ export async function deletaRecomendacoes(entidade: 'vagaId' | 'candidatoId', id
 }
 
 export async function getVectorEmbedding(entidade: 'Candidato' | 'Vaga', id: number): Promise<string> {
-  const resultado = await prisma.$queryRaw<Array<{ embedding: string }>>`
-      SELECT embedding::text 
-      FROM "${entidade}" 
-      WHERE id = ${id}
-    `;
-  if (resultado.length === 0 || !resultado[0]?.embedding) {
-    return '';
-  }
+  const tabela = Prisma.raw(`"${entidade}"`);
 
-  return resultado[0].embedding;
+  const resultado = await prisma.$queryRaw<Array<{ embedding: string }>>`
+    SELECT embedding::text
+    FROM ${tabela}
+    WHERE id = ${id}
+  `;
+
+  return resultado[0]?.embedding ?? '';
 }
