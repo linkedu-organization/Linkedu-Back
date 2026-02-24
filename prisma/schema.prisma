@@ -139,6 +139,7 @@ model Recomendacao {
   vagaId      Int
   candidatoId Int
   score       Float
+  descricao   String
   updatedAt   DateTime         @default(now())
   tipo        TipoRecomendacao
   candidato   Candidato        @relation(fields: [candidatoId], references: [id], onDelete: Cascade)

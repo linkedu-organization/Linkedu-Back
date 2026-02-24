@@ -10,6 +10,7 @@ const RecomendacaoSchema = z.object({
   candidatoId: z.number(),
   updatedAt: z.date().or(z.iso.datetime()),
   score: z.number().nullable(),
+  descricao: z.string(),
   tipo: tipoRecomendacao,
 });
 

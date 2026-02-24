@@ -36,6 +36,7 @@ class RecomendacaoRepository {
       candidatoId: item.candidatoId,
       tipo: item.tipo,
       score: item.score!,
+      descricao: item.descricao,
       updatedAt: item.updatedAt,
     }));
 
@@ -68,6 +69,7 @@ class RecomendacaoRepository {
         candidatoId: item.candidatoId,
         tipo: item.tipo,
         score: item.score!,
+        descricao: item.descricao,
         updatedAt: item.updatedAt,
       }));
 
@@ -93,7 +95,7 @@ class RecomendacaoRepository {
       orderBy: { score: 'desc' },
     });
 
-    return salvos as RecomendacaoCandidatoResponse[];
+    return salvos as unknown as RecomendacaoCandidatoResponse[];
   }
 
   async getRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
@@ -112,7 +114,7 @@ class RecomendacaoRepository {
       orderBy: { score: 'desc' },
     });
 
-    return salvos as RecomendacaoVagaResponse[];
+    return salvos as unknown as RecomendacaoVagaResponse[];
   }
 }
 

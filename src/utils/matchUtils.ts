@@ -12,6 +12,7 @@ interface Similaridade {
 }
 
 export const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
+export const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 export async function criarEmbedding(texto: string) {
   const model = genAI.getGenerativeModel({ model: 'gemini-embedding-001' });
@@ -51,7 +52,7 @@ export const camposCandidato = [
 
 export async function gerarEmbedding(tableName: CandidatoCreateDTO | VagaCreateDTO): Promise<number[]> {
   let textoEmbedding = '';
-  if (tableName as CandidatoCreateDTO) {
+  if ('habilidades' in tableName) {
     const {
       instituicao,
       areaAtuacao,
@@ -64,7 +65,7 @@ export async function gerarEmbedding(tableName: CandidatoCreateDTO | VagaCreateD
     textoEmbedding = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
     Nível de escolaridade: ${nivelEscolaridade}, com conclusão prevista para ${periodoConclusao ?? 'não informada'}. 
     Competências e conhecimentos técnicos: ${habilidades.join(', ')}. Áreas de interesse e objetivos: ${areasInteresse.join(', ')}. Disponibilidade de tempo: ${tempoDisponivel}.`;
-  } else if (tableName as VagaCreateDTO) {
+  } else {
     const {
       titulo,
       descricao,
@@ -121,21 +122,25 @@ export async function getVagasPayload(vagasRecomendadas: Similaridade[], candida
     include: { recrutador: { include: { perfil: true } } },
   });
 
-  return vagasRecomendadas
-    .map(vaga => {
+  const resultado = await Promise.all(
+    vagasRecomendadas.map(async vaga => {
       const dadosVaga = vagasCompletas.find(v => v.id === vaga.id);
 
       if (!dadosVaga) return null;
-
+      const descricao = await geraDescricao(vaga.id, candidatoId, vaga.score);
       return {
         vagaId: dadosVaga.id,
         candidatoId: candidatoId,
         updatedAt: new Date(),
         tipo: 'VAGAS_PARA_CANDIDATO' as const,
         score: vaga.score,
+        descricao: descricao,
         vaga: dadosVaga,
       } as RecomendacaoVagaResponse;
-    })
+    }),
+  );
+
+  return resultado
     .filter((item): item is RecomendacaoVagaResponse => item !== null)
     .sort((a, b) => (b.score || 0) - (a.score || 0));
 }
@@ -151,20 +156,25 @@ export async function getCandidatoPayload(candidatosRecomendados: Similaridade[]
     },
   });
 
-  return candidatosRecomendados
-    .map(candidato => {
+  const resultado = await Promise.all(
+    candidatosRecomendados.map(async candidato => {
       const dadosCandidato = candidatosCompletos.find(c => c.id === candidato.id);
       if (!dadosCandidato) return null;
 
+      const descricao = await geraDescricao(dadosCandidato.id, vagaId, candidato.score);
       return {
         vagaId: vagaId,
         candidatoId: dadosCandidato.id,
         updatedAt: new Date() as Date,
         tipo: 'CANDIDATOS_PARA_VAGA' as const,
         score: candidato.score,
+        descricao: descricao,
         candidato: dadosCandidato,
       } as RecomendacaoCandidatoResponse;
-    })
+    }),
+  );
+
+  return resultado
     .filter((item): item is RecomendacaoCandidatoResponse => item !== null)
     .sort((a, b) => (b.score || 0) - (a.score || 0));
 }
@@ -188,4 +198,33 @@ export async function getVectorEmbedding(entidade: 'Candidato' | 'Vaga', id: num
   `;
 
   return resultado[0]?.embedding ?? '';
+}
+
+export async function geraDescricao(vagaId: number, candidatoId: number, score: number): Promise<string> {
+  const vaga = await prisma.vaga.findUnique({
+    where: { id: vagaId },
+  });
+
+  const candidato = await prisma.candidato.findUnique({
+    where: { id: candidatoId },
+  });
+
+  const textoEmbeddingCandidato = `Profissional/Estudante da instituição ${candidato?.instituicao} com foco em ${candidato?.areaAtuacao}. 
+    Nível de escolaridade: ${candidato?.nivelEscolaridade}, com conclusão prevista para ${candidato?.periodoConclusao ?? 'não informada'}. 
+    Competências e conhecimentos técnicos: ${candidato?.habilidades.join(', ')}. Áreas de interesse e objetivos: ${candidato?.areasInteresse.join(', ')}. Disponibilidade de tempo: ${candidato?.tempoDisponivel}.`;
+
+  const textoEmbeddingVaga = `Oportunidade de ${vaga?.titulo} na instituição ${vaga?.instituicao}. Perfil da Vaga: ${vaga?.descricao}. Formação requerida: ${vaga?.curso} para o público ${vaga?.publicoAlvo}. 
+        Requisitos técnicos mandatórios: ${vaga?.conhecimentosObrigatorios}. Desejável e diferenciais: ${vaga?.conhecimentosOpcionais}. Condições: Carga horária de ${vaga?.cargaHoraria} e duração de ${vaga?.duracao}.`;
+
+  const prompt = `Gere uma descrição de recomendação com os motivos do match entre um candidato e uma vaga com base nas seguintes informações:
+    Candidato: ${textoEmbeddingCandidato}
+    Vaga: ${textoEmbeddingVaga}
+    Score da recomendação: ${score}
+    
+    Explique os principais pontos de compatibilidade técnica e de interesse.
+    Não invente informações. Use no máximo 5 linhas e não fale sobre o score.
+    `;
+
+  const response = await model.generateContent(prompt);
+  return response.response.text();
 }
