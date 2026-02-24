@@ -1,7 +1,10 @@
+import { response } from 'express';
+
 import { ExperienciaUpdateDTO } from '../../src/models/ExperienciaSchema';
 import { experienciaRepository } from '../../src/repositories/ExperienciaRepository';
 import { experienciaService } from '../../src/services/ExperienciaService';
 import * as authUtils from '../../src/utils/authUtils';
+import { vagaService } from '../../src/services/VagaService';
 
 jest.mock('../../src/repositories/ExperienciaRepository', () => ({
   experienciaRepository: {
@@ -91,8 +94,57 @@ describe('Atualiza vaga', () => {
 
     expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(experienciaRepository.update).toHaveBeenCalled();
-    console.log('experienciaUpdatedResponse:', experienciaUpdatedResponse);
-    console.log('result:', result);
-    expect(result).toEqual(experienciaUpdatedResponse);
+    const { candidatoId, ...resto } = experienciaUpdatedResponse;
+    expect(result).toEqual(resto);
+  });
+});
+
+describe('Recupera vaga pelo id', () => {
+  test('case 1: case 1: retorna vaga existente', async () => {
+    const experienciaResponse = makeExperienciaResponse();
+    mockGetById(experienciaResponse);
+
+    const result = await experienciaService.getById(1);
+
+    expect(experienciaRepository.getById).toHaveBeenCalledWith(1);
+    expect(result).toEqual(experienciaResponse);
+  });
+
+  test('case 2: experiência inexistente lança erro', async () => {
+    (experienciaRepository.getById as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
+
+    await expect(experienciaService.getById(-1)).rejects.toThrow('Entidade com id -1 não encontrada');
+  });
+});
+
+describe('Recupera todas as experiencia', () => {
+  test('case 1: retorna lista de experiencia', async () => {
+    const response = [makeExperienciaResponse(), makeExperienciaResponse({ id: 2 })];
+    mockGetAll(response);
+
+    const result = await experienciaService.getAll();
+
+    expect(experienciaRepository.getAll).toHaveBeenCalled();
+    expect(result).toEqual(response);
+  });
+});
+
+describe('Deleta vaga', () => {
+  test('case 1: com id válido', async () => {
+    mockGetById(makeExperienciaResponse());
+    mockDelete();
+
+    const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    await experienciaService.delete(1, AUTH_TOKEN);
+
+    // expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
+    expect(experienciaRepository.delete).toHaveBeenCalledWith(1);
+  });
+
+  test('case 2: com id inválido lança erro', async () => {
+    jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
+    (experienciaRepository.delete as jest.Mock).mockRejectedValue(new Error('Entidade com id -1 não encontrada'));
+
+    await expect(experienciaService.delete(-1, AUTH_TOKEN)).rejects.toThrow('Entidade com id -1 não encontrada');
   });
 });
