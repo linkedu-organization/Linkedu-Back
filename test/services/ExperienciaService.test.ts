@@ -1,10 +1,6 @@
-import { response } from 'express';
-
-import { ExperienciaUpdateDTO } from '../../src/models/ExperienciaSchema';
 import { experienciaRepository } from '../../src/repositories/ExperienciaRepository';
 import { experienciaService } from '../../src/services/ExperienciaService';
 import * as authUtils from '../../src/utils/authUtils';
-import { vagaService } from '../../src/services/VagaService';
 
 jest.mock('../../src/repositories/ExperienciaRepository', () => ({
   experienciaRepository: {
