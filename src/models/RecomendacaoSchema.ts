@@ -5,7 +5,7 @@ import { VagaResponseSchema } from './VagaSchema';
 
 const tipoRecomendacao = z.enum(['VAGAS_PARA_CANDIDATO', 'CANDIDATOS_PARA_VAGA']);
 
-const RecomendacaoSchema = z.object({
+export const RecomendacaoCreateSchema = z.object({
   vagaId: z.number(),
   candidatoId: z.number(),
   updatedAt: z.date().or(z.iso.datetime()),
@@ -14,14 +14,15 @@ const RecomendacaoSchema = z.object({
   tipo: tipoRecomendacao,
 });
 
-export const RecomendacaoCandidatoResponse = RecomendacaoSchema.extend({
+export const RecomendacaoCandidatoResponse = RecomendacaoCreateSchema.extend({
   candidato: CandidatoResponseSchema,
 });
 
-export const RecomendacaoVagaResponse = RecomendacaoSchema.extend({
+export const RecomendacaoVagaResponse = RecomendacaoCreateSchema.extend({
   vaga: VagaResponseSchema,
 });
 
 export type tipoRecomendacao = z.infer<typeof tipoRecomendacao>;
-export type RecomendacaoCandidatoResponse = z.infer<typeof RecomendacaoCandidatoResponse>;
+export type RecomendacaoCreate = z.infer<typeof RecomendacaoCreateSchema>;
 export type RecomendacaoVagaResponse = z.infer<typeof RecomendacaoVagaResponse>;
+export type RecomendacaoCandidatoResponse = z.infer<typeof RecomendacaoCandidatoResponse>;

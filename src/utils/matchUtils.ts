@@ -4,9 +4,13 @@ import { Prisma, TipoRecomendacao } from '@prisma/client';
 import { VagaCreateDTO } from '../models/VagaSchema';
 import { CandidatoCreateDTO } from '../models/CandidatoSchema';
 import prisma from './prisma';
-import { RecomendacaoCandidatoResponse, RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
+import {
+  RecomendacaoCandidatoResponse,
+  RecomendacaoCreate,
+  RecomendacaoVagaResponse,
+} from '../models/RecomendacaoSchema';
 
-interface Similaridade {
+export interface Similaridade {
   id: number;
   score: number;
 }
@@ -145,7 +149,7 @@ export async function getVagasPayload(vagasRecomendadas: Similaridade[], candida
     .sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
-export async function getCandidatoPayload(candidatosRecomendados: Similaridade[], vagaId: number) {
+export async function getCandidatosPayload(candidatosRecomendados: Similaridade[], vagaId: number) {
   const candidatosCompletos = await prisma.candidato.findMany({
     where: {
       id: { in: candidatosRecomendados.map(c => c.id) },

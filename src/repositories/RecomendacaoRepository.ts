@@ -1,37 +1,24 @@
-import { Prisma } from '@prisma/client';
-
 import { RecomendacaoCandidatoResponse } from '../models/RecomendacaoSchema';
 import { RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
 import prisma from '../utils/prisma';
 import {
   salvaNovasRecomendacoes,
-  calculaSimilaridade,
   getVagasPayload,
-  getCandidatoPayload,
+  getCandidatosPayload,
   deletaRecomendacoes,
-  getVectorEmbedding,
+  Similaridade,
 } from '../utils/matchUtils';
 
 class RecomendacaoRepository {
-  async createRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
-    const embeddingCandidato = await getVectorEmbedding('Candidato', candidatoId);
+  async createRecomendacaoVagas(
+    vagasSimilares: Similaridade[],
+    candidatoId: number,
+  ): Promise<RecomendacaoVagaResponse[]> {
+    const vagas = await getVagasPayload(vagasSimilares, candidatoId);
 
-    if (embeddingCandidato === '') {
-      return [];
-    }
-
-    const vagasRecomendadas = await calculaSimilaridade(
-      embeddingCandidato,
-      'Vaga',
-      Prisma.sql`("dataExpiracao" IS NULL OR TO_DATE("dataExpiracao", 'DD/MM/YYYY') >= CURRENT_DATE)`,
-    );
-
-    if (vagasRecomendadas.length === 0) return [];
-
-    const resultadoFinal = await getVagasPayload(vagasRecomendadas, candidatoId);
     deletaRecomendacoes('candidatoId', candidatoId, 'VAGAS_PARA_CANDIDATO');
 
-    const dadosParaSalvar = resultadoFinal.map(item => ({
+    const recomendacoes = vagas.map(item => ({
       vagaId: item.vagaId,
       candidatoId: item.candidatoId,
       tipo: item.tipo,
@@ -40,29 +27,20 @@ class RecomendacaoRepository {
       updatedAt: item.updatedAt,
     }));
 
-    if (dadosParaSalvar.length > 0) {
-      await salvaNovasRecomendacoes(dadosParaSalvar);
-    }
+    salvaNovasRecomendacoes(recomendacoes);
 
-    return resultadoFinal;
+    return vagas;
   }
 
-  async createRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
-    const vagaEmbedding = await getVectorEmbedding('Vaga', vagaId);
-
-    if (vagaEmbedding === '') {
-      return [];
-    }
-
-    const cadidatosParaVaga = await calculaSimilaridade(vagaEmbedding, 'Candidato', Prisma.sql`disponivel = true`);
-
-    if (cadidatosParaVaga.length === 0) return [];
-
-    const resultadoFinal = await getCandidatoPayload(cadidatosParaVaga, vagaId);
+  async createRecomendacaoCandidatos(
+    candidatosSimilares: Similaridade[],
+    vagaId: number,
+  ): Promise<RecomendacaoCandidatoResponse[]> {
+    const candidatos = await getCandidatosPayload(candidatosSimilares, vagaId);
 
     deletaRecomendacoes('vagaId', vagaId, 'CANDIDATOS_PARA_VAGA');
 
-    const dadosParaSalvar = resultadoFinal
+    const recomendacoes = candidatos
       .filter((item): item is RecomendacaoCandidatoResponse => item !== null && item.score !== null)
       .map(item => ({
         vagaId: item.vagaId,
@@ -73,9 +51,9 @@ class RecomendacaoRepository {
         updatedAt: item.updatedAt,
       }));
 
-    await salvaNovasRecomendacoes(dadosParaSalvar);
+    salvaNovasRecomendacoes(recomendacoes);
 
-    return resultadoFinal;
+    return candidatos;
   }
 
   async getRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
