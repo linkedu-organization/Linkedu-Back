@@ -14,7 +14,9 @@ export const ExperienciaCreateSchema = ExperienciaSchema.extend({
   candidatoId: z.number(),
 });
 
-export const ExperienciaUpdateSchema = ExperienciaSchema.partial();
+export const ExperienciaUpdateSchema = ExperienciaSchema.extend({
+  candidatoId: z.number(),
+});
 
 export const ExperienciaResponseSchema = ExperienciaSchema.extend({
   id: z.number(),
