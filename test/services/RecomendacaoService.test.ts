@@ -33,8 +33,8 @@ const mockCreateRecomendacaoCandidatos = recomendacaoRepository.createRecomendac
 const mockGetRecomendacaoCandidatos = recomendacaoRepository.getRecomendacaoCandidatos as jest.Mock;
 const mockGetRecomendacaoVagas = recomendacaoRepository.getRecomendacaoVagas as jest.Mock;
 
-describe('Recomendacao de vagas para o candidato logado', () => {
-  test('Deve criar recomendações de vagas para o candidato logado', async () => {
+describe('Cria Recomendação', () => {
+  test('case 1: recomendações de vagas para candidato logado', async () => {
     const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
 
     const candidatoServiceGetById = jest.spyOn(candidatoService, 'getById').mockResolvedValue({} as any);
@@ -52,10 +52,8 @@ describe('Recomendacao de vagas para o candidato logado', () => {
     expect(candidatoServiceGetById).toHaveBeenCalledWith(1);
     expect(mockCreateRecomendacaoVagas).toHaveBeenCalledWith([{ similarity: 10 }, { similarity: 20 }], 1);
   });
-});
 
-describe('Recomendacao de candidatos para uma vaga', () => {
-  test('Deve criar recomendações de candidatos para uma vaga', async () => {
+  test('case 2: recomendações de candidatos para uma vaga', async () => {
     const vagaServiceGetById = jest.spyOn(vagaService, 'getById').mockResolvedValue({} as any);
     const embedding = jest.spyOn(matchUtils, 'getVectorEmbedding').mockResolvedValue('[0.1,0.2]');
     const calculaSimilaridade = jest
@@ -72,8 +70,8 @@ describe('Recomendacao de candidatos para uma vaga', () => {
   });
 });
 
-describe('Get de recomendações de vagas para o candidato logado', () => {
-  test('Deve obter recomendações de vagas para o candidato logado', async () => {
+describe('Recupera recomendações', () => {
+  test('case 1: vagas para candidato', async () => {
     const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
 
     const candidatoServiceGetById = jest.spyOn(candidatoService, 'getById').mockResolvedValue({} as any);
@@ -85,10 +83,8 @@ describe('Get de recomendações de vagas para o candidato logado', () => {
     expect(candidatoServiceGetById).toHaveBeenCalledWith(1);
     expect(mockGetRecomendacaoVagas).toHaveBeenCalledWith(1);
   });
-});
 
-describe('Get de recomendações de candidatos para uma vaga', () => {
-  test('Deve obter recomendações de candidatos para uma vaga', async () => {
+  test('case 2: candidatos para vaga', async () => {
     mockGetRecomendacaoCandidatos.mockResolvedValueOnce([]);
     await recomendacaoService.getRecomendacaoCandidatos(1);
 
