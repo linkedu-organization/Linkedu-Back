@@ -5,6 +5,7 @@ import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
 import { camposCandidato, createEmbedding, gerarEmbedding } from '../utils/matchUtils';
+import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class CandidatoRepository {
   async create(data: CandidatoCreateDTO, embedding: number[]) {
