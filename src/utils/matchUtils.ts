@@ -4,11 +4,7 @@ import { Prisma, TipoRecomendacao } from '@prisma/client';
 import { VagaCreateDTO } from '../models/VagaSchema';
 import { CandidatoCreateDTO } from '../models/CandidatoSchema';
 import prisma from './prisma';
-import {
-  RecomendacaoCandidatoResponse,
-  RecomendacaoCreate,
-  RecomendacaoVagaResponse,
-} from '../models/RecomendacaoSchema';
+import { RecomendacaoCandidatoResponse, RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
 
 export interface Similaridade {
   id: number;
