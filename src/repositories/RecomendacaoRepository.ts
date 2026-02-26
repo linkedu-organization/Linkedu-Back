@@ -73,8 +73,7 @@ class RecomendacaoRepository {
       orderBy: { score: 'desc' },
     });
 
-    RecomendacaoCandidatoResponse.parse(salvos);
-    return salvos;
+    return salvos as RecomendacaoCandidatoResponse[];
   }
 
   async getRecomendacaoVagas(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
@@ -93,8 +92,7 @@ class RecomendacaoRepository {
       orderBy: { score: 'desc' },
     });
 
-    RecomendacaoVagaResponse.parse(salvos);
-    return salvos;
+    return salvos as RecomendacaoVagaResponse[];
   }
 }
 
