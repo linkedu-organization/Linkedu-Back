@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CandidatoResponseSchema } from './CandidatoSchema';
+import { CandidatoExtendedResponseSchema } from './CandidatoSchema';
 import { VagaResponseSchema } from './VagaSchema';
 
 const tipoRecomendacao = z.enum(['VAGAS_PARA_CANDIDATO', 'CANDIDATOS_PARA_VAGA']);
@@ -15,7 +15,7 @@ export const RecomendacaoCreateSchema = z.object({
 });
 
 export const RecomendacaoCandidatoResponse = RecomendacaoCreateSchema.extend({
-  candidato: CandidatoResponseSchema,
+  candidato: CandidatoExtendedResponseSchema,
 });
 
 export const RecomendacaoVagaResponse = RecomendacaoCreateSchema.extend({
