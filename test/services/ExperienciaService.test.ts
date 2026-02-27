@@ -73,14 +73,14 @@ describe('Cria Experiência', () => {
   });
 });
 
-describe('Atualiza vaga', () => {
+describe('Atualiza experiencia', () => {
   test('case 1: atualiza campos da experiência', async () => {
     const updatedExperienciaResponse = makeExperienciaResponse({
       descricao: 'Muito agradável!',
       local: 'LSI - Bloco CN',
     });
 
-    mockGetById(makeExperienciaResponse());
+    mockGetById(makeExperiencia());
     mockUpdate(updatedExperienciaResponse);
 
     const updateDTO = makeExperiencia();
@@ -88,14 +88,14 @@ describe('Atualiza vaga', () => {
     const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
     const result = await experienciaService.update(1, updateDTO, AUTH_TOKEN);
 
-    // expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(experienciaRepository.update).toHaveBeenCalled();
     expect(result).toEqual(updatedExperienciaResponse);
   });
 });
 
-describe('Recupera vaga pelo id', () => {
-  test('case 1: case 1: retorna vaga existente', async () => {
+describe('Recupera experiencia pelo id', () => {
+  test('case 1: case 1: retorna experiencia existente', async () => {
     const experienciaResponse = makeExperienciaResponse();
     mockGetById(experienciaResponse);
 
@@ -124,15 +124,15 @@ describe('Recupera todas as experiencia', () => {
   });
 });
 
-describe('Deleta vaga', () => {
+describe('Deleta experiencia', () => {
   test('case 1: com id válido', async () => {
-    mockGetById(makeExperienciaResponse());
+    mockGetById(makeExperiencia());
     mockDelete();
 
     const ensureSelfTargetedAction = jest.spyOn(authUtils, 'ensureSelfTargetedAction').mockReturnValue(undefined);
     await experienciaService.delete(1, AUTH_TOKEN);
 
-    // expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
+    expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(experienciaRepository.delete).toHaveBeenCalledWith(1);
   });
 
