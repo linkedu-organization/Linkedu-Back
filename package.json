@@ -11,7 +11,8 @@
     "prisma:generate": "prisma generate",
     "prestart": "npm run build",
     "format": "prettier --write .",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "postinstall": "prisma generate"
   },
   "repository": {
     "type": "git",
