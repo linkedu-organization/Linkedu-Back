@@ -59,8 +59,5 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Set environment variables
-        run: echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
-
       - name: Run tests
-        run: npx prisma generate && npm test
+        run: npm test
