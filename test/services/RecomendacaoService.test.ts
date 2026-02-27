@@ -15,15 +15,19 @@ jest.mock('../../src/repositories/RecomendacaoRepository', () => ({
 }));
 
 jest.mock('@prisma/client', () => {
-  const actual = jest.requireActual('@prisma/client');
-
   return {
-    ...actual,
     PrismaClient: jest.fn().mockImplementation(() => ({
       $queryRaw: jest.fn(),
       $executeRaw: jest.fn(),
       $executeRawUnsafe: jest.fn(),
+      recomendacao: {
+        create: jest.fn(),
+        findMany: jest.fn(),
+      },
     })),
+    Prisma: {
+      sql: () => '',
+    },
   };
 });
 
@@ -36,7 +40,6 @@ const mockGetRecomendacaoVagas = recomendacaoRepository.getRecomendacaoVagas as 
 describe('Cria Recomendação', () => {
   test('case 1: recomendações de vagas para candidato logado', async () => {
     const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
-
     const candidatoServiceGetById = jest.spyOn(candidatoService, 'getById').mockResolvedValue({} as any);
     const embedding = jest.spyOn(matchUtils, 'getVectorEmbedding').mockResolvedValue('[0.1,0.2]');
     const calculaSimilaridade = jest
@@ -44,12 +47,13 @@ describe('Cria Recomendação', () => {
       .mockResolvedValue([{ similarity: 10 }, { similarity: 20 }] as any);
 
     mockCreateRecomendacaoVagas.mockResolvedValueOnce([]);
+
     await recomendacaoService.createRecomendacaoVagas(AUTH_TOKEN);
 
     expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
+    expect(candidatoServiceGetById).toHaveBeenCalledWith(1);
     expect(embedding).toHaveBeenCalledWith('Candidato', 1);
     expect(calculaSimilaridade).toHaveBeenCalledWith('[0.1,0.2]', 'Vaga', expect.anything());
-    expect(candidatoServiceGetById).toHaveBeenCalledWith(1);
     expect(mockCreateRecomendacaoVagas).toHaveBeenCalledWith([{ similarity: 10 }, { similarity: 20 }], 1);
   });
 
