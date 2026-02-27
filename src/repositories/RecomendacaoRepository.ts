@@ -94,6 +94,22 @@ class RecomendacaoRepository {
 
     return salvos as RecomendacaoVagaResponse[];
   }
+
+  async deleteByCandidatoId(candidatoId: number) {
+    await prisma.recomendacao.deleteMany({
+      where: {
+        candidatoId,
+      },
+    });
+  }
+
+  async deleteByVagaId(vagaId: number) {
+    await prisma.recomendacao.deleteMany({
+      where: {
+        vagaId,
+      },
+    });
+  }
 }
 
 export const recomendacaoRepository = new RecomendacaoRepository();

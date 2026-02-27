@@ -2,6 +2,7 @@ import { VagaCreateDTO, VagaUpdateDTO } from '../models/VagaSchema';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
 import { camposVaga, createEmbedding, gerarEmbedding } from '../utils/matchUtils';
+import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class VagaRepository {
   async create(data: VagaCreateDTO, recrutadorId: number, embedding: number[]) {
@@ -51,6 +52,7 @@ class VagaRepository {
   }
 
   async delete(id: number) {
+    await recomendacaoRepository.deleteByVagaId(id);
     return prisma.vaga.delete({
       where: { id },
     });
