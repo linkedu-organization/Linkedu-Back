@@ -8,16 +8,18 @@ import { AppError } from './errors/AppError';
 
 const app = express();
 const port = process.env.PORT ?? 3333;
+const corsOptions = {
+  origin: 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
 app.disable('x-powered-by');
 
-const corsOptions = {
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(cookieParser());
 app.use('/api', routes);
 
