@@ -84,9 +84,7 @@ class RecomendacaoRepository {
 
   async deleteByCandidatoId(candidatoId: number) {
     await prisma.recomendacao.deleteMany({
-      where: {
-        candidatoId,
-      },
+      where: { candidatoId },
     });
   }
 
