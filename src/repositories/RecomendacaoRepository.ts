@@ -82,13 +82,7 @@ class RecomendacaoRepository {
         candidatoId: candidatoId,
         tipo: 'VAGAS_PARA_CANDIDATO',
       },
-      include: {
-        vaga: {
-          include: {
-            recrutador: { include: { perfil: true } },
-          },
-        },
-      },
+      include: { vaga: { include: { recrutador: { include: { perfil: true } } } } },
       orderBy: { score: 'desc' },
     });
 
