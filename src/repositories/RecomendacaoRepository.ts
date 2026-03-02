@@ -62,14 +62,7 @@ class RecomendacaoRepository {
         vagaId: vagaId,
         tipo: 'CANDIDATOS_PARA_VAGA',
       },
-      include: {
-        candidato: {
-          include: {
-            perfil: true,
-            experiencias: true,
-          },
-        },
-      },
+      include: { candidato: { include: { perfil: true, experiencias: true } } },
       orderBy: { score: 'desc' },
     });
 
