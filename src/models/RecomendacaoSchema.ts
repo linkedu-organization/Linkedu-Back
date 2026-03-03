@@ -11,7 +11,7 @@ export const RecomendacaoCreateSchema = z.object({
   updatedAt: z.date().or(z.iso.datetime()),
   score: z.number().nullable(),
   descricao: z.string(),
-  tipo: tipoRecomendacao,
+  tipo: TipoRecomendacao,
 });
 
 export const RecomendacaoCandidatoResponse = RecomendacaoCreateSchema.extend({
