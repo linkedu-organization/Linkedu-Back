@@ -29,7 +29,7 @@ const CandidatoSchema = z.object({
   habilidades: z.string().array(),
 });
 
-export const CandidadoSchemaEmbedding = CandidatoSchema.extend({
+export const CandidadoEmbeddingSchema = CandidatoSchema.extend({
   embedding: z.array(z.number()).length(3072).nullable().default(null),
 });
 
@@ -52,4 +52,4 @@ export const CandidatoExtendedResponseSchema = CandidatoResponseSchema.extend({
 
 export type CandidatoCreateDTO = z.infer<typeof CandidatoCreateSchema>;
 export type CandidatoUpdateDTO = z.infer<typeof CandidatoUpdateSchema>;
-export type CandidatoEmbeddingDTO = z.infer<typeof CandidadoSchemaEmbedding>;
+export type CandidatoEmbeddingDTO = z.infer<typeof CandidadoEmbeddingSchema>;
