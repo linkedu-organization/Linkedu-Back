@@ -9,7 +9,7 @@ import { AppError } from './errors/AppError';
 const app = express();
 const port = process.env.PORT ?? 3333;
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: 'https://linkedu-441836131981.southamerica-east1.run.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
