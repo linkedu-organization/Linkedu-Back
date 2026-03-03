@@ -70,7 +70,7 @@ class CandidatoRepository {
         where: { id },
       });
       await perfilRepository.delete(tx, candidato.perfilId);
-      await recomendacaoRepository.deleteByCandidatoId(candidato.id);
+      await recomendacaoRepository.deleteByCandidatoId(tx, candidato.id);
       return candidato;
     });
   }

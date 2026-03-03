@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client';
+
 import { RecomendacaoCandidatoResponse } from '../models/RecomendacaoSchema';
 import { RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
 import prisma from '../utils/prisma';
@@ -82,8 +84,8 @@ class RecomendacaoRepository {
     return salvos as RecomendacaoVagaResponse[];
   }
 
-  async deleteByCandidatoId(candidatoId: number) {
-    await prisma.recomendacao.deleteMany({
+  async deleteByCandidatoId(tx: Prisma.TransactionClient, candidatoId: number) {
+    await tx.recomendacao.deleteMany({
       where: { candidatoId },
     });
   }
