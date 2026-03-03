@@ -4,8 +4,6 @@ import { Prisma } from '@prisma/client';
 import prisma from './prisma';
 import { VagaResponseDTO } from '../models/VagaSchema';
 import { CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
-import { vagaService } from '../services/VagaService';
-import { candidatoService } from '../services/CandidatoService';
 
 export interface Similaridade {
   id: number;
@@ -81,8 +79,7 @@ export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: Vag
 async function criarEmbedding(texto: string) {
   const model = genAI.getGenerativeModel({ model: 'gemini-embedding-001' });
   const result = await model.embedContent(texto);
-  const embedding = result.embedding;
-  return embedding;
+  return result.embedding;
 }
 
 async function atualizarEmbedding(
@@ -130,46 +127,38 @@ export async function calcularSimilaridade(
   `;
 }
 
-export async function getVagasPayload(vagasSimilares: Similaridade[], candidatoId: number) {
-  const resultado = await Promise.all(
+export async function getRecomendacaoVagasPayload(vagasSimilares: Similaridade[], candidatoId: number) {
+  const result = await Promise.all(
     vagasSimilares.map(async vaga => {
-      const dadosVaga = await vagaService.getById(vaga.id);
       //const descricao = await gerarDescricao(vaga.id, candidatoId, vaga.score);
-
       return {
-        vagaId: dadosVaga.id,
+        vagaId: vaga.id,
         candidatoId: candidatoId,
         updatedAt: new Date(),
         tipo: 'VAGAS_PARA_CANDIDATO' as const,
         score: vaga.score,
         descricao: '',
-        vaga: dadosVaga,
       };
     }),
   );
-
-  return resultado.sort((a, b) => (b.score || 0) - (a.score || 0));
+  return result.sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
-export async function getCandidatosPayload(candidatosRecomendados: Similaridade[], vagaId: number) {
-  const resultado = await Promise.all(
-    candidatosRecomendados.map(async candidato => {
-      const dadosCandidato = await candidatoService.getById(candidato.id);
+export async function getRecomendacaoCandidatosPayload(candidatosSimilares: Similaridade[], vagaId: number) {
+  const result = await Promise.all(
+    candidatosSimilares.map(async candidato => {
       //const descricao = await gerarDescricao(dadosCandidato.id, vagaId, candidato.score);
-
       return {
         vagaId: vagaId,
-        candidatoId: dadosCandidato.id,
+        candidatoId: candidato.id,
         updatedAt: new Date() as Date,
         tipo: 'CANDIDATOS_PARA_VAGA' as const,
         score: candidato.score,
         descricao: '',
-        candidato: dadosCandidato,
       };
     }),
   );
-
-  return resultado.sort((a, b) => (b.score || 0) - (a.score || 0));
+  return result.sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
 // async function gerarDescricao(vagaId: number, candidatoId: number, score: number) {

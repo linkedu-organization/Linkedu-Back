@@ -1,21 +1,26 @@
 import { Prisma, TipoRecomendacao } from '@prisma/client';
 
 import prisma from '../utils/prisma';
-import { getVagasPayload, getCandidatosPayload, Similaridade } from '../utils/matchUtils';
+import { getRecomendacaoVagasPayload, getRecomendacaoCandidatosPayload, Similaridade } from '../utils/matchUtils';
+import { vagaRepository } from './VagaRepository';
+import { candidatoRepository } from './CandidatoRepository';
 
 class RecomendacaoRepository {
   async createRecomendacaoVagasParaCandidato(vagasSimilares: Similaridade[], candidatoId: number) {
-    const vagas = await getVagasPayload(vagasSimilares, candidatoId);
-    this.deleteRecomendacao('candidatoId', candidatoId, 'VAGAS_PARA_CANDIDATO');
-    this.createRecomendacao(vagas);
-    return vagas;
+    const recomendacoes = await getRecomendacaoVagasPayload(vagasSimilares, candidatoId);
+    await this.deleteRecomendacao('candidatoId', candidatoId, 'VAGAS_PARA_CANDIDATO');
+    await this.createRecomendacao(recomendacoes);
+    return recomendacoes.map(obj => ({ ...obj, vaga: vagaRepository.getById(obj.vagaId) }));
   }
 
   async createRecomendacaoCandidatosParaVaga(candidatosSimilares: Similaridade[], vagaId: number) {
-    const candidatos = await getCandidatosPayload(candidatosSimilares, vagaId);
-    this.deleteRecomendacao('vagaId', vagaId, 'CANDIDATOS_PARA_VAGA');
-    this.createRecomendacao(candidatos);
-    return candidatos;
+    const recomendacoes = await getRecomendacaoCandidatosPayload(candidatosSimilares, vagaId);
+    await this.deleteRecomendacao('vagaId', vagaId, 'CANDIDATOS_PARA_VAGA');
+    await this.createRecomendacao(recomendacoes);
+    return recomendacoes.map(obj => ({
+      ...obj,
+      candidato: candidatoRepository.getById(obj.candidatoId),
+    }));
   }
 
   async createRecomendacao(dados: Prisma.RecomendacaoCreateManyInput[]) {
