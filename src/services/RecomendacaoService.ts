@@ -9,7 +9,7 @@ import { getAuthTokenId } from '../utils/authUtils';
 import { calculaSimilaridade, getVectorEmbedding } from '../utils/matchUtils';
 
 class RecomendacaoService {
-  async createRecomendacaoVagas(authToken: unknown): Promise<RecomendacaoVagaResponse[]> {
+  async createRecomendacaoVagasParaCandidato(authToken: unknown): Promise<RecomendacaoVagaResponse[]> {
     const authTokenId = getAuthTokenId(authToken);
     await candidatoService.getById(authTokenId);
 
@@ -29,10 +29,10 @@ class RecomendacaoService {
       return [];
     }
 
-    return recomendacaoRepository.createRecomendacaoVagas(vagasSimilares, authTokenId);
+    return recomendacaoRepository.createRecomendacaoVagasParaCandidato(vagasSimilares, authTokenId);
   }
 
-  async createRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+  async createRecomendacaoCandidatosParaVaga(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
     await vagaService.getById(vagaId);
     const vagaEmbedding = await getVectorEmbedding('Vaga', vagaId);
 
@@ -46,17 +46,17 @@ class RecomendacaoService {
       return [];
     }
 
-    return recomendacaoRepository.createRecomendacaoCandidatos(candidatosSimilares, vagaId);
+    return recomendacaoRepository.createRecomendacaoCandidatosParaVaga(candidatosSimilares, vagaId);
   }
 
-  async getRecomendacaoCandidatos(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
-    return recomendacaoRepository.getRecomendacaoCandidatos(vagaId);
+  async getRecomendacaoCandidatosParaVaga(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+    return recomendacaoRepository.getRecomendacaoCandidatosParaVaga(vagaId);
   }
 
-  async getRecomendacaoVagas(authToken: unknown): Promise<RecomendacaoVagaResponse[]> {
+  async getRecomendacaoVagasParaCandidato(authToken: unknown): Promise<RecomendacaoVagaResponse[]> {
     const authTokenId = getAuthTokenId(authToken);
     await candidatoService.getById(authTokenId);
-    return recomendacaoRepository.getRecomendacaoVagas(authTokenId);
+    return recomendacaoRepository.getRecomendacaoVagasParaCandidato(authTokenId);
   }
 }
 
