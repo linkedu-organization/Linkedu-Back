@@ -22,7 +22,7 @@ export const RecomendacaoVagaResponse = RecomendacaoCreateSchema.extend({
   vaga: VagaResponseSchema,
 });
 
-export type tipoRecomendacao = z.infer<typeof tipoRecomendacao>;
+export type TipoRecomendacao = z.infer<typeof TipoRecomendacao>;
 export type RecomendacaoCreate = z.infer<typeof RecomendacaoCreateSchema>;
 export type RecomendacaoVagaResponse = z.infer<typeof RecomendacaoVagaResponse>;
 export type RecomendacaoCandidatoResponse = z.infer<typeof RecomendacaoCandidatoResponse>;
