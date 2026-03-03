@@ -10,21 +10,17 @@ import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { ensureSelfTargetedAction, gerarHashSenha } from '../utils/authUtils';
 import { perfilService } from './PerfilService';
 import { Filter, Sorter } from '../utils/filterUtils';
-import { gerarEmbedding } from '../utils/matchUtils';
 
 class CandidatoService {
   async create(data: CandidatoCreateDTO) {
     await perfilService.validarEmail(data.perfil.email);
     const parsedData = CandidatoCreateSchema.parse(data);
     const hashSenha = await gerarHashSenha(parsedData.perfil.senha);
-    const embedding = await gerarEmbedding(parsedData);
-    const result = await candidatoRepository.create(
-      {
-        ...parsedData,
-        perfil: { ...parsedData.perfil, senha: hashSenha },
-      },
-      embedding,
-    );
+
+    const result = await candidatoRepository.create({
+      ...parsedData,
+      perfil: { ...parsedData.perfil, senha: hashSenha },
+    });
     return CandidatoExtendedResponseSchema.parseAsync(result);
   }
 

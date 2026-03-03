@@ -49,4 +49,5 @@ export const VagaResponseSchema = VagaSchema.extend({
 
 export type VagaCreateDTO = z.infer<typeof VagaCreateSchema>;
 export type VagaUpdateDTO = z.infer<typeof VagaUpdateSchema>;
+export type VagaResponseDTO = z.infer<typeof VagaResponseSchema>;
 export type VagaEmbeddingDTO = z.infer<typeof VagaSchemaEmbedding>;

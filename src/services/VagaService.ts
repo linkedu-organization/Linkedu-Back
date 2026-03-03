@@ -9,14 +9,13 @@ import { EntityNotFoundError } from '../errors/EntityNotFoundError';
 import { vagaRepository } from '../repositories/VagaRepository';
 import { Filter, Sorter } from '../utils/filterUtils';
 import { ensureSelfTargetedAction, getAuthTokenId } from '../utils/authUtils';
-import { gerarEmbedding } from '../utils/matchUtils';
 
 class VagaService {
   async create(data: VagaCreateDTO, authToken: unknown) {
     const parsedData = VagaCreateSchema.parse(data);
     const authTokenId = getAuthTokenId(authToken);
-    const embedding = await gerarEmbedding(parsedData);
-    const result = await vagaRepository.create(parsedData, authTokenId, embedding);
+
+    const result = await vagaRepository.create(parsedData, authTokenId);
     return VagaResponseSchema.parseAsync(result);
   }
 

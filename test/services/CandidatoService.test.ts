@@ -3,7 +3,6 @@ import { candidatoRepository } from '../../src/repositories/CandidatoRepository'
 import { candidatoService } from '../../src/services/CandidatoService';
 import { perfilService } from '../../src/services/PerfilService';
 import * as authUtils from '../../src/utils/authUtils';
-import * as matchUtils from '../../src/utils/matchUtils';
 
 jest.mock('../../src/repositories/CandidatoRepository', () => ({
   candidatoRepository: {
@@ -83,12 +82,10 @@ describe('Cria candidato', () => {
   test('case 1: com todos os campos', async () => {
     const candidato = makeCandidato();
     const response = makeCandidatoResponse();
-    const embedding = jest.spyOn(matchUtils, 'gerarEmbedding').mockResolvedValue(new Array(3072).fill(0));
 
     mockCreate(response);
     const result = await candidatoService.create(candidato);
 
-    expect(embedding).toHaveBeenCalledTimes(1);
     expect(candidatoRepository.create).toHaveBeenCalled();
     const payload = (candidatoRepository.create as jest.Mock).mock.calls[0][0];
     expect(payload.cargo).toBe('ALUNO');
@@ -103,10 +100,8 @@ describe('Cria candidato', () => {
     });
 
     mockCreate(makeCandidatoResponse({ perfil: makePerfilResponse({ foto: null, biografia: null }) }));
-    const embedding = jest.spyOn(matchUtils, 'gerarEmbedding').mockResolvedValue(new Array(3072).fill(0));
     await candidatoService.create(candidato);
 
-    expect(embedding).toHaveBeenCalledTimes(1);
     const payload = (candidatoRepository.create as jest.Mock).mock.calls[0][0];
     expect(payload.perfil.foto).toBeNull();
     expect(payload.perfil.biografia).toBeNull();
@@ -126,10 +121,8 @@ describe('Cria candidato', () => {
 
     jest.spyOn(perfilService, 'validarEmail').mockResolvedValue(undefined);
     (candidatoRepository.create as jest.Mock).mockResolvedValue(response);
-    const embedding = jest.spyOn(matchUtils, 'gerarEmbedding').mockResolvedValue(new Array(3072).fill(0));
     const result = await candidatoService.create(candidato);
 
-    expect(embedding).toHaveBeenCalledTimes(1);
     expect(perfilService.validarEmail).toHaveBeenCalledWith(candidato.perfil.email);
     expect(candidatoRepository.create).toHaveBeenCalled();
     expect(result).toEqual(response);

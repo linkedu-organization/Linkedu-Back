@@ -1,18 +1,18 @@
 import { VagaCreateDTO, VagaUpdateDTO } from '../models/VagaSchema';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
-import { camposVaga, createEmbedding, gerarEmbedding } from '../utils/matchUtils';
+import { camposVaga, gerarEmbeddingVaga } from '../utils/matchUtils';
 import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class VagaRepository {
-  async create(data: VagaCreateDTO, recrutadorId: number, embedding: number[]) {
+  async create(data: VagaCreateDTO, recrutadorId: number) {
     return prisma.$transaction(async tx => {
       const vagaCriada = await tx.vaga.create({
         data: { ...data, recrutadorId },
         include: { recrutador: { include: { perfil: true } } },
       });
 
-      await createEmbedding('Vaga', tx, vagaCriada.id, embedding);
+      await gerarEmbeddingVaga(tx, vagaCriada);
       return vagaCriada;
     });
   }
@@ -43,8 +43,7 @@ class VagaRepository {
       const camposModificados = camposVaga.some(campo => data[campo as keyof typeof data] !== undefined);
 
       if (camposModificados) {
-        const embedding = await gerarEmbedding(vagaAtualizada as VagaCreateDTO);
-        await createEmbedding('Vaga', tx, vagaAtualizada.id, embedding);
+        await gerarEmbeddingVaga(tx, vagaAtualizada);
       }
 
       return vagaAtualizada;

@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Prisma, TipoRecomendacao } from '@prisma/client';
 
-import { VagaCreateDTO } from '../models/VagaSchema';
-import { CandidatoCreateDTO } from '../models/CandidatoSchema';
 import prisma from './prisma';
+import { VagaResponseDTO } from '../models/VagaSchema';
+import { CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
 import { RecomendacaoCandidatoResponse, RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
 
 export interface Similaridade {
@@ -21,7 +21,7 @@ export async function criarEmbedding(texto: string) {
   return embedding;
 }
 
-export async function createEmbedding(tableName: 'Vaga' | 'Candidato', tx: any, id: number, embedding: number[]) {
+export async function atualizarEmbedding(tableName: 'Vaga' | 'Candidato', tx: any, id: number, embedding: number[]) {
   if (embedding && embedding.length > 0) {
     const vectorString = `[${embedding.map(Number).join(',')}]`;
     await tx.$executeRawUnsafe(`UPDATE "${tableName}" SET embedding = $1::vector WHERE id = $2`, vectorString, id);
@@ -50,40 +50,43 @@ export const camposCandidato = [
   'habilidades',
 ];
 
-export async function gerarEmbedding(tableName: CandidatoCreateDTO | VagaCreateDTO): Promise<number[]> {
-  let textoEmbedding = '';
-  if ('habilidades' in tableName) {
-    const {
-      instituicao,
-      areaAtuacao,
-      nivelEscolaridade,
-      periodoConclusao,
-      tempoDisponivel,
-      areasInteresse,
-      habilidades,
-    } = tableName as CandidatoCreateDTO;
-    textoEmbedding = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
+export async function gerarEmbeddingCandidato(tx: Prisma.TransactionClient, candidato: CandidatoExtendedResponseDTO) {
+  const {
+    instituicao,
+    areaAtuacao,
+    nivelEscolaridade,
+    periodoConclusao,
+    tempoDisponivel,
+    areasInteresse,
+    habilidades,
+  } = candidato;
+
+  const textoEmbedding = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
     Nível de escolaridade: ${nivelEscolaridade}, com conclusão prevista para ${periodoConclusao ?? 'não informada'}. 
     Competências e conhecimentos técnicos: ${habilidades.join(', ')}. Áreas de interesse e objetivos: ${areasInteresse.join(', ')}. Disponibilidade de tempo: ${tempoDisponivel}.`;
-  } else {
-    const {
-      titulo,
-      descricao,
-      cargaHoraria,
-      duracao,
-      instituicao,
-      curso,
-      publicoAlvo,
-      conhecimentosObrigatorios,
-      conhecimentosOpcionais,
-    } = tableName as VagaCreateDTO;
-
-    textoEmbedding = `Oportunidade de ${titulo} na instituição ${instituicao}. Perfil da Vaga: ${descricao}. Formação requerida: ${curso} para o público ${publicoAlvo}. 
-        Requisitos técnicos mandatórios: ${conhecimentosObrigatorios}. Desejável e diferenciais: ${conhecimentosOpcionais}. Condições: Carga horária de ${cargaHoraria} e duração de ${duracao}.`;
-  }
 
   const embedding = await criarEmbedding(textoEmbedding);
-  return embedding.values;
+  await atualizarEmbedding('Candidato', tx, candidato.id, embedding.values);
+}
+
+export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: VagaResponseDTO) {
+  const {
+    titulo,
+    descricao,
+    cargaHoraria,
+    duracao,
+    instituicao,
+    curso,
+    publicoAlvo,
+    conhecimentosObrigatorios,
+    conhecimentosOpcionais,
+  } = vaga;
+
+  const textoEmbedding = `Oportunidade de ${titulo} na instituição ${instituicao}. Perfil da Vaga: ${descricao}. Formação requerida: ${curso} para o público ${publicoAlvo}. 
+    Requisitos técnicos mandatórios: ${conhecimentosObrigatorios}. Desejável e diferenciais: ${conhecimentosOpcionais}. Condições: Carga horária de ${cargaHoraria} e duração de ${duracao}.`;
+
+  const embedding = await criarEmbedding(textoEmbedding);
+  await atualizarEmbedding('Vaga', tx, vaga.id, embedding.values);
 }
 
 export async function salvaNovasRecomendacoes(dados: Prisma.RecomendacaoCreateManyInput[]) {
@@ -97,7 +100,7 @@ export async function calculaSimilaridade(
   embedding: string,
   nomeTabela: 'Candidato' | 'Vaga',
   filtrosAdicionais: Prisma.Sql = Prisma.sql`1=1`,
-): Promise<Similaridade[]> {
+) {
   const vetorEmbedding = Prisma.sql`${embedding}::vector`;
 
   return prisma.$queryRaw<Similaridade[]>`

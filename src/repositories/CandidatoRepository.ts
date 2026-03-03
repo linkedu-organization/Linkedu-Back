@@ -4,11 +4,11 @@ import { CandidatoCreateDTO, CandidatoUpdateDTO } from '../models/CandidatoSchem
 import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
-import { camposCandidato, createEmbedding, gerarEmbedding } from '../utils/matchUtils';
+import { camposCandidato, gerarEmbeddingCandidato } from '../utils/matchUtils';
 import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class CandidatoRepository {
-  async create(data: CandidatoCreateDTO, embedding: number[]) {
+  async create(data: CandidatoCreateDTO) {
     const { perfil, ...candidatoData } = data;
 
     return prisma.$transaction(async tx => {
@@ -18,11 +18,12 @@ class CandidatoRepository {
           ...candidatoData,
           perfil: { connect: { id: perfilCriado.id } },
         },
+        include: { perfil: true },
       });
 
-      await createEmbedding('Candidato', tx, candidatoCriado.id, embedding);
+      await gerarEmbeddingCandidato(tx, candidatoCriado);
 
-      return { ...candidatoCriado, perfil: perfilCriado };
+      return candidatoCriado;
     });
   }
 
@@ -56,8 +57,7 @@ class CandidatoRepository {
       const camposModificados = camposCandidato.some(campo => data[campo as keyof typeof data] !== undefined);
 
       if (camposModificados) {
-        const embedding = await gerarEmbedding(candidatoAtualizado as CandidatoCreateDTO);
-        await createEmbedding('Candidato', tx, candidatoAtualizado.id, embedding);
+        await gerarEmbeddingCandidato(tx, candidatoAtualizado);
       }
 
       return candidatoAtualizado;
