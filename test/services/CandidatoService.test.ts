@@ -121,6 +121,7 @@ describe('Cria candidato', () => {
 
     jest.spyOn(perfilService, 'validarEmail').mockResolvedValue(undefined);
     (candidatoRepository.create as jest.Mock).mockResolvedValue(response);
+
     const result = await candidatoService.create(candidato);
 
     expect(perfilService.validarEmail).toHaveBeenCalledWith(candidato.perfil.email);

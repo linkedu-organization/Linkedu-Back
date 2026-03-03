@@ -52,10 +52,11 @@ class VagaRepository {
 
   async delete(id: number) {
     prisma.$transaction(async tx => {
-      await recomendacaoRepository.deleteByVagaId(tx, id);
-      return tx.vaga.delete({
+      const vaga = await tx.vaga.delete({
         where: { id },
       });
+      await recomendacaoRepository.deleteByVagaId(tx, id);
+      return vaga;
     });
   }
 }

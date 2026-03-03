@@ -9,20 +9,15 @@ import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class CandidatoRepository {
   async create(data: CandidatoCreateDTO) {
-    const { perfil, ...candidatoData } = data;
-
+    const { perfil, ...candidato } = data;
     return prisma.$transaction(async tx => {
       const perfilCriado = await perfilRepository.create(tx, perfil, TipoPerfil.CANDIDATO);
       const candidatoCriado = await tx.candidato.create({
-        data: {
-          ...candidatoData,
-          perfil: { connect: { id: perfilCriado.id } },
-        },
+        data: { ...candidato, perfil: { connect: { id: perfilCriado.id } } },
         include: { perfil: true },
       });
 
       await gerarEmbeddingCandidato(tx, candidatoCriado);
-
       return candidatoCriado;
     });
   }
@@ -70,7 +65,7 @@ class CandidatoRepository {
         where: { id },
       });
       await perfilRepository.delete(tx, candidato.perfilId);
-      await recomendacaoRepository.deleteByCandidatoId(tx, candidato.id);
+      await recomendacaoRepository.deleteByCandidatoId(tx, id);
       return candidato;
     });
   }

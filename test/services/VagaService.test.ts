@@ -13,8 +13,6 @@ jest.mock('../../src/repositories/VagaRepository', () => ({
   },
 }));
 
-jest.mock('../../src/utils/matchUtils');
-
 const makePerfilResponse = (overrides = {}) => ({
   id: 1,
   nome: 'Professor Medeiros',
@@ -95,20 +93,18 @@ const mockGetAll = (v: any) => (vagaRepository.getAll as jest.Mock).mockResolved
 const mockDelete = () => (vagaRepository.delete as jest.Mock).mockResolvedValue(undefined);
 
 describe('Cria vaga', () => {
-  describe('Cria vaga', () => {
-    test('case 1: com todos os campos', async () => {
-      const vaga = makeVaga();
-      const response = makeVagaResponse();
+  test('case 1: com todos os campos', async () => {
+    const vaga = makeVaga();
+    const response = makeVagaResponse();
 
-      mockCreate(response);
+    mockCreate(response);
 
-      const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
+    const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
+    const result = await vagaService.create(vaga, AUTH_TOKEN);
 
-      const result = await vagaService.create(vaga, AUTH_TOKEN);
-
-      expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
-      expect(result).toEqual(response);
-    });
+    expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
+    expect(vagaRepository.create).toHaveBeenCalledWith(vaga, 1);
+    expect(result).toEqual(response);
   });
 
   test('case 2: removendo opcionais (deixando-os nulos)', async () => {
@@ -167,7 +163,6 @@ describe('Atualiza vaga', () => {
     expect(ensureSelfTargetedAction).toHaveBeenCalledWith(1, AUTH_TOKEN);
     expect(vagaRepository.getById).toHaveBeenCalledWith(1);
     expect(vagaRepository.update).toHaveBeenCalledWith(1, vagaUpdate);
-    expect(vagaRepository.getById).toHaveBeenCalledWith(1);
     expect(result).toEqual(updatedVaga);
   });
 });
