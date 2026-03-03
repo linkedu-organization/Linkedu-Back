@@ -8,11 +8,8 @@ import { AppError } from './errors/AppError';
 
 const app = express();
 const port = process.env.PORT ?? 3333;
-
-const origensPermitidas = ['http://localhost:5173', 'https://linkedu-front.vercel.app'];
-
 const corsOptions = {
-  origin: origensPermitidas,
+  origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
