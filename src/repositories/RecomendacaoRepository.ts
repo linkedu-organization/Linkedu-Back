@@ -40,17 +40,7 @@ class RecomendacaoRepository {
 
     deletaRecomendacoes('vagaId', vagaId, 'CANDIDATOS_PARA_VAGA');
 
-    const recomendacoes = candidatos
-      .filter((item): item is RecomendacaoCandidatoResponse => item !== null && item.score !== null)
-      .map(item => ({
-        vagaId: item.vagaId,
-        candidatoId: item.candidatoId,
-        tipo: item.tipo,
-        score: item.score!,
-        descricao: item.descricao,
-        updatedAt: item.updatedAt,
-      }));
-
+    const recomendacoes = candidatos.filter((item): item is RecomendacaoCandidatoResponse => item !== null);
     salvaNovasRecomendacoes(recomendacoes);
 
     return candidatos;
