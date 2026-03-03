@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { CandidatoExtendedResponseSchema } from './CandidatoSchema';
 import { VagaResponseSchema } from './VagaSchema';
 
-const tipoRecomendacao = z.enum(['VAGAS_PARA_CANDIDATO', 'CANDIDATOS_PARA_VAGA']);
+const TipoRecomendacao = z.enum(['VAGAS_PARA_CANDIDATO', 'CANDIDATOS_PARA_VAGA']);
 
 export const RecomendacaoCreateSchema = z.object({
   vagaId: z.number(),
