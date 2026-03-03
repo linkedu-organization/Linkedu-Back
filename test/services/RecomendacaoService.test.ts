@@ -41,9 +41,9 @@ describe('Cria Recomendação', () => {
   test('case 1: recomendações de vagas para candidato logado', async () => {
     const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
     const candidatoServiceGetById = jest.spyOn(candidatoService, 'getById').mockResolvedValue({} as any);
-    const embedding = jest.spyOn(matchUtils, 'getVectorEmbedding').mockResolvedValue('[0.1,0.2]');
+    const embedding = jest.spyOn(matchUtils, 'getEmbedding').mockResolvedValue('[0.1,0.2]');
     const calculaSimilaridade = jest
-      .spyOn(matchUtils, 'calculaSimilaridade')
+      .spyOn(matchUtils, 'calcularSimilaridade')
       .mockResolvedValue([{ similarity: 10 }, { similarity: 20 }] as any);
 
     mockCreateRecomendacaoVagas.mockResolvedValueOnce([]);
@@ -59,9 +59,9 @@ describe('Cria Recomendação', () => {
 
   test('case 2: recomendações de candidatos para uma vaga', async () => {
     const vagaServiceGetById = jest.spyOn(vagaService, 'getById').mockResolvedValue({} as any);
-    const embedding = jest.spyOn(matchUtils, 'getVectorEmbedding').mockResolvedValue('[0.1,0.2]');
+    const embedding = jest.spyOn(matchUtils, 'getEmbedding').mockResolvedValue('[0.1,0.2]');
     const calculaSimilaridade = jest
-      .spyOn(matchUtils, 'calculaSimilaridade')
+      .spyOn(matchUtils, 'calcularSimilaridade')
       .mockResolvedValue([{ similarity: 10 }, { similarity: 20 }] as any);
 
     mockCreateRecomendacaoCandidatos.mockResolvedValueOnce([]);

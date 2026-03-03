@@ -1,27 +1,28 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoRecomendacao } from '@prisma/client';
 
 import prisma from '../utils/prisma';
-import {
-  salvaNovasRecomendacoes,
-  getVagasPayload,
-  getCandidatosPayload,
-  deletaRecomendacoes,
-  Similaridade,
-} from '../utils/matchUtils';
+import { getVagasPayload, getCandidatosPayload, Similaridade } from '../utils/matchUtils';
 
 class RecomendacaoRepository {
   async createRecomendacaoVagasParaCandidato(vagasSimilares: Similaridade[], candidatoId: number) {
     const vagas = await getVagasPayload(vagasSimilares, candidatoId);
-    deletaRecomendacoes('candidatoId', candidatoId, 'VAGAS_PARA_CANDIDATO');
-    salvaNovasRecomendacoes(vagas);
+    this.deleteRecomendacao('candidatoId', candidatoId, 'VAGAS_PARA_CANDIDATO');
+    this.createRecomendacao(vagas);
     return vagas;
   }
 
   async createRecomendacaoCandidatosParaVaga(candidatosSimilares: Similaridade[], vagaId: number) {
     const candidatos = await getCandidatosPayload(candidatosSimilares, vagaId);
-    deletaRecomendacoes('vagaId', vagaId, 'CANDIDATOS_PARA_VAGA');
-    salvaNovasRecomendacoes(candidatos);
+    this.deleteRecomendacao('vagaId', vagaId, 'CANDIDATOS_PARA_VAGA');
+    this.createRecomendacao(candidatos);
     return candidatos;
+  }
+
+  async createRecomendacao(dados: Prisma.RecomendacaoCreateManyInput[]) {
+    await prisma.recomendacao.createMany({
+      data: dados,
+      skipDuplicates: true,
+    });
   }
 
   async getRecomendacaoVagasParaCandidato(candidatoId: number) {
@@ -55,6 +56,15 @@ class RecomendacaoRepository {
   async deleteByVagaId(tx: Prisma.TransactionClient, vagaId: number) {
     return tx.recomendacao.deleteMany({
       where: { vagaId },
+    });
+  }
+
+  async deleteRecomendacao(entidade: 'vagaId' | 'candidatoId', id: number, tipo: TipoRecomendacao) {
+    return prisma.recomendacao.deleteMany({
+      where: {
+        [entidade]: id,
+        tipo: tipo,
+      },
     });
   }
 }

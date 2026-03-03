@@ -1,32 +1,19 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Prisma, TipoRecomendacao } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 import prisma from './prisma';
 import { VagaResponseDTO } from '../models/VagaSchema';
 import { CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
-import { RecomendacaoCandidatoResponse, RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
+import { vagaService } from '../services/VagaService';
+import { candidatoService } from '../services/CandidatoService';
 
 export interface Similaridade {
   id: number;
   score: number;
 }
 
-export const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
-export const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
-export async function criarEmbedding(texto: string) {
-  const model = genAI.getGenerativeModel({ model: 'gemini-embedding-001' });
-  const result = await model.embedContent(texto);
-  const embedding = result.embedding;
-  return embedding;
-}
-
-export async function atualizarEmbedding(tableName: 'Vaga' | 'Candidato', tx: any, id: number, embedding: number[]) {
-  if (embedding && embedding.length > 0) {
-    const vectorString = `[${embedding.map(Number).join(',')}]`;
-    await tx.$executeRawUnsafe(`UPDATE "${tableName}" SET embedding = $1::vector WHERE id = $2`, vectorString, id);
-  }
-}
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
+//const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 export const camposVaga = [
   'titulo',
@@ -89,14 +76,33 @@ export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: Vag
   await atualizarEmbedding('Vaga', tx, vaga.id, embedding.values);
 }
 
-export async function salvaNovasRecomendacoes(dados: Prisma.RecomendacaoCreateManyInput[]) {
-  await prisma.recomendacao.createMany({
-    data: dados,
-    skipDuplicates: true,
-  });
+async function criarEmbedding(texto: string) {
+  const model = genAI.getGenerativeModel({ model: 'gemini-embedding-001' });
+  const result = await model.embedContent(texto);
+  const embedding = result.embedding;
+  return embedding;
 }
 
-export async function calculaSimilaridade(
+async function atualizarEmbedding(tableName: 'Vaga' | 'Candidato', tx: any, id: number, embedding: number[]) {
+  if (embedding && embedding.length > 0) {
+    const vectorString = `[${embedding.map(Number).join(',')}]`;
+    await tx.$executeRawUnsafe(`UPDATE "${tableName}" SET embedding = $1::vector WHERE id = $2`, vectorString, id);
+  }
+}
+
+export async function getEmbedding(entidade: 'Candidato' | 'Vaga', id: number) {
+  const tabela = Prisma.raw(`"${entidade}"`);
+
+  const resultado = await prisma.$queryRaw<Array<{ embedding: string }>>`
+    SELECT embedding::text
+    FROM ${tabela}
+    WHERE id = ${id}
+  `;
+
+  return resultado[0]?.embedding ?? '';
+}
+
+export async function calcularSimilaridade(
   embedding: string,
   nomeTabela: 'Candidato' | 'Vaga',
   filtrosAdicionais: Prisma.Sql = Prisma.sql`1=1`,
@@ -117,117 +123,68 @@ export async function calculaSimilaridade(
     `;
 }
 
-export async function getVagasPayload(vagasRecomendadas: Similaridade[], candidatoId: number) {
-  const vagasCompletas = await prisma.vaga.findMany({
-    where: {
-      id: { in: vagasRecomendadas.map(v => v.id) },
-    },
-    include: { recrutador: { include: { perfil: true } } },
-  });
-
+export async function getVagasPayload(vagasSimilares: Similaridade[], candidatoId: number) {
   const resultado = await Promise.all(
-    vagasRecomendadas.map(async vaga => {
-      const dadosVaga = vagasCompletas.find(v => v.id === vaga.id);
+    vagasSimilares.map(async vaga => {
+      const dadosVaga = await vagaService.getById(vaga.id);
+      //const descricao = await gerarDescricao(vaga.id, candidatoId, vaga.score);
 
-      if (!dadosVaga) return null;
-      const descricao = await geraDescricao(vaga.id, candidatoId, vaga.score);
       return {
         vagaId: dadosVaga.id,
         candidatoId: candidatoId,
         updatedAt: new Date(),
         tipo: 'VAGAS_PARA_CANDIDATO' as const,
         score: vaga.score,
-        descricao: descricao,
+        descricao: '',
         vaga: dadosVaga,
-      } as RecomendacaoVagaResponse;
+      };
     }),
   );
 
-  return resultado
-    .filter((item): item is RecomendacaoVagaResponse => item !== null)
-    .sort((a, b) => (b.score || 0) - (a.score || 0));
+  return resultado.sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
 export async function getCandidatosPayload(candidatosRecomendados: Similaridade[], vagaId: number) {
-  const candidatosCompletos = await prisma.candidato.findMany({
-    where: {
-      id: { in: candidatosRecomendados.map(c => c.id) },
-    },
-    include: {
-      perfil: true,
-      experiencias: true,
-    },
-  });
-
   const resultado = await Promise.all(
     candidatosRecomendados.map(async candidato => {
-      const dadosCandidato = candidatosCompletos.find(c => c.id === candidato.id);
-      if (!dadosCandidato) return null;
+      const dadosCandidato = await candidatoService.getById(candidato.id);
+      //const descricao = await gerarDescricao(dadosCandidato.id, vagaId, candidato.score);
 
-      const descricao = await geraDescricao(dadosCandidato.id, vagaId, candidato.score);
       return {
         vagaId: vagaId,
         candidatoId: dadosCandidato.id,
         updatedAt: new Date() as Date,
         tipo: 'CANDIDATOS_PARA_VAGA' as const,
         score: candidato.score,
-        descricao: descricao,
+        descricao: '',
         candidato: dadosCandidato,
-      } as RecomendacaoCandidatoResponse;
+      };
     }),
   );
 
-  return resultado
-    .filter((item): item is RecomendacaoCandidatoResponse => item !== null)
-    .sort((a, b) => (b.score || 0) - (a.score || 0));
+  return resultado.sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
-export async function deletaRecomendacoes(entidade: 'vagaId' | 'candidatoId', id: number, tipo: TipoRecomendacao) {
-  await prisma.recomendacao.deleteMany({
-    where: {
-      [entidade]: id,
-      tipo: tipo,
-    },
-  });
-}
+// async function gerarDescricao(vagaId: number, candidatoId: number, score: number) {
+//   const vaga = await vagaService.getById(vagaId);
+//   const candidato = await candidatoService.getById(candidatoId);
 
-export async function getVectorEmbedding(entidade: 'Candidato' | 'Vaga', id: number): Promise<string> {
-  const tabela = Prisma.raw(`"${entidade}"`);
+//   const textoEmbeddingCandidato = `Profissional/Estudante da instituição ${candidato.instituicao} com foco em ${candidato.areaAtuacao}.
+//     Nível de escolaridade: ${candidato.nivelEscolaridade}, com conclusão prevista para ${candidato.periodoConclusao ?? 'não informada'}.
+//     Competências e conhecimentos técnicos: ${candidato.habilidades.join(', ')}. Áreas de interesse e objetivos: ${candidato.areasInteresse?.join(', ')}. Disponibilidade de tempo: ${candidato.tempoDisponivel}.`;
 
-  const resultado = await prisma.$queryRaw<Array<{ embedding: string }>>`
-    SELECT embedding::text
-    FROM ${tabela}
-    WHERE id = ${id}
-  `;
+//   const textoEmbeddingVaga = `Oportunidade de ${vaga.titulo} na instituição ${vaga.instituicao}. Perfil da Vaga: ${vaga.descricao}. Formação requerida: ${vaga.curso} para o público ${vaga.publicoAlvo}.
+//         Requisitos técnicos mandatórios: ${vaga.conhecimentosObrigatorios}. Desejável e diferenciais: ${vaga.conhecimentosOpcionais}. Condições: Carga horária de ${vaga.cargaHoraria} e duração de ${vaga.duracao}.`;
 
-  return resultado[0]?.embedding ?? '';
-}
+//   const prompt = `Gere uma descrição de recomendação com os motivos do match entre um candidato e uma vaga com base nas seguintes informações:
+//     Candidato: ${textoEmbeddingCandidato}
+//     Vaga: ${textoEmbeddingVaga}
+//     Score da recomendação: ${score}
 
-export async function geraDescricao(vagaId: number, candidatoId: number, score: number): Promise<string> {
-  const vaga = await prisma.vaga.findUnique({
-    where: { id: vagaId },
-  });
+//     Explique os principais pontos de compatibilidade técnica e de interesse.
+//     Não invente informações. Use no máximo 5 linhas e não fale sobre o score.
+//     `;
 
-  const candidato = await prisma.candidato.findUnique({
-    where: { id: candidatoId },
-  });
-
-  const textoEmbeddingCandidato = `Profissional/Estudante da instituição ${candidato?.instituicao} com foco em ${candidato?.areaAtuacao}. 
-    Nível de escolaridade: ${candidato?.nivelEscolaridade}, com conclusão prevista para ${candidato?.periodoConclusao ?? 'não informada'}. 
-    Competências e conhecimentos técnicos: ${candidato?.habilidades.join(', ')}. Áreas de interesse e objetivos: ${candidato?.areasInteresse.join(', ')}. Disponibilidade de tempo: ${candidato?.tempoDisponivel}.`;
-
-  const textoEmbeddingVaga = `Oportunidade de ${vaga?.titulo} na instituição ${vaga?.instituicao}. Perfil da Vaga: ${vaga?.descricao}. Formação requerida: ${vaga?.curso} para o público ${vaga?.publicoAlvo}. 
-        Requisitos técnicos mandatórios: ${vaga?.conhecimentosObrigatorios}. Desejável e diferenciais: ${vaga?.conhecimentosOpcionais}. Condições: Carga horária de ${vaga?.cargaHoraria} e duração de ${vaga?.duracao}.`;
-
-  const prompt = `Gere uma descrição de recomendação com os motivos do match entre um candidato e uma vaga com base nas seguintes informações:
-    Candidato: ${textoEmbeddingCandidato}
-    Vaga: ${textoEmbeddingVaga}
-    Score da recomendação: ${score}
-    
-    Explique os principais pontos de compatibilidade técnica e de interesse.
-    Não invente informações. Use no máximo 5 linhas e não fale sobre o score.
-    `;
-
-  const response = await model.generateContent(prompt);
-  return response.response.text();
-}
+//   const response = await model.generateContent(prompt);
+//   return response.response.text();
+// }
