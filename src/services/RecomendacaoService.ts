@@ -6,6 +6,7 @@ import { vagaService } from './VagaService';
 import { recomendacaoRepository } from '../repositories/RecomendacaoRepository';
 import { getAuthTokenId } from '../utils/authUtils';
 import { calcularSimilaridade, getEmbedding } from '../utils/matchUtils';
+import { EmbeddingNotFoundError } from '../errors/EmbeddingNotFoundError';
 
 class RecomendacaoService {
   async createRecomendacaoVagasParaCandidato(authToken: unknown) {
@@ -13,11 +14,11 @@ class RecomendacaoService {
     await candidatoService.getById(authTokenId);
 
     const candidatoEmbedding = await getEmbedding('Candidato', authTokenId);
-    if (candidatoEmbedding === '') return [];
+    if (candidatoEmbedding === '') throw new EmbeddingNotFoundError(authTokenId);
 
     const vagasSimilares = await calcularSimilaridade(
-      candidatoEmbedding,
       'Vaga',
+      candidatoEmbedding,
       Prisma.sql`("dataExpiracao" IS NULL OR TO_DATE("dataExpiracao", 'DD/MM/YYYY') >= CURRENT_DATE)`,
     );
     if (vagasSimilares.length === 0) return [];
@@ -30,9 +31,9 @@ class RecomendacaoService {
     await vagaService.getById(vagaId);
 
     const vagaEmbedding = await getEmbedding('Vaga', vagaId);
-    if (vagaEmbedding === '') return [];
+    if (vagaEmbedding === '') throw new EmbeddingNotFoundError(vagaId);
 
-    const candidatosSimilares = await calcularSimilaridade(vagaEmbedding, 'Candidato', Prisma.sql`disponivel = true`);
+    const candidatosSimilares = await calcularSimilaridade('Candidato', vagaEmbedding, Prisma.sql`disponivel = true`);
     if (candidatosSimilares.length === 0) return [];
 
     const result = await recomendacaoRepository.createRecomendacaoCandidatosParaVaga(candidatosSimilares, vagaId);

@@ -53,7 +53,7 @@ export async function gerarEmbeddingCandidato(tx: Prisma.TransactionClient, cand
     Competências e conhecimentos técnicos: ${habilidades.join(', ')}. Áreas de interesse e objetivos: ${areasInteresse.join(', ')}. Disponibilidade de tempo: ${tempoDisponivel}.`;
 
   const embedding = await criarEmbedding(textoEmbedding);
-  await atualizarEmbedding('Candidato', tx, candidato.id, embedding.values);
+  await atualizarEmbedding(tx, 'Candidato', candidato.id, embedding.values);
 }
 
 export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: VagaResponseDTO) {
@@ -73,7 +73,7 @@ export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: Vag
     Requisitos técnicos mandatórios: ${conhecimentosObrigatorios}. Desejável e diferenciais: ${conhecimentosOpcionais}. Condições: Carga horária de ${cargaHoraria} e duração de ${duracao}.`;
 
   const embedding = await criarEmbedding(textoEmbedding);
-  await atualizarEmbedding('Vaga', tx, vaga.id, embedding.values);
+  await atualizarEmbedding(tx, 'Vaga', vaga.id, embedding.values);
 }
 
 async function criarEmbedding(texto: string) {
@@ -83,14 +83,19 @@ async function criarEmbedding(texto: string) {
   return embedding;
 }
 
-async function atualizarEmbedding(tableName: 'Vaga' | 'Candidato', tx: any, id: number, embedding: number[]) {
+async function atualizarEmbedding(
+  tx: Prisma.TransactionClient,
+  entidade: 'Vaga' | 'Candidato',
+  id: number,
+  embedding: number[],
+) {
   if (embedding && embedding.length > 0) {
     const vectorString = `[${embedding.map(Number).join(',')}]`;
-    await tx.$executeRawUnsafe(`UPDATE "${tableName}" SET embedding = $1::vector WHERE id = $2`, vectorString, id);
+    await tx.$executeRawUnsafe(`UPDATE "${entidade}" SET embedding = $1::vector WHERE id = $2`, vectorString, id);
   }
 }
 
-export async function getEmbedding(entidade: 'Candidato' | 'Vaga', id: number) {
+export async function getEmbedding(entidade: 'Vaga' | 'Candidato', id: number) {
   const tabela = Prisma.raw(`"${entidade}"`);
 
   const resultado = await prisma.$queryRaw<Array<{ embedding: string }>>`
@@ -103,24 +108,24 @@ export async function getEmbedding(entidade: 'Candidato' | 'Vaga', id: number) {
 }
 
 export async function calcularSimilaridade(
+  entidade: 'Vaga' | 'Candidato',
   embedding: string,
-  nomeTabela: 'Candidato' | 'Vaga',
   filtrosAdicionais: Prisma.Sql = Prisma.sql`1=1`,
 ) {
   const vetorEmbedding = Prisma.sql`${embedding}::vector`;
 
   return prisma.$queryRaw<Similaridade[]>`
-      SELECT 
-        id,
-        1 - (embedding <=> ${vetorEmbedding}) as score
-      FROM ${Prisma.raw(`"${nomeTabela}"`)}
-      WHERE 
-        embedding IS NOT NULL
-        AND ${filtrosAdicionais}
-      ORDER BY 
-        embedding <=> ${vetorEmbedding} ASC
-      LIMIT 10;
-    `;
+    SELECT 
+      id,
+      1 - (embedding <=> ${vetorEmbedding}) as score
+    FROM ${Prisma.raw(`"${entidade}"`)}
+    WHERE 
+      embedding IS NOT NULL
+      AND ${filtrosAdicionais}
+    ORDER BY 
+      embedding <=> ${vetorEmbedding} ASC
+    LIMIT 10;
+  `;
 }
 
 export async function getVagasPayload(vagasSimilares: Similaridade[], candidatoId: number) {

@@ -42,7 +42,7 @@ describe('Cria Recomendação', () => {
     const getAuthTokenId = jest.spyOn(authUtils, 'getAuthTokenId').mockReturnValue(1);
     const candidatoServiceGetById = jest.spyOn(candidatoService, 'getById').mockResolvedValue({} as any);
     const embedding = jest.spyOn(matchUtils, 'getEmbedding').mockResolvedValue('[0.1,0.2]');
-    const calculaSimilaridade = jest
+    const calcularSimilaridade = jest
       .spyOn(matchUtils, 'calcularSimilaridade')
       .mockResolvedValue([{ similarity: 10 }, { similarity: 20 }] as any);
 
@@ -53,14 +53,14 @@ describe('Cria Recomendação', () => {
     expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
     expect(candidatoServiceGetById).toHaveBeenCalledWith(1);
     expect(embedding).toHaveBeenCalledWith('Candidato', 1);
-    expect(calculaSimilaridade).toHaveBeenCalledWith('[0.1,0.2]', 'Vaga', expect.anything());
+    expect(calcularSimilaridade).toHaveBeenCalledWith('Vaga', '[0.1,0.2]', expect.anything());
     expect(mockCreateRecomendacaoVagas).toHaveBeenCalledWith([{ similarity: 10 }, { similarity: 20 }], 1);
   });
 
   test('case 2: recomendações de candidatos para uma vaga', async () => {
     const vagaServiceGetById = jest.spyOn(vagaService, 'getById').mockResolvedValue({} as any);
     const embedding = jest.spyOn(matchUtils, 'getEmbedding').mockResolvedValue('[0.1,0.2]');
-    const calculaSimilaridade = jest
+    const calcularSimilaridade = jest
       .spyOn(matchUtils, 'calcularSimilaridade')
       .mockResolvedValue([{ similarity: 10 }, { similarity: 20 }] as any);
 
@@ -68,7 +68,7 @@ describe('Cria Recomendação', () => {
     await recomendacaoService.createRecomendacaoCandidatosParaVaga(1);
 
     expect(embedding).toHaveBeenCalledWith('Vaga', 1);
-    expect(calculaSimilaridade).toHaveBeenCalledWith('[0.1,0.2]', 'Candidato', expect.anything());
+    expect(calcularSimilaridade).toHaveBeenCalledWith('Candidato', '[0.1,0.2]', expect.anything());
     expect(vagaServiceGetById).toHaveBeenCalledWith(1);
     expect(mockCreateRecomendacaoCandidatos).toHaveBeenCalledWith([{ similarity: 10 }, { similarity: 20 }], 1);
   });
