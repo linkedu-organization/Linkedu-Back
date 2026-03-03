@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-import { RecomendacaoCandidatoResponse } from '../models/RecomendacaoSchema';
-import { RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
+import { RecomendacaoCandidatoResponseSchema, RecomendacaoVagaResponseSchema } from '../models/RecomendacaoSchema';
 import { candidatoService } from './CandidatoService';
 import { vagaService } from './VagaService';
 import { recomendacaoRepository } from '../repositories/RecomendacaoRepository';
@@ -9,7 +8,7 @@ import { getAuthTokenId } from '../utils/authUtils';
 import { calculaSimilaridade, getVectorEmbedding } from '../utils/matchUtils';
 
 class RecomendacaoService {
-  async createRecomendacaoVagasParaCandidato(authToken: unknown): Promise<RecomendacaoVagaResponse[]> {
+  async createRecomendacaoVagasParaCandidato(authToken: unknown) {
     const authTokenId = getAuthTokenId(authToken);
     await candidatoService.getById(authTokenId);
 
@@ -29,10 +28,11 @@ class RecomendacaoService {
       return [];
     }
 
-    return recomendacaoRepository.createRecomendacaoVagasParaCandidato(vagasSimilares, authTokenId);
+    const result = await recomendacaoRepository.createRecomendacaoVagasParaCandidato(vagasSimilares, authTokenId);
+    return RecomendacaoVagaResponseSchema.array().parseAsync(result);
   }
 
-  async createRecomendacaoCandidatosParaVaga(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
+  async createRecomendacaoCandidatosParaVaga(vagaId: number) {
     await vagaService.getById(vagaId);
     const vagaEmbedding = await getVectorEmbedding('Vaga', vagaId);
 
@@ -46,17 +46,20 @@ class RecomendacaoService {
       return [];
     }
 
-    return recomendacaoRepository.createRecomendacaoCandidatosParaVaga(candidatosSimilares, vagaId);
+    const result = await recomendacaoRepository.createRecomendacaoCandidatosParaVaga(candidatosSimilares, vagaId);
+    return RecomendacaoCandidatoResponseSchema.array().parseAsync(result);
   }
 
-  async getRecomendacaoCandidatosParaVaga(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
-    return recomendacaoRepository.getRecomendacaoCandidatosParaVaga(vagaId);
-  }
-
-  async getRecomendacaoVagasParaCandidato(authToken: unknown): Promise<RecomendacaoVagaResponse[]> {
+  async getRecomendacaoVagasParaCandidato(authToken: unknown) {
     const authTokenId = getAuthTokenId(authToken);
     await candidatoService.getById(authTokenId);
-    return recomendacaoRepository.getRecomendacaoVagasParaCandidato(authTokenId);
+    const result = await recomendacaoRepository.getRecomendacaoVagasParaCandidato(authTokenId);
+    return RecomendacaoVagaResponseSchema.array().parseAsync(result);
+  }
+
+  async getRecomendacaoCandidatosParaVaga(vagaId: number) {
+    const result = await recomendacaoRepository.getRecomendacaoCandidatosParaVaga(vagaId);
+    return RecomendacaoCandidatoResponseSchema.array().parseAsync(result);
   }
 }
 

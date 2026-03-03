@@ -14,15 +14,14 @@ export const RecomendacaoCreateSchema = z.object({
   tipo: TipoRecomendacao,
 });
 
-export const RecomendacaoCandidatoResponse = RecomendacaoCreateSchema.extend({
+export const RecomendacaoCandidatoResponseSchema = RecomendacaoCreateSchema.extend({
   candidato: CandidatoExtendedResponseSchema,
 });
 
-export const RecomendacaoVagaResponse = RecomendacaoCreateSchema.extend({
+export const RecomendacaoVagaResponseSchema = RecomendacaoCreateSchema.extend({
   vaga: VagaResponseSchema,
 });
 
 export type TipoRecomendacao = z.infer<typeof TipoRecomendacao>;
-export type RecomendacaoCreate = z.infer<typeof RecomendacaoCreateSchema>;
-export type RecomendacaoVagaResponse = z.infer<typeof RecomendacaoVagaResponse>;
-export type RecomendacaoCandidatoResponse = z.infer<typeof RecomendacaoCandidatoResponse>;
+export type RecomendacaoCandidatoResponse = z.infer<typeof RecomendacaoCandidatoResponseSchema>;
+export type RecomendacaoVagaResponse = z.infer<typeof RecomendacaoVagaResponseSchema>;

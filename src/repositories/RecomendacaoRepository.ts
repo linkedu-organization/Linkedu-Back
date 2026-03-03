@@ -1,7 +1,5 @@
 import { Prisma } from '@prisma/client';
 
-import { RecomendacaoCandidatoResponse } from '../models/RecomendacaoSchema';
-import { RecomendacaoVagaResponse } from '../models/RecomendacaoSchema';
 import prisma from '../utils/prisma';
 import {
   salvaNovasRecomendacoes,
@@ -12,57 +10,22 @@ import {
 } from '../utils/matchUtils';
 
 class RecomendacaoRepository {
-  async createRecomendacaoVagasParaCandidato(
-    vagasSimilares: Similaridade[],
-    candidatoId: number,
-  ): Promise<RecomendacaoVagaResponse[]> {
+  async createRecomendacaoVagasParaCandidato(vagasSimilares: Similaridade[], candidatoId: number) {
     const vagas = await getVagasPayload(vagasSimilares, candidatoId);
-
     deletaRecomendacoes('candidatoId', candidatoId, 'VAGAS_PARA_CANDIDATO');
-
-    const recomendacoes = vagas.map(item => ({
-      vagaId: item.vagaId,
-      candidatoId: item.candidatoId,
-      tipo: item.tipo,
-      score: item.score!,
-      descricao: item.descricao,
-      updatedAt: item.updatedAt,
-    }));
-
-    salvaNovasRecomendacoes(recomendacoes);
-
+    salvaNovasRecomendacoes(vagas);
     return vagas;
   }
 
-  async createRecomendacaoCandidatosParaVaga(
-    candidatosSimilares: Similaridade[],
-    vagaId: number,
-  ): Promise<RecomendacaoCandidatoResponse[]> {
+  async createRecomendacaoCandidatosParaVaga(candidatosSimilares: Similaridade[], vagaId: number) {
     const candidatos = await getCandidatosPayload(candidatosSimilares, vagaId);
-
     deletaRecomendacoes('vagaId', vagaId, 'CANDIDATOS_PARA_VAGA');
-
-    const recomendacoes = candidatos.filter((item): item is RecomendacaoCandidatoResponse => item !== null);
-    salvaNovasRecomendacoes(recomendacoes);
-
+    salvaNovasRecomendacoes(candidatos);
     return candidatos;
   }
 
-  async getRecomendacaoCandidatosParaVaga(vagaId: number): Promise<RecomendacaoCandidatoResponse[]> {
-    const salvos = await prisma.recomendacao.findMany({
-      where: {
-        vagaId: vagaId,
-        tipo: 'CANDIDATOS_PARA_VAGA',
-      },
-      include: { candidato: { include: { perfil: true, experiencias: true } } },
-      orderBy: { score: 'desc' },
-    });
-
-    return salvos as RecomendacaoCandidatoResponse[];
-  }
-
-  async getRecomendacaoVagasParaCandidato(candidatoId: number): Promise<RecomendacaoVagaResponse[]> {
-    const salvos = await prisma.recomendacao.findMany({
+  async getRecomendacaoVagasParaCandidato(candidatoId: number) {
+    return prisma.recomendacao.findMany({
       where: {
         candidatoId: candidatoId,
         tipo: 'VAGAS_PARA_CANDIDATO',
@@ -70,18 +33,27 @@ class RecomendacaoRepository {
       include: { vaga: { include: { recrutador: { include: { perfil: true } } } } },
       orderBy: { score: 'desc' },
     });
+  }
 
-    return salvos as RecomendacaoVagaResponse[];
+  async getRecomendacaoCandidatosParaVaga(vagaId: number) {
+    return prisma.recomendacao.findMany({
+      where: {
+        vagaId: vagaId,
+        tipo: 'CANDIDATOS_PARA_VAGA',
+      },
+      include: { candidato: { include: { perfil: true, experiencias: true } } },
+      orderBy: { score: 'desc' },
+    });
   }
 
   async deleteByCandidatoId(tx: Prisma.TransactionClient, candidatoId: number) {
-    await tx.recomendacao.deleteMany({
+    return tx.recomendacao.deleteMany({
       where: { candidatoId },
     });
   }
 
   async deleteByVagaId(tx: Prisma.TransactionClient, vagaId: number) {
-    await tx.recomendacao.deleteMany({
+    return tx.recomendacao.deleteMany({
       where: { vagaId },
     });
   }
