@@ -7,10 +7,10 @@ import * as matchUtils from '../../src/utils/matchUtils';
 
 jest.mock('../../src/repositories/RecomendacaoRepository', () => ({
   recomendacaoRepository: {
-    createRecomendacaoVagas: jest.fn(),
-    createRecomendacaoCandidatos: jest.fn(),
-    getRecomendacaoCandidatos: jest.fn(),
-    getRecomendacaoVagas: jest.fn(),
+    createRecomendacaoVagasParaCandidato: jest.fn(),
+    createRecomendacaoCandidatosParaVaga: jest.fn(),
+    getRecomendacaoCandidatosParaVaga: jest.fn(),
+    getRecomendacaoVagasParaCandidato: jest.fn(),
   },
 }));
 
@@ -32,10 +32,10 @@ jest.mock('@prisma/client', () => {
 });
 
 const AUTH_TOKEN = 'testAuthToken';
-const mockCreateRecomendacaoVagas = recomendacaoRepository.createRecomendacaoVagas as jest.Mock;
-const mockCreateRecomendacaoCandidatos = recomendacaoRepository.createRecomendacaoCandidatos as jest.Mock;
-const mockGetRecomendacaoCandidatos = recomendacaoRepository.getRecomendacaoCandidatos as jest.Mock;
-const mockGetRecomendacaoVagas = recomendacaoRepository.getRecomendacaoVagas as jest.Mock;
+const mockCreateRecomendacaoVagas = recomendacaoRepository.createRecomendacaoVagasParaCandidato as jest.Mock;
+const mockCreateRecomendacaoCandidatos = recomendacaoRepository.createRecomendacaoCandidatosParaVaga as jest.Mock;
+const mockGetRecomendacaoCandidatos = recomendacaoRepository.getRecomendacaoCandidatosParaVaga as jest.Mock;
+const mockGetRecomendacaoVagas = recomendacaoRepository.getRecomendacaoVagasParaCandidato as jest.Mock;
 
 describe('Cria Recomendação', () => {
   test('case 1: recomendações de vagas para candidato logado', async () => {
@@ -48,7 +48,7 @@ describe('Cria Recomendação', () => {
 
     mockCreateRecomendacaoVagas.mockResolvedValueOnce([]);
 
-    await recomendacaoService.createRecomendacaoVagas(AUTH_TOKEN);
+    await recomendacaoService.createRecomendacaoVagasParaCandidato(AUTH_TOKEN);
 
     expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
     expect(candidatoServiceGetById).toHaveBeenCalledWith(1);
@@ -65,7 +65,7 @@ describe('Cria Recomendação', () => {
       .mockResolvedValue([{ similarity: 10 }, { similarity: 20 }] as any);
 
     mockCreateRecomendacaoCandidatos.mockResolvedValueOnce([]);
-    await recomendacaoService.createRecomendacaoCandidatos(1);
+    await recomendacaoService.createRecomendacaoCandidatosParaVaga(1);
 
     expect(embedding).toHaveBeenCalledWith('Vaga', 1);
     expect(calculaSimilaridade).toHaveBeenCalledWith('[0.1,0.2]', 'Candidato', expect.anything());
@@ -81,7 +81,7 @@ describe('Recupera recomendações', () => {
     const candidatoServiceGetById = jest.spyOn(candidatoService, 'getById').mockResolvedValue({} as any);
 
     mockGetRecomendacaoVagas.mockResolvedValueOnce([]);
-    await recomendacaoService.getRecomendacaoVagas(AUTH_TOKEN);
+    await recomendacaoService.getRecomendacaoVagasParaCandidato(AUTH_TOKEN);
 
     expect(getAuthTokenId).toHaveBeenCalledWith(AUTH_TOKEN);
     expect(candidatoServiceGetById).toHaveBeenCalledWith(1);
@@ -90,7 +90,7 @@ describe('Recupera recomendações', () => {
 
   test('case 2: candidatos para vaga', async () => {
     mockGetRecomendacaoCandidatos.mockResolvedValueOnce([]);
-    await recomendacaoService.getRecomendacaoCandidatos(1);
+    await recomendacaoService.getRecomendacaoCandidatosParaVaga(1);
 
     expect(mockGetRecomendacaoCandidatos).toHaveBeenCalledWith(1);
   });
