@@ -4,6 +4,8 @@ import { CandidatoCreateDTO, CandidatoUpdateDTO } from '../models/CandidatoSchem
 import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
+import { camposCandidato, gerarEmbeddingCandidato } from '../utils/matchUtils';
+import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class CandidatoRepository {
   async create(data: CandidatoCreateDTO) {
@@ -12,8 +14,11 @@ class CandidatoRepository {
       const perfilCriado = await perfilRepository.create(tx, perfil, TipoPerfil.CANDIDATO);
       const candidatoCriado = await tx.candidato.create({
         data: { ...candidato, perfil: { connect: { id: perfilCriado.id } } },
+        include: { perfil: true },
       });
-      return { ...candidatoCriado, perfil: perfilCriado };
+
+      await gerarEmbeddingCandidato(tx, candidatoCriado);
+      return candidatoCriado;
     });
   }
 
@@ -34,13 +39,23 @@ class CandidatoRepository {
 
   async update(id: number, data: CandidatoUpdateDTO) {
     const { perfil, ...candidato } = data;
-    return prisma.candidato.update({
-      where: { id },
-      data: {
-        ...candidato,
-        ...{ perfil: { update: perfil } },
-      },
-      include: { perfil: true, experiencias: true },
+    return prisma.$transaction(async tx => {
+      const candidatoAtualizado = await tx.candidato.update({
+        where: { id },
+        data: {
+          ...candidato,
+          ...{ perfil: { update: perfil } },
+        },
+        include: { perfil: true, experiencias: true },
+      });
+
+      const camposModificados = camposCandidato.some(campo => data[campo as keyof typeof data] !== undefined);
+
+      if (camposModificados) {
+        await gerarEmbeddingCandidato(tx, candidatoAtualizado);
+      }
+
+      return candidatoAtualizado;
     });
   }
 
@@ -50,6 +65,7 @@ class CandidatoRepository {
         where: { id },
       });
       await perfilRepository.delete(tx, candidato.perfilId);
+      await recomendacaoRepository.deleteByCandidatoId(tx, id);
       return candidato;
     });
   }

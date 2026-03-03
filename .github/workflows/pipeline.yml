@@ -3,7 +3,7 @@ name: Lint Code
 on:
   push:
     branches:
-      - "**"
+      - '**'
   pull_request:
     branches:
       - main
@@ -20,7 +20,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "22"
+          node-version: '22'
 
       - name: Cache Node modules
         uses: actions/cache@v3
@@ -46,7 +46,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Cache Node modules
         uses: actions/cache@v3
@@ -58,9 +58,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      - name: Set environment variables
-        run: echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
 
       - name: Run tests
         run: npm test
