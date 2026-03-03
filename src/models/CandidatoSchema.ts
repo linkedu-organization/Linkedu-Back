@@ -52,4 +52,4 @@ export const CandidatoExtendedResponseSchema = CandidatoResponseSchema.extend({
 
 export type CandidatoCreateDTO = z.infer<typeof CandidatoCreateSchema>;
 export type CandidatoUpdateDTO = z.infer<typeof CandidatoUpdateSchema>;
-export type CandidatoEmbeddingDTO = z.infer<typeof CandidadoSchemaEmbedding>;
+export type CandidatoEmbeddingDTO = z.infer<typeof CandidadoEmbeddingSchema>;
