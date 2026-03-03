@@ -80,8 +80,8 @@ class RecomendacaoRepository {
     });
   }
 
-  async deleteByVagaId(vagaId: number) {
-    await prisma.recomendacao.deleteMany({
+  async deleteByVagaId(tx: Prisma.TransactionClient, vagaId: number) {
+    await tx.recomendacao.deleteMany({
       where: { vagaId },
     });
   }
