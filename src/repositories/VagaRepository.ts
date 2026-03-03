@@ -1,6 +1,8 @@
 import { VagaCreateDTO, VagaUpdateDTO } from '../models/VagaSchema';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
+import { camposVaga, gerarEmbeddingVaga } from '../utils/matchUtils';
+import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class VagaRepository {
   async create(data: VagaCreateDTO, recrutadorId: number) {
@@ -9,6 +11,8 @@ class VagaRepository {
         data: { ...data, recrutadorId },
         include: { recrutador: { include: { perfil: true } } },
       });
+
+      await gerarEmbeddingVaga(tx, vagaCriada);
       return vagaCriada;
     });
   }
@@ -29,16 +33,30 @@ class VagaRepository {
   }
 
   async update(id: number, data: VagaUpdateDTO) {
-    return prisma.vaga.update({
-      where: { id },
-      data: Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)),
-      include: { recrutador: { include: { perfil: true } } },
+    return prisma.$transaction(async tx => {
+      const vagaAtualizada = await tx.vaga.update({
+        where: { id },
+        data: Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)),
+        include: { recrutador: { include: { perfil: true } } },
+      });
+
+      const camposModificados = camposVaga.some(campo => data[campo as keyof typeof data] !== undefined);
+
+      if (camposModificados) {
+        await gerarEmbeddingVaga(tx, vagaAtualizada);
+      }
+
+      return vagaAtualizada;
     });
   }
 
   async delete(id: number) {
-    return prisma.vaga.delete({
-      where: { id },
+    prisma.$transaction(async tx => {
+      const vaga = await tx.vaga.delete({
+        where: { id },
+      });
+      await recomendacaoRepository.deleteByVagaId(tx, id);
+      return vaga;
     });
   }
 }
