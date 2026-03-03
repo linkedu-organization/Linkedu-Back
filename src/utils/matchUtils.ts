@@ -50,7 +50,8 @@ export async function gerarEmbeddingCandidato(tx: Prisma.TransactionClient, cand
 
   const textoEmbedding = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
     Nível de escolaridade: ${nivelEscolaridade}, com conclusão prevista para ${periodoConclusao ?? 'não informada'}. 
-    Competências e conhecimentos técnicos: ${habilidades.join(', ')}. Áreas de interesse e objetivos: ${areasInteresse.join(', ')}. Disponibilidade de tempo: ${tempoDisponivel}.`;
+    Competências e conhecimentos técnicos: ${habilidades.join(', ')}. Áreas de interesse e objetivos: ${areasInteresse.join(', ')}.
+    Disponibilidade de tempo: ${tempoDisponivel}.`;
 
   const embedding = await criarEmbedding(textoEmbedding);
   await atualizarEmbedding(tx, 'Candidato', candidato.id, embedding.values);
@@ -69,8 +70,9 @@ export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: Vag
     conhecimentosOpcionais,
   } = vaga;
 
-  const textoEmbedding = `Oportunidade de ${titulo} na instituição ${instituicao}. Perfil da Vaga: ${descricao}. Formação requerida: ${curso} para o público ${publicoAlvo}. 
-    Requisitos técnicos mandatórios: ${conhecimentosObrigatorios}. Desejável e diferenciais: ${conhecimentosOpcionais}. Condições: Carga horária de ${cargaHoraria} e duração de ${duracao}.`;
+  const textoEmbedding = `Oportunidade de ${titulo} na instituição ${instituicao}. Perfil da Vaga: ${descricao}.
+    Formação requerida: ${curso} para o público ${publicoAlvo.join(', ')}. Requisitos técnicos mandatórios: ${conhecimentosObrigatorios.join(', ')}.
+    Desejável e diferenciais: ${conhecimentosOpcionais.join(', ')}. Condições: Carga horária de ${cargaHoraria} e duração de ${duracao}.`;
 
   const embedding = await criarEmbedding(textoEmbedding);
   await atualizarEmbedding(tx, 'Vaga', vaga.id, embedding.values);
