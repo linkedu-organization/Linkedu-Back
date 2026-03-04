@@ -214,7 +214,7 @@ describe('Recupera candidato pelo id', () => {
   });
 });
 
-describe('Recupera todos os candidatoes', () => {
+describe('Recupera todos os candidatos', () => {
   test('case 1: retorna lista', async () => {
     const list = [makeCandidatoResponse()];
     mockGetAll(list);
