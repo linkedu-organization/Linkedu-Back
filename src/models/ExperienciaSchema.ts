@@ -12,9 +12,7 @@ const ExperienciaSchema = z.object({
 
 export const ExperienciaCreateSchema = ExperienciaSchema;
 
-export const ExperienciaUpdateSchema = ExperienciaSchema.extend({
-  candidatoId: z.number(),
-});
+export const ExperienciaUpdateSchema = ExperienciaSchema.partial();
 
 export const ExperienciaResponseSchema = ExperienciaSchema.extend({
   id: z.number(),

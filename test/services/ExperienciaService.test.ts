@@ -45,7 +45,7 @@ const mockDelete = () => (experienciaRepository.delete as jest.Mock).mockResolve
 
 describe('Cria Experiência', () => {
   test('case 1: com todos os campos', async () => {
-    const experiencia = makeExperiencia();
+    const { candidatoId: _, ...experiencia } = makeExperiencia();
     const response = makeExperienciaResponse();
 
     mockCreate(response);
