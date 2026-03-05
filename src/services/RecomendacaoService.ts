@@ -33,7 +33,12 @@ class RecomendacaoService {
     const vagaEmbedding = await getEmbedding('Vaga', vagaId);
     if (vagaEmbedding === '') throw new EmbeddingNotFoundError(vagaId);
 
-    const candidatosSimilares = await calcularSimilaridade('Candidato', vagaEmbedding, Prisma.sql`disponivel = true`);
+    const candidatosSimilares = await calcularSimilaridade(
+      'Candidato',
+      vagaEmbedding,
+      Prisma.sql`disponivel = true AND p."ultimoAcesso" >= CURRENT_DATE - INTERVAL '90 days'`,
+      Prisma.sql`JOIN (SELECT id as "perfilId", "ultimoAcesso" FROM "Perfil") p ON p."perfilId" = "Candidato"."perfilId"`,
+    );
     if (candidatosSimilares.length === 0) return [];
 
     const result = await recomendacaoRepository.createRecomendacaoCandidatosParaVaga(candidatosSimilares, vagaId);
