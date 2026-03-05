@@ -1,3 +1,4 @@
+import e from 'express';
 import { recomendacaoRepository } from '../../src/repositories/RecomendacaoRepository';
 import { candidatoService } from '../../src/services/CandidatoService';
 import { recomendacaoService } from '../../src/services/RecomendacaoService';
@@ -68,7 +69,7 @@ describe('Cria Recomendação', () => {
     await recomendacaoService.createRecomendacaoCandidatosParaVaga(1);
 
     expect(embedding).toHaveBeenCalledWith('Vaga', 1);
-    expect(calcularSimilaridade).toHaveBeenCalledWith('Candidato', '[0.1,0.2]', expect.anything());
+    expect(calcularSimilaridade).toHaveBeenCalledWith('Candidato', '[0.1,0.2]', expect.anything(), expect.anything());
     expect(vagaServiceGetById).toHaveBeenCalledWith(1);
     expect(mockCreateRecomendacaoCandidatos).toHaveBeenCalledWith([{ similarity: 10 }, { similarity: 20 }], 1);
   });
