@@ -1,4 +1,3 @@
-import e from 'express';
 import { recomendacaoRepository } from '../../src/repositories/RecomendacaoRepository';
 import { candidatoService } from '../../src/services/CandidatoService';
 import { recomendacaoService } from '../../src/services/RecomendacaoService';
