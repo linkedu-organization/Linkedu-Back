@@ -123,7 +123,7 @@ export async function calcularSimilaridade(
     WHERE 
       embedding IS NOT NULL
       AND ${filtrosAdicionais}
-      AND 1 - (embedding <=> ${vetorEmbedding}) > 0.6
+      AND 1 - (embedding <=> ${vetorEmbedding}) >= 0.6
     ORDER BY 
       embedding <=> ${vetorEmbedding} ASC
     LIMIT 10;
