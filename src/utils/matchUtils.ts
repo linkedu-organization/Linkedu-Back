@@ -110,6 +110,7 @@ export async function calcularSimilaridade(
   entidade: 'Vaga' | 'Candidato',
   embedding: string,
   filtrosAdicionais: Prisma.Sql = Prisma.sql`1=1`,
+  join: Prisma.Sql = Prisma.empty,
 ) {
   const vetorEmbedding = Prisma.sql`${embedding}::vector`;
 
@@ -118,9 +119,11 @@ export async function calcularSimilaridade(
       id,
       1 - (embedding <=> ${vetorEmbedding}) as score
     FROM ${Prisma.raw(`"${entidade}"`)}
+    ${join}
     WHERE 
       embedding IS NOT NULL
       AND ${filtrosAdicionais}
+      AND 1 - (embedding <=> ${vetorEmbedding}) >= 0.6
     ORDER BY 
       embedding <=> ${vetorEmbedding} ASC
     LIMIT 10;

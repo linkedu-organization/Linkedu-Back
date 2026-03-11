@@ -11,7 +11,7 @@ import { EmbeddingNotFoundError } from '../errors/EmbeddingNotFoundError';
 class RecomendacaoService {
   async createRecomendacaoVagasParaCandidato(authToken: unknown) {
     const authTokenId = getAuthTokenId(authToken);
-    await candidatoService.getById(authTokenId);
+    const candidato = await candidatoService.getById(authTokenId);
 
     const candidatoEmbedding = await getEmbedding('Candidato', authTokenId);
     if (candidatoEmbedding === '') throw new EmbeddingNotFoundError(authTokenId);
@@ -19,7 +19,11 @@ class RecomendacaoService {
     const vagasSimilares = await calcularSimilaridade(
       'Vaga',
       candidatoEmbedding,
-      Prisma.sql`("dataExpiracao" IS NULL OR TO_DATE("dataExpiracao", 'DD/MM/YYYY') >= CURRENT_DATE)`,
+      Prisma.sql`
+    ("dataExpiracao" IS NULL OR TO_DATE("dataExpiracao", 'DD/MM/YYYY') >= CURRENT_DATE)
+    AND "cargaHoraria" <= ${candidato.tempoDisponivel} AND "instituicao" = ${candidato.instituicao}
+    AND "curso" = ${candidato.areaAtuacao}
+  `,
     );
     if (vagasSimilares.length === 0) return [];
 
@@ -28,12 +32,17 @@ class RecomendacaoService {
   }
 
   async createRecomendacaoCandidatosParaVaga(vagaId: number) {
-    await vagaService.getById(vagaId);
+    const vaga = await vagaService.getById(vagaId);
 
     const vagaEmbedding = await getEmbedding('Vaga', vagaId);
     if (vagaEmbedding === '') throw new EmbeddingNotFoundError(vagaId);
 
-    const candidatosSimilares = await calcularSimilaridade('Candidato', vagaEmbedding, Prisma.sql`disponivel = true`);
+    const candidatosSimilares = await calcularSimilaridade(
+      'Candidato',
+      vagaEmbedding,
+      Prisma.sql`disponivel = true AND p."ultimoAcesso" >= CURRENT_DATE - INTERVAL '60 days' AND "tempoDisponivel" >= ${vaga.cargaHoraria} AND "instituicao" = ${vaga.instituicao} AND "areaAtuacao" = ${vaga.curso}`,
+      Prisma.sql`JOIN (SELECT id as "perfilId", "ultimoAcesso" FROM "Perfil") p ON p."perfilId" = "Candidato"."perfilId"`,
+    );
     if (candidatosSimilares.length === 0) return [];
 
     const result = await recomendacaoRepository.createRecomendacaoCandidatosParaVaga(candidatosSimilares, vagaId);
