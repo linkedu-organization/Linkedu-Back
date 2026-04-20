@@ -4,7 +4,6 @@ import { Prisma } from '@prisma/client';
 import prisma from './prisma';
 import { VagaCreateDTO, VagaResponseDTO } from '../models/VagaSchema';
 import { CandidatoCreateDTO, CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
-import { ExperienciaResponseDTO } from '../models/ExperienciaSchema';
 
 export interface Similaridade {
   id: number;
