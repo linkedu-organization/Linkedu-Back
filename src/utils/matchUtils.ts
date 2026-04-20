@@ -89,27 +89,27 @@ export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: Vag
   await atualizarEmbedding(tx, 'Vaga', vaga.id, embedding.values);
 }
 
-export async function gerarResumoExperiencia(
-  tx: Prisma.TransactionClient,
-  experiencia: ExperienciaResponseDTO,
-  candidatoId: number,
-) {
-  const { titulo, descricao, orientador, instituicao, periodoInicio, periodoFim, local } = experiencia;
-  const resumo = `O candidato possui experiência de ${titulo} na instituição ${instituicao}, orientada por ${orientador}. Descrição da experiência: ${descricao}. Atuou no Período: ${periodoInicio} a ${periodoFim ? periodoFim : 'atualmente'}. Local da experiência: ${local}.`;
-
-  await atualizarResumoCandidato(tx, candidatoId, resumo);
-}
-
-async function atualizarResumoCandidato(tx: Prisma.TransactionClient, candidatoId: number, resumo: string) {
-  const candidato = await prisma.candidato.findUnique({ where: { id: candidatoId }, include: { perfil: true } });
+export async function gerarResumoExperiencia(tx: Prisma.TransactionClient, candidatoId: number) {
+  const candidato = await tx.candidato.findUnique({ where: { id: candidatoId }, include: { perfil: true } });
   if (!candidato) return;
-  const resumoCandidato = `${candidato.resumo}\nExperiência: ${resumo}`;
+
+  const experiencias = await tx.experiencia.findMany({ where: { candidatoId } });
+  const resumoExperiencias = experiencias
+    .map(exp => {
+      return `O candidato possui experiência de ${exp.titulo} na instituição ${exp.instituicao}, orientada por ${exp.orientador}. 
+      Descrição da experiência: ${exp.descricao}. Atuou no período: ${exp.periodoInicio} a ${exp.periodoFim ?? 'atualmente'}. 
+      Local da experiência: ${exp.local}.`;
+    })
+    .join('\n');
+
+  const resumoFinal = `${candidato.resumo}\n${resumoExperiencias}`.trim();
   const candidatoAtualizado = await tx.candidato.update({
     where: { id: candidatoId },
-    data: { resumo: resumoCandidato },
+    data: { resumo: resumoFinal },
     include: { perfil: true },
   });
-  gerarEmbeddingCandidato(tx, candidatoAtualizado, resumoCandidato);
+
+  await gerarEmbeddingCandidato(tx, candidatoAtualizado, resumoFinal);
 }
 
 async function criarEmbedding(texto: string) {
