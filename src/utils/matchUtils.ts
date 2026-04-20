@@ -88,7 +88,7 @@ export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: Vag
   await atualizarEmbedding(tx, 'Vaga', vaga.id, embedding.values);
 }
 
-export async function gerarResumoExperiencia(tx: Prisma.TransactionClient, candidatoId: number) {
+export async function atualizaResumoCandidato(tx: Prisma.TransactionClient, candidatoId: number) {
   const candidato = await tx.candidato.findUnique({ where: { id: candidatoId }, include: { perfil: true } });
   if (!candidato) return;
 
@@ -101,7 +101,7 @@ export async function gerarResumoExperiencia(tx: Prisma.TransactionClient, candi
     })
     .join('\n');
   const resumoBase = gerarResumoCandidato(candidato);
-  const resumoFinal = `${resumoBase}\n${resumoExperiencias}`.trim();
+  const resumoFinal = `${resumoBase}\n${resumoExperiencias ?? 'Sem experiências informadas'}`.trim();
   const candidatoAtualizado = await tx.candidato.update({
     where: { id: candidatoId },
     data: { resumo: resumoFinal },
@@ -109,6 +109,7 @@ export async function gerarResumoExperiencia(tx: Prisma.TransactionClient, candi
   });
 
   await gerarEmbeddingCandidato(tx, candidatoAtualizado, resumoFinal);
+  return candidatoAtualizado;
 }
 
 async function criarEmbedding(texto: string) {

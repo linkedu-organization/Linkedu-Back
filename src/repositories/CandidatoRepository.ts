@@ -4,7 +4,7 @@ import { CandidatoCreateDTO, CandidatoUpdateDTO } from '../models/CandidatoSchem
 import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
-import { camposCandidato, gerarEmbeddingCandidato, gerarResumoCandidato } from '../utils/matchUtils';
+import { atualizaResumoCandidato, gerarEmbeddingCandidato, gerarResumoCandidato } from '../utils/matchUtils';
 import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class CandidatoRepository {
@@ -41,22 +41,16 @@ class CandidatoRepository {
   async update(id: number, data: CandidatoUpdateDTO) {
     const { perfil, ...candidato } = data;
     return prisma.$transaction(async tx => {
-      const candidatoAtual = await tx.candidato.findUniqueOrThrow({ where: { id }, include: { perfil: true } });
-      const dadosFiltrados = Object.fromEntries(Object.entries(candidato).filter(([, v]) => v !== undefined));
-      const candidatoCompleto: CandidatoCreateDTO = { ...candidatoAtual, ...dadosFiltrados } as CandidatoCreateDTO;
-      const resumoCandidato = gerarResumoCandidato(candidatoCompleto);
-      const candidatoAtualizado = await tx.candidato.update({
+      await tx.candidato.update({
         where: { id },
-        data: { ...candidato, ...{ perfil: { update: perfil } }, resumo: resumoCandidato },
+        data: {
+          ...candidato,
+          ...{ perfil: { update: perfil } },
+        },
         include: { perfil: true, experiencias: true },
       });
 
-      const camposModificados = camposCandidato.some(campo => data[campo as keyof typeof data] !== undefined);
-
-      if (camposModificados) {
-        await gerarEmbeddingCandidato(tx, candidatoAtualizado, resumoCandidato);
-      }
-
+      const candidatoAtualizado = await atualizaResumoCandidato(tx, id);
       return candidatoAtualizado;
     });
   }

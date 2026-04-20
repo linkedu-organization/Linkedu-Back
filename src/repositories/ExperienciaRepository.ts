@@ -1,5 +1,5 @@
 import { ExperienciaCreateDTO, ExperienciaUpdateDTO } from '../models/ExperienciaSchema';
-import { gerarResumoExperiencia } from '../utils/matchUtils';
+import { atualizaResumoCandidato } from '../utils/matchUtils';
 import prisma from '../utils/prisma';
 
 class ExperienciaRepository {
@@ -8,7 +8,7 @@ class ExperienciaRepository {
       const experienciaCriada = await tx.experiencia.create({
         data: { ...data, candidatoId },
       });
-      await gerarResumoExperiencia(tx, candidatoId);
+      await atualizaResumoCandidato(tx, candidatoId);
       return experienciaCriada;
     });
   }
@@ -29,7 +29,7 @@ class ExperienciaRepository {
         where: { id },
         data: Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)),
       });
-      await gerarResumoExperiencia(tx, experienciaAtualizada.candidatoId);
+      await atualizaResumoCandidato(tx, experienciaAtualizada.candidatoId);
       return experienciaAtualizada;
     });
   }
@@ -39,7 +39,7 @@ class ExperienciaRepository {
       const experienciaDeletada = await tx.experiencia.delete({
         where: { id },
       });
-      await gerarResumoExperiencia(tx, experienciaDeletada.candidatoId);
+      await atualizaResumoCandidato(tx, experienciaDeletada.candidatoId);
       return experienciaDeletada;
     });
   }
