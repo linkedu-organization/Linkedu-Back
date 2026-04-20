@@ -1,4 +1,5 @@
 import { ExperienciaCreateDTO, ExperienciaUpdateDTO } from '../models/ExperienciaSchema';
+import { gerarResumoExperiencia } from '../utils/matchUtils';
 import prisma from '../utils/prisma';
 
 class ExperienciaRepository {
@@ -7,6 +8,7 @@ class ExperienciaRepository {
       const experienciaCriada = await tx.experiencia.create({
         data: { ...data, candidatoId },
       });
+      await gerarResumoExperiencia(tx, experienciaCriada, candidatoId);
       return experienciaCriada;
     });
   }

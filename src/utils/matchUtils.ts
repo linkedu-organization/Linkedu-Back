@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import prisma from './prisma';
 import { VagaCreateDTO, VagaResponseDTO } from '../models/VagaSchema';
 import { CandidatoCreateDTO, CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
+import { ExperienciaResponseDTO } from '../models/ExperienciaSchema';
 
 export interface Similaridade {
   id: number;
@@ -86,6 +87,29 @@ export function gerarResumoVaga(vaga: VagaCreateDTO) {
 export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: VagaResponseDTO, textoEmbedding: string) {
   const embedding = await criarEmbedding(textoEmbedding);
   await atualizarEmbedding(tx, 'Vaga', vaga.id, embedding.values);
+}
+
+export async function gerarResumoExperiencia(
+  tx: Prisma.TransactionClient,
+  experiencia: ExperienciaResponseDTO,
+  candidatoId: number,
+) {
+  const { titulo, descricao, orientador, instituicao, periodoInicio, periodoFim, local } = experiencia;
+  const resumo = `O candidato possui experiência de ${titulo} na instituição ${instituicao}, orientada por ${orientador}. Descrição da experiência: ${descricao}. Atuou no Período: ${periodoInicio} a ${periodoFim ? periodoFim : 'atualmente'}. Local da experiência: ${local}.`;
+
+  await atualizarResumoCandidato(tx, candidatoId, resumo);
+}
+
+async function atualizarResumoCandidato(tx: Prisma.TransactionClient, candidatoId: number, resumo: string) {
+  const candidato = await prisma.candidato.findUnique({ where: { id: candidatoId }, include: { perfil: true } });
+  if (!candidato) return;
+  const resumoCandidato = `${candidato.resumo}\nExperiência: ${resumo}`;
+  const candidatoAtualizado = await tx.candidato.update({
+    where: { id: candidatoId },
+    data: { resumo: resumoCandidato },
+    include: { perfil: true },
+  });
+  gerarEmbeddingCandidato(tx, candidatoAtualizado, resumoCandidato);
 }
 
 async function criarEmbedding(texto: string) {
