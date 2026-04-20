@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Prisma } from '@prisma/client';
 
 import prisma from './prisma';
-import { VagaResponseDTO } from '../models/VagaSchema';
+import { VagaCreateDTO, VagaResponseDTO } from '../models/VagaSchema';
 import { CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
 
 export interface Similaridade {
@@ -55,7 +55,7 @@ export async function gerarEmbeddingCandidato(tx: Prisma.TransactionClient, cand
   await atualizarEmbedding(tx, 'Candidato', candidato.id, embedding.values);
 }
 
-export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: VagaResponseDTO) {
+export async function gerarResumoVaga(vaga: VagaCreateDTO) {
   const {
     titulo,
     descricao,
@@ -68,10 +68,14 @@ export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: Vag
     conhecimentosOpcionais,
   } = vaga;
 
-  const textoEmbedding = `Oportunidade de ${titulo} na instituição ${instituicao}. Perfil da Vaga: ${descricao}.
+  const resumo = `Oportunidade de ${titulo} na instituição ${instituicao}. Perfil da Vaga: ${descricao}.
     Formação requerida: ${curso} para o público ${publicoAlvo.join(', ')}. Requisitos técnicos mandatórios: ${conhecimentosObrigatorios.join(', ')}.
     Desejável e diferenciais: ${conhecimentosOpcionais.join(', ')}. Condições: Carga horária de ${cargaHoraria} e duração de ${duracao}.`;
 
+  return resumo;
+}
+
+export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: VagaResponseDTO, textoEmbedding: string) {
   const embedding = await criarEmbedding(textoEmbedding);
   await atualizarEmbedding(tx, 'Vaga', vaga.id, embedding.values);
 }

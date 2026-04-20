@@ -1,18 +1,19 @@
 import { VagaCreateDTO, VagaUpdateDTO } from '../models/VagaSchema';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
-import { camposVaga, gerarEmbeddingVaga } from '../utils/matchUtils';
+import { camposVaga, gerarEmbeddingVaga, gerarResumoVaga } from '../utils/matchUtils';
 import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class VagaRepository {
   async create(data: VagaCreateDTO, recrutadorId: number) {
     return prisma.$transaction(async tx => {
+      const resumoVaga = await gerarResumoVaga(data);
       const vagaCriada = await tx.vaga.create({
-        data: { ...data, recrutadorId },
+        data: { ...data, recrutadorId, resumo: resumoVaga },
         include: { recrutador: { include: { perfil: true } } },
       });
 
-      await gerarEmbeddingVaga(tx, vagaCriada);
+      await gerarEmbeddingVaga(tx, vagaCriada, resumoVaga);
       return vagaCriada;
     });
   }
@@ -34,18 +35,20 @@ class VagaRepository {
 
   async update(id: number, data: VagaUpdateDTO) {
     return prisma.$transaction(async tx => {
+      const vagaAtual = await tx.vaga.findUniqueOrThrow({ where: { id } });
+      const dadosFiltrados = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
+      const vagaCompleta: VagaCreateDTO = { ...vagaAtual, ...dadosFiltrados } as VagaCreateDTO;
+      const resumoVaga = await gerarResumoVaga(vagaCompleta);
       const vagaAtualizada = await tx.vaga.update({
         where: { id },
-        data: Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)),
+        data: { ...dadosFiltrados, resumo: resumoVaga },
         include: { recrutador: { include: { perfil: true } } },
       });
 
       const camposModificados = camposVaga.some(campo => data[campo as keyof typeof data] !== undefined);
-
       if (camposModificados) {
-        await gerarEmbeddingVaga(tx, vagaAtualizada);
+        await gerarEmbeddingVaga(tx, vagaAtualizada, resumoVaga);
       }
-
       return vagaAtualizada;
     });
   }
