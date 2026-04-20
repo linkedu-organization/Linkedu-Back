@@ -81,7 +81,9 @@ const makeVagaResponse = (overrides = {}) => ({
   publicoAlvo: ['ALUNO_GRADUACAO'],
   conhecimentosObrigatorios: ['JavaScript', 'TypeScript'],
   conhecimentosOpcionais: ['React', 'Node.js'],
-
+  resumo: `Oportunidade de Estágio em Desenvolvimento de Software na instituição UFCG. Perfil da Vaga: Descrição da vaga....
+    Formação requerida: Ciência da Computação para o público ALUNO_GRADUACAO. Requisitos técnicos mandatórios: JavaScript, TypeScript.
+    Desejável e diferenciais: React, Node.js. Condições: Carga horária de 20 e duração de 6 meses.`,
   ...overrides,
 });
 

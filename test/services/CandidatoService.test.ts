@@ -68,6 +68,10 @@ const makeCandidatoResponse = (overrides = {}) => ({
   areasInteresse: ['DESENVOLVIMENTO_WEB', 'IA'],
   habilidades: ['INGLES', 'JAVASCRIPT', 'JAVA', 'REACT'],
   perfil: makePerfilResponse(),
+  resumo: `Profissional/Estudante da instituição UFCG com foco em Ciência da Computação. 
+    Nível de escolaridade: SUPERIOR_INCOMPLETO, com conclusão prevista para 202612. 
+    Competências e conhecimentos técnicos: INGLES, JAVASCRIPT, JAVA, REACT. Áreas de interesse e objetivos: DESENVOLVIMENTO_WEB, IA.
+    Disponibilidade de tempo: 20.`,
   ...overrides,
 });
 
