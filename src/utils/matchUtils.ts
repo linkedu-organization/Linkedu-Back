@@ -100,8 +100,8 @@ export async function gerarResumoExperiencia(tx: Prisma.TransactionClient, candi
       Local da experiência: ${exp.local}.`;
     })
     .join('\n');
-
-  const resumoFinal = `${candidato.resumo}\n${resumoExperiencias}`.trim();
+  const resumoBase = gerarResumoCandidato(candidato);
+  const resumoFinal = `${resumoBase}\n${resumoExperiencias}`.trim();
   const candidatoAtualizado = await tx.candidato.update({
     where: { id: candidatoId },
     data: { resumo: resumoFinal },
