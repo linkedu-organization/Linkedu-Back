@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 
 import prisma from './prisma';
 import { VagaCreateDTO, VagaResponseDTO } from '../models/VagaSchema';
-import { CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
+import { CandidatoCreateDTO, CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
 
 export interface Similaridade {
   id: number;
@@ -35,7 +35,7 @@ export const camposCandidato = [
   'habilidades',
 ];
 
-export async function gerarEmbeddingCandidato(tx: Prisma.TransactionClient, candidato: CandidatoExtendedResponseDTO) {
+export function gerarResumoCandidato(candidato: CandidatoCreateDTO) {
   const {
     instituicao,
     areaAtuacao,
@@ -46,16 +46,24 @@ export async function gerarEmbeddingCandidato(tx: Prisma.TransactionClient, cand
     habilidades,
   } = candidato;
 
-  const textoEmbedding = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
+  const resumo = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
     Nível de escolaridade: ${nivelEscolaridade}, com conclusão prevista para ${periodoConclusao ?? 'não informada'}. 
     Competências e conhecimentos técnicos: ${habilidades.join(', ')}. Áreas de interesse e objetivos: ${areasInteresse.join(', ')}.
     Disponibilidade de tempo: ${tempoDisponivel}.`;
 
+  return resumo;
+}
+
+export async function gerarEmbeddingCandidato(
+  tx: Prisma.TransactionClient,
+  candidato: CandidatoExtendedResponseDTO,
+  textoEmbedding: string,
+) {
   const embedding = await criarEmbedding(textoEmbedding);
   await atualizarEmbedding(tx, 'Candidato', candidato.id, embedding.values);
 }
 
-export async function gerarResumoVaga(vaga: VagaCreateDTO) {
+export function gerarResumoVaga(vaga: VagaCreateDTO) {
   const {
     titulo,
     descricao,

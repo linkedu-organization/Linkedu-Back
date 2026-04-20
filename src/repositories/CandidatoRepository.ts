@@ -4,20 +4,21 @@ import { CandidatoCreateDTO, CandidatoUpdateDTO } from '../models/CandidatoSchem
 import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
-import { camposCandidato, gerarEmbeddingCandidato } from '../utils/matchUtils';
+import { camposCandidato, gerarEmbeddingCandidato, gerarResumoCandidato } from '../utils/matchUtils';
 import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class CandidatoRepository {
   async create(data: CandidatoCreateDTO) {
     const { perfil, ...candidato } = data;
     return prisma.$transaction(async tx => {
+      const resumoCandidato = gerarResumoCandidato(data);
       const perfilCriado = await perfilRepository.create(tx, perfil, TipoPerfil.CANDIDATO);
       const candidatoCriado = await tx.candidato.create({
-        data: { ...candidato, perfil: { connect: { id: perfilCriado.id } } },
+        data: { ...candidato, perfil: { connect: { id: perfilCriado.id } }, resumo: resumoCandidato },
         include: { perfil: true },
       });
 
-      await gerarEmbeddingCandidato(tx, candidatoCriado);
+      await gerarEmbeddingCandidato(tx, candidatoCriado, resumoCandidato);
       return candidatoCriado;
     });
   }
@@ -40,19 +41,20 @@ class CandidatoRepository {
   async update(id: number, data: CandidatoUpdateDTO) {
     const { perfil, ...candidato } = data;
     return prisma.$transaction(async tx => {
+      const candidatoAtual = await tx.candidato.findUniqueOrThrow({ where: { id }, include: { perfil: true } });
+      const dadosFiltrados = Object.fromEntries(Object.entries(candidato).filter(([, v]) => v !== undefined));
+      const candidatoCompleto: CandidatoCreateDTO = { ...candidatoAtual, ...dadosFiltrados } as CandidatoCreateDTO;
+      const resumoCandidato = gerarResumoCandidato(candidatoCompleto);
       const candidatoAtualizado = await tx.candidato.update({
         where: { id },
-        data: {
-          ...candidato,
-          ...{ perfil: { update: perfil } },
-        },
+        data: { ...candidato, ...{ perfil: { update: perfil } }, resumo: resumoCandidato },
         include: { perfil: true, experiencias: true },
       });
 
       const camposModificados = camposCandidato.some(campo => data[campo as keyof typeof data] !== undefined);
 
       if (camposModificados) {
-        await gerarEmbeddingCandidato(tx, candidatoAtualizado);
+        await gerarEmbeddingCandidato(tx, candidatoAtualizado, resumoCandidato);
       }
 
       return candidatoAtualizado;

@@ -7,7 +7,7 @@ import { recomendacaoRepository } from './RecomendacaoRepository';
 class VagaRepository {
   async create(data: VagaCreateDTO, recrutadorId: number) {
     return prisma.$transaction(async tx => {
-      const resumoVaga = await gerarResumoVaga(data);
+      const resumoVaga = gerarResumoVaga(data);
       const vagaCriada = await tx.vaga.create({
         data: { ...data, recrutadorId, resumo: resumoVaga },
         include: { recrutador: { include: { perfil: true } } },
@@ -38,7 +38,7 @@ class VagaRepository {
       const vagaAtual = await tx.vaga.findUniqueOrThrow({ where: { id } });
       const dadosFiltrados = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
       const vagaCompleta: VagaCreateDTO = { ...vagaAtual, ...dadosFiltrados } as VagaCreateDTO;
-      const resumoVaga = await gerarResumoVaga(vagaCompleta);
+      const resumoVaga = gerarResumoVaga(vagaCompleta);
       const vagaAtualizada = await tx.vaga.update({
         where: { id },
         data: { ...dadosFiltrados, resumo: resumoVaga },
