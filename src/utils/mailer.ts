@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const loadTemplate = (template: string, replacements?: Record<string, string>) => {
-  const templatePath = path.resolve(process.cwd(), 'templates', template);
+  const templatePath = path.resolve(process.cwd(), 'src/templates', template);
   let html = fs.readFileSync(templatePath, 'utf8');
   if (replacements) {
     Object.keys(replacements).forEach(key => {
