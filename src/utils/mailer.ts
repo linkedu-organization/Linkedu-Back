@@ -4,6 +4,13 @@ import nodemailer from 'nodemailer';
 
 import { AppError } from '../errors/AppError';
 
+interface EmailInfo {
+  to: string;
+  subject: string;
+  template: string;
+  replacements?: Record<string, string>;
+}
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   secure: true,
@@ -24,12 +31,7 @@ const loadTemplate = (template: string, replacements?: Record<string, string>) =
   return html;
 };
 
-export const sendEmail = async (
-  to: string,
-  subject: string,
-  template: string,
-  replacements?: Record<string, string>,
-) => {
+export const sendEmail = async ({ to, subject, template, replacements }: EmailInfo) => {
   try {
     const html = loadTemplate(template, replacements);
     await transporter.sendMail({
