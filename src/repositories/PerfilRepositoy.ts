@@ -42,6 +42,36 @@ class PerfilRepository {
       },
     });
   }
+
+  async getByResetToken(token: string) {
+    return await prisma.perfil.findFirst({
+      where: {
+        resetToken: token,
+      },
+    });
+  }
+
+  async salvarResetToken(email: string, token: string, expiresAt: Date) {
+    const perfil = await this.getByEmail(email);
+    await prisma.perfil.update({
+      where: { id: perfil!.id },
+      data: {
+        resetToken: token,
+        resetTokenExpiresAt: expiresAt,
+      },
+    });
+  }
+
+  async atualizarSenha(id: number, senha: string) {
+    return prisma.perfil.update({
+      where: { id },
+      data: {
+        senha,
+        resetToken: null,
+        resetTokenExpiresAt: null,
+      },
+    });
+  }
 }
 
 export const perfilRepository = new PerfilRepository();

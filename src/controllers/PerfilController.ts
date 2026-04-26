@@ -30,6 +30,18 @@ class PerfilController {
     res.status(200).json(result);
   }
 
+  async recuperarSenha(req: Request, res: Response) {
+    const { email } = req.body;
+    await perfilService.recuperarSenha(email);
+    res.status(200).json({ mensagem: 'Email para recuperação de senha enviado. Verifique sua caixa de Spam.' });
+  }
+
+  async atualizarSenha(req: Request, res: Response) {
+    const result = await perfilService.atualizarSenha(req.body);
+    res.clearCookie('authToken');
+    res.status(200).json(result);
+  }
+
   async logout(req: Request, res: Response) {
     res.clearCookie('authToken');
     res.status(200).send();

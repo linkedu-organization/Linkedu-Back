@@ -4,8 +4,16 @@ import { JwtPayload } from 'jsonwebtoken';
 import { AppError } from '../errors/AppError';
 import { perfilRepository } from '../repositories/PerfilRepositoy';
 import { EntityNotFoundError } from '../errors/EntityNotFoundError';
-import { gerarAuthToken } from '../utils/authUtils';
-import { PerfilExtendedResponseSchema } from '../models/PerfilSchema';
+import { gerarAuthToken, gerarHashSenha, gerarResetToken } from '../utils/authUtils';
+import {
+  PerfilExtendedResponseSchema,
+  PerfilResponseSchema,
+  PerfilUpdateSenhaDTO,
+  PerfilUpdateSenhaSchema,
+} from '../models/PerfilSchema';
+import { EmailNotRegisteredError } from '../errors/EmailNotRegisteredError';
+import { sendEmail } from '../utils/mailer';
+import { InvalidTokenError } from '../errors/InvalidTokenError';
 
 class PerfilService {
   async validarEmail(email: string) {
@@ -18,7 +26,7 @@ class PerfilService {
   async login(email: string, senha: string) {
     const perfil = await perfilRepository.getByEmail(email);
     if (!perfil) {
-      throw new AppError('Email não cadastrado', 404);
+      throw new EmailNotRegisteredError();
     }
 
     const senhaValida = await bcrypt.compare(senha, perfil.senha);
@@ -41,6 +49,37 @@ class PerfilService {
 
     const parsedData = await PerfilExtendedResponseSchema.parseAsync(perfil);
     return { autenticado: true, perfil: parsedData };
+  }
+
+  async recuperarSenha(email: string) {
+    const emailAtivo = await perfilRepository.getByEmail(email);
+    if (!emailAtivo) {
+      throw new EmailNotRegisteredError();
+    }
+
+    const { token, expiresAt } = gerarResetToken();
+    const resetLink = `${process.env.FRONTEND_URL}/recover/reset?token=${token}`;
+
+    await sendEmail(email, 'Recuperação de Senha', 'email-recuperar-senha.html', { resetLink });
+    await perfilRepository.salvarResetToken(email, token, expiresAt);
+  }
+
+  async atualizarSenha(data: PerfilUpdateSenhaDTO) {
+    const parsedData = PerfilUpdateSenhaSchema.parse(data);
+    const perfil = await perfilRepository.getByResetToken(parsedData.token);
+
+    if (!perfil) {
+      throw new InvalidTokenError();
+    }
+
+    if (perfil.resetTokenExpiresAt && perfil.resetTokenExpiresAt < new Date()) {
+      throw new AppError('Token de recuperação expirado. Por favor, solicite um novo email de recuperação.', 401);
+    }
+
+    const hashSenha = await gerarHashSenha(parsedData.senha);
+    const result = await perfilRepository.atualizarSenha(perfil.id, hashSenha);
+
+    return PerfilResponseSchema.parseAsync(result);
   }
 }
 
