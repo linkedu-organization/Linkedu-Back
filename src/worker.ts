@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import cron from 'node-cron';
 import { subDays } from 'date-fns';
 
