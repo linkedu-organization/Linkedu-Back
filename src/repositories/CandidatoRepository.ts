@@ -4,7 +4,12 @@ import { CandidatoCreateDTO, CandidatoUpdateDTO } from '../models/CandidatoSchem
 import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
-import { atualizaResumoCandidato, gerarEmbeddingCandidato, gerarResumoCandidato } from '../utils/matchUtils';
+import {
+  atualizaResumoCandidato,
+  camposCandidato,
+  gerarEmbeddingCandidato,
+  gerarResumoCandidato,
+} from '../utils/matchUtils';
 import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class CandidatoRepository {
@@ -41,7 +46,7 @@ class CandidatoRepository {
   async update(id: number, data: CandidatoUpdateDTO) {
     const { perfil, ...candidato } = data;
     return prisma.$transaction(async tx => {
-      await tx.candidato.update({
+      let candidatoAtualizado = await tx.candidato.update({
         where: { id },
         data: {
           ...candidato,
@@ -50,7 +55,15 @@ class CandidatoRepository {
         include: { perfil: true, experiencias: true },
       });
 
-      const candidatoAtualizado = await atualizaResumoCandidato(tx, id);
+      const camposModificados = camposCandidato.some(campo => data[campo as keyof typeof data] !== undefined);
+
+      if (camposModificados) {
+        const candidatoComResumo = await atualizaResumoCandidato(tx, id);
+        if (candidatoComResumo) {
+          candidatoAtualizado = { ...candidatoAtualizado, ...candidatoComResumo };
+        }
+      }
+
       return candidatoAtualizado;
     });
   }

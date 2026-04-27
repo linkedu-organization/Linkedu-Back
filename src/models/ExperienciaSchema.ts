@@ -20,4 +20,3 @@ export const ExperienciaResponseSchema = ExperienciaSchema.extend({
 
 export type ExperienciaCreateDTO = z.infer<typeof ExperienciaCreateSchema>;
 export type ExperienciaUpdateDTO = z.infer<typeof ExperienciaUpdateSchema>;
-export type ExperienciaResponseDTO = z.infer<typeof ExperienciaResponseSchema>;
