@@ -5,7 +5,7 @@ import { sendEmail } from './utils/mailer';
 import { perfilRepository } from './repositories/PerfilRepositoy';
 import { candidatoRepository } from './repositories/CandidatoRepository';
 
-cron.schedule('18 21 * * *', async () => {
+cron.schedule('0 9 * * *', async () => {
   const limite = subDays(new Date(), 30);
   const candidatosInativos = await candidatoRepository.getInativos(limite);
 
