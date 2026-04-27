@@ -37,6 +37,18 @@ class CandidatoRepository {
     });
   }
 
+  async getInativos(limite: Date) {
+    return prisma.candidato.findMany({
+      include: { perfil: true },
+      where: {
+        perfil: {
+          ultimoAcesso: { lte: limite },
+          emailInatividadeEnviado: false,
+        },
+      },
+    });
+  }
+
   async update(id: number, data: CandidatoUpdateDTO) {
     const { perfil, ...candidato } = data;
     return prisma.$transaction(async tx => {

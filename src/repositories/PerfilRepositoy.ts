@@ -6,7 +6,7 @@ import { PerfilCreateDTO } from '../models/PerfilSchema';
 class PerfilRepository {
   async create(tx: Prisma.TransactionClient, data: PerfilCreateDTO, tipo: TipoPerfil) {
     return tx.perfil.create({
-      data: { ...data, tipo: tipo, ultimoAcesso: new Date() },
+      data: { ...data, tipo: tipo, ultimoAcesso: new Date(), emailInatividadeEnviado: false },
     });
   }
 
@@ -70,6 +70,13 @@ class PerfilRepository {
         resetToken: null,
         resetTokenExpiresAt: null,
       },
+    });
+  }
+
+  async marcarEmailInatividadeEnviado(id: number) {
+    return prisma.perfil.update({
+      where: { id },
+      data: { emailInatividadeEnviado: true },
     });
   }
 }
