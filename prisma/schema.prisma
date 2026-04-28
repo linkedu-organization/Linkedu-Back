@@ -80,6 +80,7 @@ model Candidato {
   experiencias      Experiencia[]
   vagasRecomendadas Recomendacao[]
   embedding         Unsupported("vector(3072)")?
+  resumo            String?
 }
 
 enum PublicoAlvo {
@@ -120,6 +121,7 @@ model Vaga {
   conhecimentosOpcionais    String[]
   candidadosRecomendados    Recomendacao[]
   embedding                 Unsupported("vector(3072)")?
+  resumo                    String?
 }
 
 model Experiencia {

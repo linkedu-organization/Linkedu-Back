@@ -1,4 +1,5 @@
 import { ExperienciaCreateDTO, ExperienciaUpdateDTO } from '../models/ExperienciaSchema';
+import { atualizaResumoCandidato } from '../utils/matchUtils';
 import prisma from '../utils/prisma';
 
 class ExperienciaRepository {
@@ -7,6 +8,7 @@ class ExperienciaRepository {
       const experienciaCriada = await tx.experiencia.create({
         data: { ...data, candidatoId },
       });
+      await atualizaResumoCandidato(tx, candidatoId);
       return experienciaCriada;
     });
   }
@@ -22,15 +24,23 @@ class ExperienciaRepository {
   }
 
   async update(id: number, data: ExperienciaUpdateDTO) {
-    return prisma.experiencia.update({
-      where: { id },
-      data: Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)),
+    return prisma.$transaction(async tx => {
+      const experienciaAtualizada = await tx.experiencia.update({
+        where: { id },
+        data: Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)),
+      });
+      await atualizaResumoCandidato(tx, experienciaAtualizada.candidatoId);
+      return experienciaAtualizada;
     });
   }
 
   async delete(id: number) {
-    return prisma.experiencia.delete({
-      where: { id },
+    return prisma.$transaction(async tx => {
+      const experienciaDeletada = await tx.experiencia.delete({
+        where: { id },
+      });
+      await atualizaResumoCandidato(tx, experienciaDeletada.candidatoId);
+      return experienciaDeletada;
     });
   }
 }
