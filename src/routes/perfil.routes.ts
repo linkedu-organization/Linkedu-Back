@@ -17,6 +17,14 @@ perfilRoutes.get('/autenticado', getAuth, async (req, res) => {
   await perfilController.getPerfilAutenticado(req, res);
 });
 
+perfilRoutes.post('/recuperar-senha', async (req, res) => {
+  await perfilController.recuperarSenha(req, res);
+});
+
+perfilRoutes.put('/atualizar-senha', async (req, res) => {
+  await perfilController.atualizarSenha(req, res);
+});
+
 perfilRoutes.post('/logout', requireAuth, async (req, res) => {
   await perfilController.logout(req, res);
 });
