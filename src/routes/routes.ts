@@ -6,6 +6,7 @@ import { perfilRoutes } from './perfil.routes';
 import { vagaRoutes } from './vaga.routes';
 import { experienciaRoutes } from './experiencia.routes';
 import { recomendacaoRoutes } from './recomendacao.routes';
+import { jobRoutes } from './job.routes';
 
 export const routes = Router();
 
@@ -15,3 +16,4 @@ routes.use('/candidatos', candidatoRoutes);
 routes.use('/vagas', vagaRoutes);
 routes.use('/experiencias', experienciaRoutes);
 routes.use('/recomendacoes', recomendacaoRoutes);
+routes.use('/jobs', jobRoutes);
