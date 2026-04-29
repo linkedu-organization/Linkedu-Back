@@ -11,12 +11,13 @@ class JobService {
     const candidatosInativos = await candidatoRepository.getInativos(limite);
 
     for (const candidato of candidatosInativos) {
+      const nome = candidato.perfil.nome.split(' ')[0] ?? 'Olá';
       try {
         await sendEmail({
           to: candidato.perfil.email,
           subject: 'Seu perfil do Linkedu está inativo',
           template: 'template-email-perfil-inativo.html',
-          replacements: { loginLink: `${process.env.FRONTEND_URL}/login` },
+          replacements: { nome, loginLink: `${process.env.FRONTEND_URL}/login` },
         });
 
         await perfilRepository.marcarEmailInatividadeEnviado(candidato.perfil.id);
