@@ -72,6 +72,13 @@ class PerfilRepository {
       },
     });
   }
+
+  async marcarEmailInatividadeEnviado(id: number) {
+    return prisma.perfil.update({
+      where: { id },
+      data: { emailInatividadeEnviado: true },
+    });
+  }
 }
 
 export const perfilRepository = new PerfilRepository();
