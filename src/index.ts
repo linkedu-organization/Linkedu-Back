@@ -8,10 +8,8 @@ import { AppError } from './errors/AppError';
 
 const app = express();
 const port = process.env.PORT ?? 3333;
-const origensPermitidas = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [];
-
 const corsOptions = {
-  origin: origensPermitidas,
+  origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
