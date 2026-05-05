@@ -170,16 +170,28 @@ async function gerarDescricaoRecomendacao(vagaId: number, candidatoId: number, s
   const vaga = await vagaService.getById(vagaId);
   const candidato = await candidatoService.getById(candidatoId);
 
-  const prompt = `Dado que o score do match foi ${score}, gere uma descrição que justifique o match do candidato e da vaga a seguir. Para cálculo do match, as informações analisadas, em busca de semelhanças semânticas da vaga e do candidato, foram, respectivamente: 
-  Público Alvo: ${vaga.publicoAlvo} e nível de escolaridade: ${candidato.nivelEscolaridade};
-  Instituição do candidato: ${candidato.instituicao} e instituição da vaga: ${vaga.instituicao};
-  Tempo disponível do candidato: ${candidato.tempoDisponivel} e tempo requerido da vaga: ${vaga.cargaHoraria};
-  Período de conclusão do candidato: ${candidato.periodoConclusao ?? 'não informada'} e duração da vaga (em meses): ${vaga.duracao};
-  Área de atuação do candidato: ${candidato.areaAtuacao} e perfil da vaga: ${vaga.descricao} e o título da vaga: ${vaga.titulo};
-  Competências e conhecimentos técnicos do candidato: ${candidato.habilidades.join(', ')} e Requisitos técnicos mandatórios da vaga: ${vaga.conhecimentosObrigatorios};
-  Áreas de interesse do candidato: ${candidato.areasInteresse?.join(', ')} e Desejável e diferenciais da vaga: ${vaga.conhecimentosOpcionais}
-  Com base nos conhecimentos e interesses do candidato, também olhe para a descrição da vaga e o título da vaga para encontrar outras possíveis semelhanças que justifiquem o match.
-  Para a descrição, use no máximo 5 linhas e não fale sobre o score dado, não diga que não possua informações o suficiente para gerar a descrição, caso sinta dúvida do motivo do match, faça uma descrição breve e genérica que convença o leitor.`;
+  const prompt = `Dado que o score do match foi ${score}, gere uma descrição que justifique o alinhamento entre o candidato e a vaga.
+  Considere as seguintes comparações (com base em similaridade semântica):
+
+  - Público-alvo da vaga: ${vaga.publicoAlvo} | Escolaridade do candidato: ${candidato.nivelEscolaridade}
+  - Instituição da vaga: ${vaga.instituicao} | Instituição do candidato: ${candidato.instituicao}
+  - Carga horária da vaga: ${vaga.cargaHoraria} | Tempo disponível do candidato: ${candidato.tempoDisponivel}
+  - Duração da vaga: ${vaga.duracao} | Período de conclusão do candidato: ${candidato.periodoConclusao ?? 'não informada'}
+  - Perfil e descrição da vaga: ${vaga.descricao} | Área de atuação do candidato: ${candidato.areaAtuacao}
+  - Título da vaga: ${vaga.titulo}
+  - Requisitos técnicos obrigatórios: ${vaga.conhecimentosObrigatorios} | Habilidades do candidato: ${candidato.habilidades.join(', ')}
+  - Diferenciais da vaga: ${vaga.conhecimentosOpcionais} | Áreas de interesse do candidato: ${candidato.areasInteresse?.join(', ')}
+
+  Instruções:
+  - Destaque as principais similaridades entre candidato e vaga.
+  - Utilize também o título e a descrição da vaga para identificar conexões adicionais.
+
+  Restrições:
+  - Produza um texto de 400 caracteres.
+  - Não mencione o score.
+  - Não inclua justificativas sobre falta de informação.
+  - Mantenha um tom formal, mas não excessivamente erudito.
+  - Caso haja incerteza, utilize uma justificativa genérica, porém coerente com os dados apresentados.`;
 
   const response = await model.generateContent(prompt);
   return response.response.text();
