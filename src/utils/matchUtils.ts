@@ -2,8 +2,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Prisma } from '@prisma/client';
 
 import prisma from './prisma';
-import { VagaResponseDTO } from '../models/VagaSchema';
-import { CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
+import { VagaCreateDTO, VagaResponseDTO } from '../models/VagaSchema';
+import { CandidatoCreateDTO, CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
 import { vagaService } from '../services/VagaService';
 import { candidatoService } from '../services/CandidatoService';
 
@@ -37,7 +37,7 @@ export const camposCandidato = [
   'habilidades',
 ];
 
-export async function gerarEmbeddingCandidato(tx: Prisma.TransactionClient, candidato: CandidatoExtendedResponseDTO) {
+export function gerarResumoCandidato(candidato: CandidatoCreateDTO) {
   const {
     instituicao,
     areaAtuacao,
@@ -48,16 +48,24 @@ export async function gerarEmbeddingCandidato(tx: Prisma.TransactionClient, cand
     habilidades,
   } = candidato;
 
-  const textoEmbedding = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
+  const resumo = `Profissional/Estudante da instituição ${instituicao} com foco em ${areaAtuacao}. 
     Nível de escolaridade: ${nivelEscolaridade}, com conclusão prevista para ${periodoConclusao ?? 'não informada'}. 
     Competências e conhecimentos técnicos: ${habilidades.join(', ')}. Áreas de interesse e objetivos: ${areasInteresse.join(', ')}.
     Disponibilidade de tempo: ${tempoDisponivel}.`;
 
+  return resumo;
+}
+
+export async function gerarEmbeddingCandidato(
+  tx: Prisma.TransactionClient,
+  candidato: CandidatoExtendedResponseDTO,
+  textoEmbedding: string,
+) {
   const embedding = await criarEmbedding(textoEmbedding);
   await atualizarEmbedding(tx, 'Candidato', candidato.id, embedding.values);
 }
 
-export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: VagaResponseDTO) {
+export function gerarResumoVaga(vaga: VagaCreateDTO) {
   const {
     titulo,
     descricao,
@@ -70,12 +78,40 @@ export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: Vag
     conhecimentosOpcionais,
   } = vaga;
 
-  const textoEmbedding = `Oportunidade de ${titulo} na instituição ${instituicao}. Perfil da Vaga: ${descricao}.
+  const resumo = `Oportunidade de ${titulo} na instituição ${instituicao}. Perfil da Vaga: ${descricao}.
     Formação requerida: ${curso} para o público ${publicoAlvo.join(', ')}. Requisitos técnicos mandatórios: ${conhecimentosObrigatorios.join(', ')}.
     Desejável e diferenciais: ${conhecimentosOpcionais.join(', ')}. Condições: Carga horária de ${cargaHoraria} e duração de ${duracao}.`;
 
+  return resumo;
+}
+
+export async function gerarEmbeddingVaga(tx: Prisma.TransactionClient, vaga: VagaResponseDTO, textoEmbedding: string) {
   const embedding = await criarEmbedding(textoEmbedding);
   await atualizarEmbedding(tx, 'Vaga', vaga.id, embedding.values);
+}
+
+export async function atualizaResumoCandidato(tx: Prisma.TransactionClient, candidatoId: number) {
+  const candidato = await tx.candidato.findUnique({ where: { id: candidatoId }, include: { perfil: true } });
+  if (!candidato) return;
+
+  const experiencias = await tx.experiencia.findMany({ where: { candidatoId } });
+  const resumoExperiencias = experiencias
+    .map(exp => {
+      return `O candidato possui experiência de ${exp.titulo} na instituição ${exp.instituicao}, orientada por ${exp.orientador}. 
+      Descrição da experiência: ${exp.descricao}. Atuou no período: ${exp.periodoInicio} a ${exp.periodoFim ?? 'atualmente'}. 
+      Local da experiência: ${exp.local}.`;
+    })
+    .join('\n');
+  const resumoBase = gerarResumoCandidato(candidato);
+  const resumoFinal = `${resumoBase}\n${resumoExperiencias ?? 'Sem experiências informadas'}`.trim();
+  const candidatoAtualizado = await tx.candidato.update({
+    where: { id: candidatoId },
+    data: { resumo: resumoFinal },
+    include: { perfil: true },
+  });
+
+  await gerarEmbeddingCandidato(tx, candidatoAtualizado, resumoFinal);
+  return candidatoAtualizado;
 }
 
 async function criarEmbedding(texto: string) {

@@ -17,6 +17,11 @@ export const PerfilUpdateSchema = PerfilCreateSchema.omit({
   senha: true,
 });
 
+export const PerfilUpdateSenhaSchema = z.object({
+  senha: z.string().min(8),
+  token: z.string(),
+});
+
 export const PerfilResponseSchema = PerfilUpdateSchema.extend({
   id: z.number(),
   tipo: TipoPerfilEnum,
@@ -38,3 +43,4 @@ export const PerfilExtendedResponseSchema = PerfilResponseSchema.extend({
 
 export type PerfilCreateDTO = z.infer<typeof PerfilCreateSchema>;
 export type PerfilUpdateDTO = z.infer<typeof PerfilUpdateSchema>;
+export type PerfilUpdateSenhaDTO = z.infer<typeof PerfilUpdateSenhaSchema>;

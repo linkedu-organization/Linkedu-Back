@@ -4,20 +4,26 @@ import { CandidatoCreateDTO, CandidatoUpdateDTO } from '../models/CandidatoSchem
 import { perfilRepository } from './PerfilRepositoy';
 import prisma from '../utils/prisma';
 import { Filter, Sorter, buildWhereClause, buildOrderClause } from '../utils/filterUtils';
-import { camposCandidato, gerarEmbeddingCandidato } from '../utils/matchUtils';
+import {
+  atualizaResumoCandidato,
+  camposCandidato,
+  gerarEmbeddingCandidato,
+  gerarResumoCandidato,
+} from '../utils/matchUtils';
 import { recomendacaoRepository } from './RecomendacaoRepository';
 
 class CandidatoRepository {
   async create(data: CandidatoCreateDTO) {
     const { perfil, ...candidato } = data;
     return prisma.$transaction(async tx => {
+      const resumoCandidato = gerarResumoCandidato(data);
       const perfilCriado = await perfilRepository.create(tx, perfil, TipoPerfil.CANDIDATO);
       const candidatoCriado = await tx.candidato.create({
-        data: { ...candidato, perfil: { connect: { id: perfilCriado.id } } },
+        data: { ...candidato, perfil: { connect: { id: perfilCriado.id } }, resumo: resumoCandidato },
         include: { perfil: true },
       });
 
-      await gerarEmbeddingCandidato(tx, candidatoCriado);
+      await gerarEmbeddingCandidato(tx, candidatoCriado, resumoCandidato);
       return candidatoCriado;
     });
   }
@@ -37,10 +43,22 @@ class CandidatoRepository {
     });
   }
 
+  async getInativos(limite: Date) {
+    return prisma.candidato.findMany({
+      include: { perfil: true },
+      where: {
+        perfil: {
+          ultimoAcesso: { lte: limite },
+          emailInatividadeEnviado: false,
+        },
+      },
+    });
+  }
+
   async update(id: number, data: CandidatoUpdateDTO) {
     const { perfil, ...candidato } = data;
     return prisma.$transaction(async tx => {
-      const candidatoAtualizado = await tx.candidato.update({
+      let candidatoAtualizado = await tx.candidato.update({
         where: { id },
         data: {
           ...candidato,
@@ -52,7 +70,10 @@ class CandidatoRepository {
       const camposModificados = camposCandidato.some(campo => data[campo as keyof typeof data] !== undefined);
 
       if (camposModificados) {
-        await gerarEmbeddingCandidato(tx, candidatoAtualizado);
+        const candidatoComResumo = await atualizaResumoCandidato(tx, id);
+        if (candidatoComResumo) {
+          candidatoAtualizado = { ...candidatoAtualizado, ...candidatoComResumo };
+        }
       }
 
       return candidatoAtualizado;
