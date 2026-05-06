@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Response } from 'express';
@@ -37,6 +38,12 @@ export const gerarAuthToken = (perfil: PerfilWithRelations) => {
   });
 
   return `Bearer ${token}`;
+};
+
+export const gerarResetToken = () => {
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + COOKIE_EXPIRATION_MS);
+  return { token, expiresAt };
 };
 
 export const getAuthToken = (res: Response) => res.locals.decryptedToken;

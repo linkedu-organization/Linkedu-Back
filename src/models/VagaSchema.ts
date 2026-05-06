@@ -45,6 +45,7 @@ export const VagaUpdateSchema = VagaSchema.partial();
 export const VagaResponseSchema = VagaSchema.extend({
   id: z.number(),
   recrutador: RecrutadorExtendedResponseSchema,
+  resumo: z.string().nullable(),
 });
 
 export type VagaCreateDTO = z.infer<typeof VagaCreateSchema>;

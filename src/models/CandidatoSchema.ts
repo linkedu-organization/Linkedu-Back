@@ -43,6 +43,7 @@ export const CandidatoUpdateSchema = CandidatoSchema.extend({
 
 export const CandidatoResponseSchema = CandidatoSchema.extend({
   id: z.number(),
+  resumo: z.string().nullable(),
   experiencias: z.array(z.lazy(() => ExperienciaResponseSchema)).optional(),
 });
 

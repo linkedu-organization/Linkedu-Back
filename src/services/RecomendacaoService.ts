@@ -41,7 +41,7 @@ class RecomendacaoService {
     const candidatosSimilares = await calcularSimilaridade(
       'Candidato',
       vagaEmbedding,
-      Prisma.sql`"disponivel" = true AND p."ultimoAcesso" >= CURRENT_DATE - INTERVAL '60 days' AND "tempoDisponivel" >= ${vaga.cargaHoraria} AND "instituicao" = ${vaga.instituicao} AND "areaAtuacao" = ${vaga.curso}`,
+      Prisma.sql`"disponivel" = true AND p."ultimoAcesso" >= CURRENT_DATE - INTERVAL '30 days' AND "tempoDisponivel" >= ${vaga.cargaHoraria} AND "instituicao" = ${vaga.instituicao} AND "areaAtuacao" = ${vaga.curso}`,
       Prisma.sql`JOIN (SELECT id as "perfilId", "ultimoAcesso" FROM "Perfil") p ON p."perfilId" = "Candidato"."perfilId"`,
     );
     if (candidatosSimilares.length === 0) return [];
