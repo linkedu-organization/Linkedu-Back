@@ -87,6 +87,7 @@ enum PublicoAlvo {
   ALUNO_POS_GRADUACAO
   TECNICO
   PESQUISADOR
+  GRADUADO
 }
 
 enum Categoria {

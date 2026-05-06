@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { RecrutadorExtendedResponseSchema } from './RecrutadorSchema';
 
-const PublicoAlvo = z.enum(['ALUNO_GRADUACAO', 'ALUNO_POS_GRADUACAO', 'TECNICO', 'PESQUISADOR']);
+const PublicoAlvo = z.enum(['ALUNO_GRADUACAO', 'ALUNO_POS_GRADUACAO', 'TECNICO', 'PESQUISADOR', 'GRADUADO']);
 
 const Categoria = z.enum([
   'PROJETO_PESQUISA',
