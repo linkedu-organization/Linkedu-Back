@@ -4,6 +4,8 @@ import { Prisma } from '@prisma/client';
 import prisma from './prisma';
 import { VagaCreateDTO, VagaResponseDTO } from '../models/VagaSchema';
 import { CandidatoCreateDTO, CandidatoExtendedResponseDTO } from '../models/CandidatoSchema';
+import { vagaService } from '../services/VagaService';
+import { candidatoService } from '../services/CandidatoService';
 
 export interface Similaridade {
   id: number;
@@ -11,7 +13,7 @@ export interface Similaridade {
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
-//const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 export const camposVaga = [
   'titulo',
@@ -169,14 +171,14 @@ export async function calcularSimilaridade(
 export async function getRecomendacaoVagasPayload(vagasSimilares: Similaridade[], candidatoId: number) {
   const result = await Promise.all(
     vagasSimilares.map(async vaga => {
-      //const descricao = await gerarDescricao(vaga.id, candidatoId, vaga.score);
+      const descricao = await gerarDescricaoRecomendacao(vaga.id, candidatoId, vaga.score);
       return {
         vagaId: vaga.id,
-        candidatoId: candidatoId,
+        candidatoId,
         updatedAt: new Date(),
         tipo: 'VAGAS_PARA_CANDIDATO' as const,
         score: vaga.score,
-        descricao: '',
+        descricao,
       };
     }),
   );
@@ -186,40 +188,47 @@ export async function getRecomendacaoVagasPayload(vagasSimilares: Similaridade[]
 export async function getRecomendacaoCandidatosPayload(candidatosSimilares: Similaridade[], vagaId: number) {
   const result = await Promise.all(
     candidatosSimilares.map(async candidato => {
-      //const descricao = await gerarDescricao(dadosCandidato.id, vagaId, candidato.score);
+      const descricao = await gerarDescricaoRecomendacao(vagaId, candidato.id, candidato.score);
       return {
-        vagaId: vagaId,
+        vagaId,
         candidatoId: candidato.id,
         updatedAt: new Date() as Date,
         tipo: 'CANDIDATOS_PARA_VAGA' as const,
         score: candidato.score,
-        descricao: '',
+        descricao,
       };
     }),
   );
   return result.sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
-// async function gerarDescricao(vagaId: number, candidatoId: number, score: number) {
-//   const vaga = await vagaService.getById(vagaId);
-//   const candidato = await candidatoService.getById(candidatoId);
+async function gerarDescricaoRecomendacao(vagaId: number, candidatoId: number, score: number) {
+  const vaga = await vagaService.getById(vagaId);
+  const candidato = await candidatoService.getById(candidatoId);
 
-//   const textoEmbeddingCandidato = `Profissional/Estudante da instituição ${candidato.instituicao} com foco em ${candidato.areaAtuacao}.
-//     Nível de escolaridade: ${candidato.nivelEscolaridade}, com conclusão prevista para ${candidato.periodoConclusao ?? 'não informada'}.
-//     Competências e conhecimentos técnicos: ${candidato.habilidades.join(', ')}. Áreas de interesse e objetivos: ${candidato.areasInteresse?.join(', ')}. Disponibilidade de tempo: ${candidato.tempoDisponivel}.`;
+  const prompt = `Dado que o score do match foi ${score}, gere uma descrição que justifique o alinhamento entre o candidato e a vaga.
+  Considere as seguintes comparações (com base em similaridade semântica):
 
-//   const textoEmbeddingVaga = `Oportunidade de ${vaga.titulo} na instituição ${vaga.instituicao}. Perfil da Vaga: ${vaga.descricao}. Formação requerida: ${vaga.curso} para o público ${vaga.publicoAlvo}.
-//         Requisitos técnicos mandatórios: ${vaga.conhecimentosObrigatorios}. Desejável e diferenciais: ${vaga.conhecimentosOpcionais}. Condições: Carga horária de ${vaga.cargaHoraria} e duração de ${vaga.duracao}.`;
+  - Público-alvo da vaga: ${vaga.publicoAlvo} | Escolaridade do candidato: ${candidato.nivelEscolaridade}
+  - Instituição da vaga: ${vaga.instituicao} | Instituição do candidato: ${candidato.instituicao}
+  - Carga horária da vaga: ${vaga.cargaHoraria} | Tempo disponível do candidato: ${candidato.tempoDisponivel}
+  - Duração da vaga: ${vaga.duracao} | Período de conclusão do candidato: ${candidato.periodoConclusao ?? 'não informada'}
+  - Perfil e descrição da vaga: ${vaga.descricao} | Área de atuação do candidato: ${candidato.areaAtuacao}
+  - Título da vaga: ${vaga.titulo}
+  - Requisitos técnicos obrigatórios: ${vaga.conhecimentosObrigatorios} | Habilidades do candidato: ${candidato.habilidades.join(', ')}
+  - Diferenciais da vaga: ${vaga.conhecimentosOpcionais} | Áreas de interesse do candidato: ${candidato.areasInteresse?.join(', ')}
 
-//   const prompt = `Gere uma descrição de recomendação com os motivos do match entre um candidato e uma vaga com base nas seguintes informações:
-//     Candidato: ${textoEmbeddingCandidato}
-//     Vaga: ${textoEmbeddingVaga}
-//     Score da recomendação: ${score}
+  Instruções:
+  - Destaque as principais similaridades entre candidato e vaga.
+  - Utilize também o título e a descrição da vaga para identificar conexões adicionais.
 
-//     Explique os principais pontos de compatibilidade técnica e de interesse.
-//     Não invente informações. Use no máximo 5 linhas e não fale sobre o score.
-//     `;
+  Restrições:
+  - Produza um texto de 400 caracteres.
+  - Não mencione o score.
+  - Não inclua justificativas sobre falta de informação.
+  - Mantenha um tom formal, mas não excessivamente erudito.
+  - Caso haja incerteza, utilize uma justificativa genérica, porém coerente com os dados apresentados.`;
 
-//   const response = await model.generateContent(prompt);
-//   return response.response.text();
-// }
+  const response = await model.generateContent(prompt);
+  return response.response.text();
+}
